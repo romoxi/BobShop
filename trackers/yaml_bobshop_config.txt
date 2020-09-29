@@ -1,0 +1,269 @@
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: bobshop_config
+    data:
+      name: bobshop_config
+      description: 'Basic configuration stuff for the shop features'
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderShopName
+    data:
+      name: shop_name
+      permname: bobshopOrderShopName
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '0'
+      description: 'name of the shop'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderActive
+    data:
+      name: active
+      permname: bobshopOrderActive
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '10'
+      description: "y = shop is open\r\nn = shop is closed"
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderAddToCartButtonText
+    data:
+      name: addToCartButtonText
+      permname: bobshopOrderAddToCartButtonText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '20'
+      description: 'text to display on the add to cart button'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderCashierbutton
+    data:
+      name: cashierButtonText
+      permname: bobshopOrderCashierbutton
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '30'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderCheckoutButtonText
+    data:
+      name: checkoutButtonText
+      permname: bobshopOrderCheckoutButtonText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '40'
+      description: 'Text for the Checkout Button'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderBuyNowButtonText
+    data:
+      name: buyNowButtonText
+      permname: bobshopOrderBuyNowButtonText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '50'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderShippingCostCat1
+    data:
+      name: shippingCostCat1
+      permname: bobshopOrderShippingCostCat1
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '60'
+      description: 'Shipping costs for category 1'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderShippingCostCat2
+    data:
+      name: shippingCostCat2
+      permname: bobshopOrderShippingCostCat2
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '70'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderShippingCostCat3
+    data:
+      name: shippingCostCat3
+      permname: bobshopOrderShippingCostCat3
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '80'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderTaxrate1
+    data:
+      name: taxrate1
+      permname: bobshopOrderTaxrate1
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '100'
+      description: 'Tax rate for product taxrateCat = 1'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderTaxrate2
+    data:
+      name: taxrate2
+      permname: bobshopOrderTaxrate2
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '110'
+      description: 'Tax for product taxrate2'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderTaxrate3
+    data:
+      name: taxrate3
+      permname: bobshopOrderTaxrate3
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '120'
+      description: 'Tax rate for product taxrateCat = 3'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderShippingCostTaxrateCat
+    data:
+      name: shippingCostTaxrateCat
+      permname: bobshopOrderShippingCostTaxrateCat
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '130'
+      description: 'TaxratCat for shipping Costs'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderPaymentDefault
+    data:
+      name: paymentDefault
+      permname: bobshopOrderPaymentDefault
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        trackerId: '$unknownobject:5f733b23efb33$'
+        fieldId: '$unknownobject:5f733b23efb3b$'
+        displayFieldsList:
+          - '$unknownobject:5f733b23efb3b$'
+        displayFieldsListType: dropdown
+        status: opc
+        preSelectFieldMethod: exact
+        displayOneItem: multi
+        indexRemote:
+          - 0
+      type: item_link
+      order: '140'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_option
+    ref: bobshop_config_sort_default_field
+    data:
+      tracker: '$profileobject:bobshop_config$'
+      name: sort_default_field
+      value: modification

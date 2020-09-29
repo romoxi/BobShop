@@ -1,0 +1,192 @@
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: bobshop_products
+    data:
+      name: bobshop_products
+      description: 'products to be sold'
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductProductId
+    data:
+      name: productId
+      permname: bobshopProductProductId
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '10'
+      description: 'unique Id'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductName
+    data:
+      name: name
+      permname: bobshopProductName
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '20'
+      description: 'the basic name of the product'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductDescription
+    data:
+      name: description
+      permname: bobshopProductDescription
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        distinct: 'n'
+        wysiwyg: 'n'
+        samerow: 1
+      type: text_area
+      order: '30'
+      description: 'description of the product'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductPrice
+    data:
+      name: price
+      permname: bobshopProductPrice
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        decimals: 2
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '40'
+      description: 'the price without VAT'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductTaxrateCat
+    data:
+      name: taxrateCat
+      permname: bobshopProductTaxrateCat
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '50'
+      description: 'tax rate from the config tracker; 1 = 0; 2 = verminderter; 3 = normaler'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductShippingCat
+    data:
+      name: shippingCat
+      permname: bobshopProductShippingCat
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '60'
+      description: 'category from the config tracker for calculate the shipping costs'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductCategory
+    data:
+      name: category
+      permname: bobshopProductCategory
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '70'
+      description: 'product category'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductPic1
+    data:
+      name: pic1
+      permname: bobshopProductPic1
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        replace: 'n'
+        uploadInModal: 'y'
+        addDecriptionOnUpload: 'n'
+        requireTitle: 'n'
+      type: files
+      order: '80'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductWikipage
+    data:
+      name: wikipage
+      permname: bobshopProductWikipage
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        fieldIdForPagename: '$profileobject:bobshop_products_bobshopProductWikipage$'
+        namespace: none
+        syncwikipagename: 'n'
+        syncwikipagedelete: 'n'
+        toolbars: 1
+        wysiwyg: 'n'
+        actions: 'n'
+        samerow: 1
+        removeBadChars: 'n'
+      type: wiki
+      order: '90'
+      description: 'wikipage name of the product'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_option
+    ref: bobshop_products_sort_default_field
+    data:
+      tracker: '$profileobject:bobshop_products$'
+      name: sort_default_field
+      value: modification

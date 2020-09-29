@@ -1,0 +1,76 @@
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: bobshop_payment
+    data:
+      name: bobshop_payment
+      description: 'Payment methodes'
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: bobshop_payment_bobshopPaymentName
+    data:
+      name: name
+      permname: bobshopPaymentName
+      tracker: '$profileobject:bobshop_payment$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '10'
+      description: 'Name for the payment methode (Paypal ...)'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: bobshop_payment_bobshopPaymentPrice
+    data:
+      name: price
+      permname: bobshopPaymentPrice
+      tracker: '$profileobject:bobshop_payment$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '20'
+      description: 'Pirce for the Payment'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_payment_bobshopPaymentIcon
+    data:
+      name: icon
+      permname: bobshopPaymentIcon
+      tracker: '$profileobject:bobshop_payment$'
+      options:
+        replace: 'n'
+        uploadInModal: 'y'
+        addDecriptionOnUpload: 'n'
+        requireTitle: 'n'
+      type: files
+      order: '30'
+      description: 'the icon for the payment methode'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_option
+    ref: bobshop_payment_sort_default_field
+    data:
+      tracker: '$profileobject:bobshop_payment$'
+      name: sort_default_field
+      value: modification

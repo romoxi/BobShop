@@ -1,0 +1,200 @@
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: user
+    data:
+      name: User
+      description: ''
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: user_userUser
+    data:
+      name: User
+      permname: userUser
+      tracker: '$profileobject:user$'
+      options:
+        autoassign: 1
+        owner: 1
+        notify_template_format: text
+        groupIds:
+          - 0
+        canChangeGroupIds:
+          - 0
+      type: user
+      order: '20'
+      visby: {  }
+      editby: {  }
+      validation: username
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: user_userTitle
+    data:
+      name: title
+      permname: userTitle
+      tracker: '$profileobject:user$'
+      options:
+        options:
+          - Frau
+          - Herr
+          - Firma
+      type: radio
+      order: '30'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userFirstName
+    data:
+      name: firstName
+      permname: userFirstName
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '40'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userName
+    data:
+      name: name
+      permname: userName
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '50'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userZip
+    data:
+      name: zip
+      permname: userZip
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '60'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userPhone
+    data:
+      name: phone
+      permname: userPhone
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '90'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: user_userStreetNumber
+    data:
+      name: streetNumber
+      permname: userStreetNumber
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '100'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userStreet
+    data:
+      name: street
+      permname: userStreet
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '110'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userCity
+    data:
+      name: city
+      permname: userCity
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '120'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userCountry
+    data:
+      name: country
+      permname: userCountry
+      tracker: '$profileobject:user$'
+      options:
+        options:
+          - Deutschland
+          - Österreich
+      type: dropdown
+      order: '130'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_option
+    ref: user_sort_default_field
+    data:
+      tracker: '$profileobject:user$'
+      name: sort_default_field
+      value: modification

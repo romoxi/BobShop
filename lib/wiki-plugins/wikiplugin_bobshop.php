@@ -243,8 +243,8 @@ function wikiplugin_bobshop($data, $params)
 												"landing_page": "LOGIN",
 												"shipping_preference": "NO_SHIPPING",
 												"user_action": "PAY_NOW",
-												"return_url": "https://mysite/tiki-index.php?page=bobshop_paypalAfterTransaction",
-												"cancel_url": "https://mysite/tiki-index.php?page=bobshop_paypalAfterTransaction"
+												"return_url": "'. $_SERVER["SCRIPT_URI"] .'?page=bobshop_paypalAfterTransaction",
+												"cancel_url": "'. $_SERVER["SCRIPT_URI"] .'?page=bobshop_paypalAfterTransaction"
 											}										
 										}';
 						$orderPayPal = createOrderPayPal($paypalOrder, $token, $paypalURL);

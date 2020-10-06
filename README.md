@@ -1,7 +1,7 @@
 # bobshop
 Shopping cart system for TikiWiki
 
-still under heavy develepment
+still under heavy development
 
 ## Features
 - easy to install and configure

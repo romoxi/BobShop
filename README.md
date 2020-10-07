@@ -26,4 +26,5 @@ pre-release v1_2 available
 - Copy php and tpl files to your installation
 - Import the wikipages
 - upload the icons to your file-gallery
+
 Details are soon available

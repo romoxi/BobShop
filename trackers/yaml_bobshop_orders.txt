@@ -54,8 +54,8 @@ objects:
       permname: bobshopOrderUser
       tracker: '$profileobject:bobshop_orders$'
       options:
-        notify_template_format: text
-      type: user
+        samerow: 1
+      type: text_field
       order: '30'
       visby: {  }
       editby: {  }
@@ -240,6 +240,136 @@ objects:
       flags:
         - link
         - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderAgreedTosDate
+    data:
+      name: agreedTosDate
+      permname: bobshopOrderAgreedTosDate
+      tracker: '$profileobject:bobshop_orders$'
+      options: {  }
+      type: datetime
+      order: '140'
+      description: 'has aggred Terms of Service at this date'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderAgreedRevocationDate
+    data:
+      name: agreedRevocationDate
+      permname: bobshopOrderAgreedRevocationDate
+      tracker: '$profileobject:bobshop_orders$'
+      options: {  }
+      type: datetime
+      order: '150'
+      description: 'agreed to Revocation Notice at this Date'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumPaymentName
+    data:
+      name: sumPaymentName
+      permname: bobshopOrderSumPaymentName
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '160'
+      description: 'The name of the payment service'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentOrderId
+    data:
+      name: paymentOrderId
+      permname: bobshopOrderPaymentOrderId
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '170'
+      description: 'the ID from the payment system (PayPal) when creating an order'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentStatus
+    data:
+      name: paymentStatus
+      permname: bobshopOrderPaymentStatus
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '180'
+      description: "Status from the payment system (PayPal)\r\nCREATED, APPROVED, ELIGIBLE, COMPLETED"
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentApproveLink
+    data:
+      name: paymentApproveLink
+      permname: bobshopOrderPaymentApproveLink
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '190'
+      description: "approve link for the payer to approve the order (Paypal)\r\nthe link will goto the paypal login"
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentPayeeMerchantId
+    data:
+      name: paymentPayeeMerchantId
+      permname: bobshopOrderPaymentPayeeMerchantId
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '200'
+      description: 'received merchant_id from the payment system (PayPal)'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentPayerId
+    data:
+      name: paymentPayerId
+      permname: bobshopOrderPaymentPayerId
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '210'
+      description: 'the payer from the payment system (the payer can differ to our user)'
+      visby: {  }
+      editby: {  }
+      flags:
         - public
   -
     type: tracker_option

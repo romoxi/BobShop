@@ -85,6 +85,6 @@
 <hr>
 
 <input type="hidden" name="action" value="checkout">
+<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="tiki-index.php?page=bobshop_cart">Back</a>
 <input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['shopConfig_checkoutButtonText']|escape}{/tr}">
 </form>
-<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="tiki-index.php?page=bobshop_cart">Back</a>

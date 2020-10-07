@@ -14,11 +14,13 @@ objects:
     type: tracker_field
     ref: bobshop_config_bobshopOrderShopName
     data:
-      name: shop_name
+      name: shopName
       permname: bobshopOrderShopName
       tracker: '$profileobject:bobshop_config$'
       options:
         samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
       type: text_field
       order: '0'
       description: 'name of the shop'
@@ -244,10 +246,10 @@ objects:
       permname: bobshopOrderPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:5f733b23efb33$'
-        fieldId: '$unknownobject:5f733b23efb3b$'
+        trackerId: '$unknownobject:5f7d8e5cb4c46$'
+        fieldId: '$unknownobject:5f7d8e5cb4c4e$'
         displayFieldsList:
-          - '$unknownobject:5f733b23efb3b$'
+          - '$unknownobject:5f7d8e5cb4c4e$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact
@@ -256,6 +258,148 @@ objects:
           - 0
       type: item_link
       order: '140'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderCurrency
+    data:
+      name: currency
+      permname: bobshopOrderCurrency
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '150'
+      description: 'Currency for this shop'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderTermsOfServicePage
+    data:
+      name: TermsOfServicePage
+      permname: bobshopOrderTermsOfServicePage
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        fieldIdForPagename: '$profileobject:bobshop_config_bobshopOrderTermsOfServicePage$'
+        namespace: none
+        syncwikipagename: 'n'
+        syncwikipagedelete: 'n'
+        toolbars: 1
+        wysiwyg: 'n'
+        actions: 'n'
+        samerow: 1
+        removeBadChars: 'n'
+      type: wiki
+      order: '160'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderRevocationNotice
+    data:
+      name: RevocationNotice
+      permname: bobshopOrderRevocationNotice
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        fieldIdForPagename: '$profileobject:bobshop_config_bobshopOrderRevocationNotice$'
+        namespace: none
+        syncwikipagename: 'n'
+        syncwikipagedelete: 'n'
+        toolbars: 1
+        wysiwyg: 'n'
+        actions: 'n'
+        samerow: 1
+        removeBadChars: 'n'
+      type: wiki
+      order: '170'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderCurrencySymbol
+    data:
+      name: currencySymbol
+      permname: bobshopOrderCurrencySymbol
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '180'
+      description: '€, $'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderCurrencyShortcut
+    data:
+      name: currencyShortcut
+      permname: bobshopOrderCurrencyShortcut
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '190'
+      description: EUR
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderEmailSender
+    data:
+      name: emailSender
+      permname: bobshopOrderEmailSender
+      tracker: '$profileobject:bobshop_config$'
+      options: {  }
+      type: email
+      order: '200'
+      description: 'this is the sender mail in the "order-received" mail to the buyer'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderCompanySignature
+    data:
+      name: companySignature
+      permname: bobshopOrderCompanySignature
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        distinct: 'n'
+        wysiwyg: 'n'
+        samerow: 1
+      type: text_area
+      order: '210'
+      description: 'Full name an Address of your company. Is used for mail etc.'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderEmailNotifications
+    data:
+      name: emailNotifications
+      permname: bobshopOrderEmailNotifications
+      tracker: '$profileobject:bobshop_config$'
+      options: {  }
+      type: email
+      order: '220'
+      description: 'mail for notifications about orders, errors etc.'
       visby: {  }
       editby: {  }
       flags:

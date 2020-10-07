@@ -1,4 +1,4 @@
-<table class="table table-hover" >
+<table class="table table-hover">
 	<colgroup>
 		<col width="5%">
 		<col width="45%">
@@ -42,7 +42,6 @@
 				<td style="text-align: right">{{$product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']}}|string_format: "%.2f"}</td>
 				{assign var="rate" value="shopConfig_taxrate{$product.{$shopConfig['productTaxrateCatFieldId']}}"}
 				<td style="text-align: right">{$shopConfig[$rate]}%</td>
-
 			</tr>
 
 			{$sumProducts = $sumProducts + ($product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']} )}

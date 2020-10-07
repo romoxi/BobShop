@@ -68,6 +68,57 @@ objects:
       flags:
         - public
   -
+    type: tracker_field
+    ref: bobshop_payment_bobshopPaymentMerchantId
+    data:
+      name: merchantId
+      permname: bobshopPaymentMerchantId
+      tracker: '$profileobject:bobshop_payment$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '40'
+      description: 'Id from the payment system (PayPal); is used to compare with the response within the payment prozess'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_payment_bobshopPaymentBuyNowButtonTextExtraText
+    data:
+      name: buyNowButtonTextExtraText
+      permname: bobshopPaymentBuyNowButtonTextExtraText
+      tracker: '$profileobject:bobshop_payment$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '50'
+      description: 'some Text to add to the byNowButtonText, when this payment is selected'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_payment_bobshopPaymentFollowUpScript
+    data:
+      name: followUpScript
+      permname: bobshopPaymentFollowUpScript
+      tracker: '$profileobject:bobshop_payment$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '60'
+      description: "what to do after the order is submitted\r\n\"PAYPAL\"  runs the paypal payment prozess"
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
     type: tracker_option
     ref: bobshop_payment_sort_default_field
     data:

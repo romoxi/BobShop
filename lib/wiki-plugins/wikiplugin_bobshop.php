@@ -5,29 +5,14 @@ function wikiplugin_bobshop_info()
         'name' => tra('BobShop'),
         'description' => tra('Create a Shop.'),
         'prefs' => array( 'wikiplugin_bobshop' ),                        
-        'params' => array(/*
-                'shop_name' => array(
-                    'required' => true,
-                    'name' => tra('BobShop'),
-                    'description' => tra('Choose a name'),
-                    'filter' => 'text',
-                    'since' => '1.0',
-                ),
-                'config' => array(
-                    'required' => false,
-                    'name' => tra('Configuration'),
-                    'description' => tra('Loads the configration site'),
-                    'filter' => 'text',
-                    'since' => '1.0',
-                ),*/
+        'params' => array(
                 'type' => array(
                     'required' => false,
                     'name' => tra('Type'),
                     'description' => tra('What to do'),
                     'filter' => 'text',
                     'since' => '1.0',
-                )
-			,
+                ),
                 'productId' => array(
                     'required' => false,
                     'name' => tra('Product Number'),
@@ -61,6 +46,8 @@ function wikiplugin_bobshop($data, $params)
 	$shopConfig['currentOrderNumber'] = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
 	//print_r($_REQUEST);
 	
+	//echo $shopConfig['shopConfig_companySignature'];
+	
 	global $tikilib;
 	global $userlib;
 	
@@ -71,8 +58,8 @@ function wikiplugin_bobshop($data, $params)
 	 * Returns some detailed user info
 	 * userId, email, login ...
 	 */
-	$userDataDetail = $userlib->get_user_info('admin');
-	//print_r($userData); echo '<hr>';
+	$userDataDetail = $userlib->get_user_info($user);
+	//print_r($userDataDetail); echo '<hr>';
 
 	/**
 	 * Returns
@@ -83,6 +70,8 @@ function wikiplugin_bobshop($data, $params)
 	
 	//print_r($shopConfig);
 	
+	//print_r($_SERVER);
+	//echo $_SERVER['SCRIPT_URI'];
 		
 	/*
 	 * checks if the "add to cart" button is pressed
@@ -96,8 +85,6 @@ function wikiplugin_bobshop($data, $params)
 		global $jitPost;
 		global $jitGet;
 		$action = $jitRequest->action->text();
-		//print_r($jitPost); echo '<hr>';
-		
 	
 		switch($action)
 		{
@@ -111,7 +98,6 @@ function wikiplugin_bobshop($data, $params)
 			
 			case 'add_to_cart':
 				$fieldNames['bobshopOrderUser'] = 'bobshop';
-				//$fieldNames['bobshopOrderOrderNumber'] = 0;
 				$fieldNames['bobshopOrderItemQuantity'] = 1;
 
 				//insert a new order, if there isnt one
@@ -120,7 +106,6 @@ function wikiplugin_bobshop($data, $params)
 					$fieldNames['bobshopOrderItemProductId'] = $jitPost->productId->text();
 					$orderVars = insert_tracker_shop_order($fieldNames, $shopConfig);
 
-					//print_r($orderVars);
 					$fieldNames['bobshopOrderItemOrderNumber'] = $orderVars['orderNumber'];
 
 					//insert the articel in the bobshop_order_items tracker
@@ -137,10 +122,11 @@ function wikiplugin_bobshop($data, $params)
 				break;
 			
 			case 'cashierbutton':
-				//print_r($shopConfig);
 				if($user)
 				{
 					$action = 'cashierpage';
+					//for mail testing
+					//send_order_received($sums, $userDataDetail, $shopConfig);
 				}
 				else
 				{
@@ -217,7 +203,12 @@ function wikiplugin_bobshop($data, $params)
 				$order = get_tracker_shop_order_by_orderNumber($shopConfig);
 
 				update_tracker_shop_order_submitted($sums, $order, $shopConfig);
+				
+				//send a order-received mail
+				$output .= send_order_received($sums, $userDataDetail, $shopConfig);
+				
 				$payment = get_tracker_shop_payment($shopConfig);
+				
 
 				//if paypal is selected
 				if($payment[$order['bobshopOrderPayment']][$shopConfig['paymentFollowUpScriptFieldId']] == 'PAYPAL')
@@ -247,6 +238,7 @@ function wikiplugin_bobshop($data, $params)
 												"cancel_url": "'. $_SERVER["SCRIPT_URI"] .'?page=bobshop_paypalAfterTransaction"
 											}										
 										}';
+						echo $paypalOrder;
 						$orderPayPal = createOrderPayPal($paypalOrder, $token, $paypalURL);
 					}
 					
@@ -319,7 +311,7 @@ function wikiplugin_bobshop($data, $params)
 			{
 				//print_r($shopConfig);
 				update_tracker_shop_order_username($user, $shopConfig);
-				$userBobshop = get_tracker_shop_user_by_userId($user, $shopConfig);
+				$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
 				$orderItems = get_tracker_shop_order_items($shopConfig);
 				$order = get_tracker_shop_order_by_orderNumber($shopConfig);
 				//if there ist no payment set, use the default
@@ -345,7 +337,7 @@ function wikiplugin_bobshop($data, $params)
 			//print_r($shopConfig);
 			if(isset($user))
 			{
-				$userBobshop = get_tracker_shop_user_by_userId($user, $shopConfig);
+				$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
 				$orderItems = get_tracker_shop_order_items($shopConfig);
 				//print_r($orderItems);
 				$order = get_tracker_shop_order_by_orderNumber($shopConfig);
@@ -353,8 +345,8 @@ function wikiplugin_bobshop($data, $params)
 				$payment = get_tracker_shop_payment($shopConfig);
 				//print_r($payment);
 				$smarty->assign('userBobshop', $userBobshop);
-				$smarty->assign('showPayment', 1);
 				$smarty->assign('payment', $payment);
+				$smarty->assign('showPayment', 1);
 				$smarty->assign('order', $order);
 				$smarty->assign('user', $user);
 				$smarty->assign('orderItems', $orderItems);
@@ -1166,7 +1158,7 @@ function get_tracker_shop_products_by_trackerID($trackerId)
 /**
  * 
  */
-function get_tracker_shop_user_by_userId($user, $shopConfig)
+function get_tracker_shop_user_by_user($user, $shopConfig)
 {
 	global $tikilib;
 
@@ -1208,9 +1200,7 @@ function get_tracker_shop_user_by_userId($user, $shopConfig)
 			//$userBobshop[$row['itemId']][$row['permName']] = $row['value'];
 		}
 		$userBobshop[$row['itemId']] = $row['itemId'];
-		
-		
-		//print_r($products);
+
 		return $userBobshop;
 	}
 
@@ -1447,10 +1437,88 @@ function update_tracker_shop_order_username($user, $shopConfig)
 	return;	
 }
 
-function update_tracker_shop_order_items_quantity1($articleId, $shopConfig)
+function send_order_received($sums, $userDataDetail, $shopConfig)
 {
+	//ToDo: check $sums
 	global $tikilib;
 	
+	$smartmail = new Smarty;
 	
-	return;
+	$mailReceiver = $userDataDetail['email'];
+	
+	$mailSender = $shopConfig['shopConfig_emailSender'];
+	$shopname = $shopConfig['shopConfig_shopName'];
+	$subject = $shopname .' Bestellbestätigung';
+	
+
+/*	//attachments?
+	$doc = 'doccc';
+	$id = md5(uniqid(time()));
+	$doc = html_entity_decode($doc, ENT_COMPAT, 'UTF-8');
+	$doc = utf8_encode($doc); 
+	$dateiinhalt = $doc;
+*/
+	
+	$smartmail->assign('userDataDetail', $userDataDetail);
+	
+	$userData = get_tracker_shop_user_by_user($userDataDetail['login'], $shopConfig);
+	$orderItems = get_tracker_shop_order_items($shopConfig);
+	$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+	$payment = get_tracker_shop_payment($shopConfig);
+
+	$smartmail->assign('userBobshop', $userBobshop);
+	$smartmail->assign('payment', $payment);
+	$smartmail->assign('showPayment', 1);
+	$smartmail->assign('orderItems', $orderItems);
+	$smartmail->assign('userBobshop', $userData);
+	$smartmail->assign('user', $user);
+	$smartmail->assign('order', $order);
+	$smartmail->assign('shopConfig', $shopConfig);
+	$smartmail->assign('fieldNamesById', array_flip($shopConfig));
+	
+	$mailText = $smartmail->fetch('wiki-plugins/wikiplugin_bobshop_mail_order_received.tpl');
+	 
+	
+	$header = "MIME-Version: 1.0\r\n";
+	$header .= "Content-Type: text/html; charset=utf-8\r\n";
+	$header .= "To: ". $userDataDetail['login'] ."<". $mailSender . ">\r\n";
+	$header .= "From: ". $shopname ."<". $mailSender . ">\r\n";
+	$header .= "Bcc: ". $shopname ."<". $mailBcc . ">\r\n";
+	$header .= "Reply-To: ". $shopname ."<". $mailSender . ">\r\n";
+	
+	//$anhang = chunk_split(base64_encode($dateiinhalt)); 
+	//$header .= "Content-Type: multipart/mixed; boundary=".$id."\n";
+	//$header .= "This is a multi-part message in MIME format\n";
+	//$header .= "--".$id."\n";
+	//$header .= "Content-Transfer-Encoding: 8bit\n";
+	//$header .= $mailText."\n";
+	//$header .= "--".$id."\n";
+	//$kopf .= "Content-Type: text/txt; name=\"".$dateiname_mail."\"\n";
+	//$header .= "Content-Transfer-Encoding: base64\n";
+	//$kopf .= "Content-Disposition: attachment; filename=\"".$dateiname_mail."\"\n\n";
+	//$kopf .= $anhang."\n";
+	//$header .= "--".$id."--\r\n\n";
+
+	//echo $header;
+	
+	$mail_send = mail($mailReceiver, $subject, $mailText, $header);
+
+	if ($mail_send)
+	{
+		$output .= message('Info', 'Bestätigungsmail wurde versendet.');
+		
+		//send mail to company
+		$header = "MIME-Version: 1.0\r\n";
+		$header .= "Content-Type: text/html; charset=utf-8\r\n";
+		$header .= "From: ". $shopname ."<". $mailSender . ">\r\n";
+		$header .= "To: ". $shopname ." - Info Bestelleingang<". $shopConfig['shopConfig_emailNotifications'] . ">\r\n";
+		$mail_send = mail($mailReceiver, $subject, $mailText, $header);
+		
+	}
+	else
+	{
+		$output .= message('Error', 'Mail not sent!', 'errors');
+	}	
+	
+	return $output;
 }

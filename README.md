@@ -15,6 +15,7 @@ pre-release v1_2 available
 - works without the TikiWiki Functions/Plugins Payment, shopper_info, Shopping Cart etc.
 - templates can be modified
 - bootstrap is used for the templates
+- different operation modes (default, sandbox, offer, presentation, info)
 
 ## What bobshop can not do at this time:
 - inventory management

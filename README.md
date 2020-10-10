@@ -23,8 +23,10 @@ pre-release v1_2 available
 
 ## How to install:
 - Setup trackers with provided YAML files
-- Copy php and tpl files to your installation
+- Copy php and tpl files to your installation (currently the templates are mostly written in german)
 - Import the wikipages
 - upload the icons to your file-gallery
+- for PayPal > edit /lib/wiki-plugins/wikiplugin_bobshop_paypal_inc.php and place your REST API app credentials
+
 
 Details are soon available

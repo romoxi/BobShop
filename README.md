@@ -9,6 +9,7 @@ release v1_3 available
 - easy to install and configure
 - no need to login to use the shopping-cart 
 - individual product fields
+- porducts can be enabled/disabled
 - multiple payment methodes (PayPal integrated)
 - 3 different tax rates
 - 3 different shipping costs

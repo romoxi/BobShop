@@ -50,7 +50,7 @@ objects:
     type: tracker_field
     ref: bobshop_orders_bobshopOrderUser
     data:
-      name: user
+      name: Benutzer
       permname: bobshopOrderUser
       tracker: '$profileobject:bobshop_orders$'
       options:
@@ -232,9 +232,11 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
       type: text_field
       order: '130'
-      description: '0 = not set; 1 = cart in use; 2 = order submitted; 3 = order confirmed; 4 = order payed; 5 = payed and shipped; 6 = not payed and shipped'
+      description: '0 = not set; 1 = cart in use; 2 = order submitted; 3 = order confirmed; 4 = order payed; 5 = payed and shipped; 6 = not payed and shipped; 10 = invited offer submitted; 11 = offer under progress; 12 = offer sent'
       visby: {  }
       editby: {  }
       flags:

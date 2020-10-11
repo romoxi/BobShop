@@ -126,6 +126,22 @@ objects:
         - public
   -
     type: tracker_field
+    ref: user_userStreetNumber
+    data:
+      name: streetNumber
+      permname: userStreetNumber
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '100'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+        - mandatory
+  -
+    type: tracker_field
     ref: user_userStreet
     data:
       name: street
@@ -175,7 +191,6 @@ objects:
       editby: {  }
       flags:
         - public
-        - mandatory
   -
     type: tracker_option
     ref: user_sort_default_field

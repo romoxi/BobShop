@@ -33,15 +33,33 @@ objects:
         - mandatory
   -
     type: tracker_field
-    ref: bobshop_config_bobshopOrderActive
+    ref: bobshop_config_bobshopOrderOpMode
     data:
-      name: active
-      permname: bobshopOrderActive
+      name: opMode
+      permname: bobshopOrderOpMode
       tracker: '$profileobject:bobshop_config$'
       options:
         samerow: 1
       type: text_field
       order: '10'
+      description: 'Operation Mode: default, sandbox, offer, presentation, info'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderActive
+    data:
+      name: aktiv
+      permname: bobshopOrderActive
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '20'
       description: "y = shop is open\r\nn = shop is closed"
       visby: {  }
       editby: {  }
@@ -60,8 +78,25 @@ objects:
         autocomplete: 'n'
         exact: 'n'
       type: text_field
-      order: '20'
+      order: '30'
       description: 'text to display on the add to cart button'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopOrderAddToWatchlistButtonText
+    data:
+      name: addToWatchlistButtonText
+      permname: bobshopOrderAddToWatchlistButtonText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '40'
       visby: {  }
       editby: {  }
       flags:
@@ -78,7 +113,7 @@ objects:
         autocomplete: 'n'
         exact: 'n'
       type: text_field
-      order: '30'
+      order: '50'
       visby: {  }
       editby: {  }
       flags:
@@ -93,7 +128,7 @@ objects:
       options:
         samerow: 1
       type: text_field
-      order: '40'
+      order: '60'
       description: 'Text for the Checkout Button'
       visby: {  }
       editby: {  }
@@ -109,7 +144,7 @@ objects:
       options:
         samerow: 1
       type: text_field
-      order: '50'
+      order: '70'
       visby: {  }
       editby: {  }
       flags:
@@ -126,7 +161,7 @@ objects:
         dec_point: .
         thousands: ','
       type: numeric
-      order: '60'
+      order: '80'
       description: 'Shipping costs for category 1'
       visby: {  }
       editby: {  }
@@ -144,7 +179,7 @@ objects:
         dec_point: .
         thousands: ','
       type: numeric
-      order: '70'
+      order: '90'
       visby: {  }
       editby: {  }
       flags:
@@ -161,7 +196,7 @@ objects:
         dec_point: .
         thousands: ','
       type: numeric
-      order: '80'
+      order: '100'
       visby: {  }
       editby: {  }
       flags:
@@ -178,7 +213,7 @@ objects:
         dec_point: .
         thousands: ','
       type: numeric
-      order: '100'
+      order: '110'
       description: 'Tax rate for product taxrateCat = 1'
       visby: {  }
       editby: {  }
@@ -196,7 +231,7 @@ objects:
         dec_point: .
         thousands: ','
       type: numeric
-      order: '110'
+      order: '120'
       description: 'Tax for product taxrate2'
       visby: {  }
       editby: {  }
@@ -214,7 +249,7 @@ objects:
         dec_point: .
         thousands: ','
       type: numeric
-      order: '120'
+      order: '130'
       description: 'Tax rate for product taxrateCat = 3'
       visby: {  }
       editby: {  }
@@ -232,7 +267,7 @@ objects:
         dec_point: .
         thousands: ','
       type: numeric
-      order: '130'
+      order: '140'
       description: 'TaxratCat for shipping Costs'
       visby: {  }
       editby: {  }
@@ -246,10 +281,10 @@ objects:
       permname: bobshopOrderPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:5f7d8e5cb4c46$'
-        fieldId: '$unknownobject:5f7d8e5cb4c4e$'
+        trackerId: '$unknownobject:5f82cd89cb290$'
+        fieldId: '$unknownobject:5f82cd89cb2a1$'
         displayFieldsList:
-          - '$unknownobject:5f7d8e5cb4c4e$'
+          - '$unknownobject:5f82cd89cb2a1$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact
@@ -257,7 +292,7 @@ objects:
         indexRemote:
           - 0
       type: item_link
-      order: '140'
+      order: '150'
       visby: {  }
       editby: {  }
       flags:
@@ -272,7 +307,7 @@ objects:
       options:
         samerow: 1
       type: text_field
-      order: '150'
+      order: '160'
       description: 'Currency for this shop'
       visby: {  }
       editby: {  }
@@ -296,7 +331,7 @@ objects:
         samerow: 1
         removeBadChars: 'n'
       type: wiki
-      order: '160'
+      order: '170'
       visby: {  }
       editby: {  }
       flags:
@@ -319,7 +354,7 @@ objects:
         samerow: 1
         removeBadChars: 'n'
       type: wiki
-      order: '170'
+      order: '180'
       visby: {  }
       editby: {  }
       flags:
@@ -334,7 +369,7 @@ objects:
       options:
         samerow: 1
       type: text_field
-      order: '180'
+      order: '190'
       description: '€, $'
       visby: {  }
       editby: {  }
@@ -350,7 +385,7 @@ objects:
       options:
         samerow: 1
       type: text_field
-      order: '190'
+      order: '200'
       description: EUR
       visby: {  }
       editby: {  }
@@ -365,7 +400,7 @@ objects:
       tracker: '$profileobject:bobshop_config$'
       options: {  }
       type: email
-      order: '200'
+      order: '210'
       description: 'this is the sender mail in the "order-received" mail to the buyer'
       visby: {  }
       editby: {  }
@@ -383,7 +418,7 @@ objects:
         wysiwyg: 'n'
         samerow: 1
       type: text_area
-      order: '210'
+      order: '220'
       description: 'Full name an Address of your company. Is used for mail etc.'
       visby: {  }
       editby: {  }
@@ -398,7 +433,7 @@ objects:
       tracker: '$profileobject:bobshop_config$'
       options: {  }
       type: email
-      order: '220'
+      order: '230'
       description: 'mail for notifications about orders, errors etc.'
       visby: {  }
       editby: {  }

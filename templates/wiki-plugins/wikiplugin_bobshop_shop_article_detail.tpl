@@ -29,17 +29,19 @@
 				{* 2 column *}
 				<div style="{$divborder}" class="col-sm-5 text-right">
 					{assign var="rate" value="shopConfig_taxrate{$row.bobshopProductTaxrateCat}"}
-					{$price = $row.bobshopProductPrice + $row.bobshopProductPrice/100 * $shopConfig[$rate]}
-					<h3 style="font-weight: bold;">{$price|string_format:"%.2f"} {$shopConfig['shopConfig_currencySymbol']}</h3>
-					<p class="small">inkl. {$shopConfig[$rate]}% MwSt.<br>zzgl. Versandkosten</p>
+					{if $showPrices}
+						{$price = $row.bobshopProductPrice + $row.bobshopProductPrice/100 * $shopConfig[$rate]}
+						<h3 style="font-weight: bold;">{$price|string_format:"%.2f"} {$shopConfig['shopConfig_currencySymbol']}</h3>
+						<p class="small">inkl. {$shopConfig[$rate]}% MwSt.<br>zzgl. Versandkosten</p>
+					{/if}
 					<p class="small">Artikelnr.: {$row.bobshopProductProductId}</p>
-					<p>Lieferzeit.: {$row.bobshopProductDeliveryTime}</p>
+					{if $showPrices}
+						<p>Lieferzeit: {$row.bobshopProductDeliveryTime}</p>
+					{/if}
 
-					<form method="post" action="{query _type=relative _keepall=y}" style="display: inline;" class="wp_addtocart_form"{$form_data}>
-						<input type="hidden" name="productId" value="{$productId|escape}">
-						<input type="hidden" name="action" value="add_to_cart">
-						<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['shopConfig_addToCartButtonText']|escape}{/tr}">
-					</form>
+					{if $cart}
+						{include file="templates/wiki-plugins/wikiplugin_bobshop_button_add.tpl"}
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -63,48 +65,8 @@
 			{/wikiplugin}
 		{/if}
 				
-				
 	<hr>
 	{/if}
 {/foreach}
 
 <a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="javascript:history.go(-1)">Back</a>
-
-
-{*
-<h3>Produktdetails</h3>
-{foreach from=$products item=row}
-	{if $row.bobshopProductProductId == $productId}
-	
-		<h2>{$row.bobshopProductName}</h2>
-
-		{wikiplugin _name="IMG" 
-			fileId="{$row.bobshopProductPic1}"
-			width="400px"
-		}
-		{/wikiplugin}
-		
-		<p>{$row.bobshopProductDescription|nl2br}</p>
-		<p>Preis: {$row.bobshopProductPrice|string_format:"%.2f"}</p>
-		<p>Artikelnr.: {$row.bobshopProductProductId}</p>
-		<hr>
-		<form method="post" action="{query _type=relative _keepall=y}" style="display: inline;" class="wp_addtocart_form"{$form_data}>
-			<input type="hidden" name="productId" value="{$productId|escape}">
-			<input type="hidden" name="action" value="add_to_cart">
-			<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['shopConfig_addToCartButtonText']|escape}{/tr}">
-		</form>
-		
-	
-		{if $row.bobshopProductWikipage != ''}
-			<hr>
-			{wikiplugin _name="INCLUDE" 
-				page="{$row.bobshopProductWikipage}"
-				nopage_text="wikisite not found"
-			}
-			{/wikiplugin}
-		{/if}
-	{/if}
-	
-{/foreach}
-<hr>
-*}

@@ -42,6 +42,6 @@
 	<input type="hidden" name="action" value="order_submitted">
 
 	{* buttons *}
-	<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="tiki-index.php?page=bobshop_cashierpage">Back</a>
+	<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="tiki-index.php?page=bobshop_cashierpage">{tr}Back{/tr}</a>
 	<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['shopConfig_buyNowButtonText']} {$payment.{$order.bobshopOrderPayment}.{$shopConfig['paymentBuyNowButtonTextExtraTextFieldId']}|escape}{/tr}">
 </form>

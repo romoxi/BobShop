@@ -5,9 +5,12 @@
 		<col width="5%">
 		<col width="5%">
 		<col width="5%">
-		<col width="15%">
-		<col width="15%">
-		<col width="5%">
+		
+		{if $showPrices}
+			<col width="15%">
+			<col width="15%">
+			<col width="5%">
+		{/if}
 	</colgroup>
 	<tr>
 		<th >Produkt#</th>
@@ -15,9 +18,11 @@
 		<th ></th>
 		<th >Anzahl</th>
 		<th ></th>
-		<th >Einzelpreis</th>
-		<th >Gesamt</th>
-		<th >MwSt</th>
+		{if $showPrices}
+			<th >Einzelpreis</th>
+			<th >Gesamt</th>
+			<th >MwSt</th>
+		{/if}
 	</tr>
 
 	{* display the products *}	
@@ -38,10 +43,14 @@
 					<a style="margin: 0; padding: 0; width: 20px; height: 20px;" class="btn btn-primary" data-role="button" data-inline="true" title="+" href="tiki-index.php?page={$page}&action=quantityAdd&productId={$product.{$shopConfig['productProductIdFieldId']}}">+</a>
 					{/if}
 				</td>
-				<td style="text-align: right">{$product.{$shopConfig['productPriceFieldId']}|string_format: "%.2f"}</td>
-				<td style="text-align: right">{{$product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']}}|string_format: "%.2f"}</td>
+
 				{assign var="rate" value="shopConfig_taxrate{$product.{$shopConfig['productTaxrateCatFieldId']}}"}
-				<td style="text-align: right">{$shopConfig[$rate]}%</td>
+				
+				{if $showPrices}
+					<td style="text-align: right">{$product.{$shopConfig['productPriceFieldId']}|string_format: "%.2f"}</td>
+					<td style="text-align: right">{{$product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']}}|string_format: "%.2f"}</td>
+					<td style="text-align: right">{$shopConfig[$rate]}%</td>
+				{/if}
 			</tr>
 
 			{$sumProducts = $sumProducts + ($product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']} )}
@@ -65,6 +74,7 @@
 	
 	{$sumTaxrates = $sumTaxrate1 + $sumTaxrate2 + $sumTaxrate3}
 
+{if $showPrices}
 {* sum of products *}
 <tr>
 	<td></td>
@@ -217,5 +227,10 @@
 	</td>
 	<td></td>
 </tr>
+{/if}
+
 </table>
+
+{if $showPrices}
 <i>Alle Preisangaben in {$shopConfig['shopConfig_currency']}.</i>
+{/if}

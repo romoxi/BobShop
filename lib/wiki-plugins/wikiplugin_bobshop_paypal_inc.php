@@ -14,8 +14,14 @@
 $clientId = '';
 $secret   = '';
 
-$sandboxURL = 'https://api.sandbox.paypal.com';
-$paypalURL = $sandboxURL;
+if($shopConfig['shopConfig_opMode'] == 'sandbox')
+{
+	$paypalURL = 'https://api.sandbox.paypal.com';
+}
+elseif($shopConfig['shopConfig_opMode'] == 'default')
+{
+	$paypalURL = 'https://api.paypal.com';
+}
 
 //END Config Section
 

@@ -14,7 +14,7 @@ objects:
     type: tracker_field
     ref: bobshop_payment_bobshopPaymentName
     data:
-      name: name
+      name: Name
       permname: bobshopPaymentName
       tracker: '$profileobject:bobshop_payment$'
       options:
@@ -117,6 +117,26 @@ objects:
       visby: {  }
       editby: {  }
       flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_payment_bobshopPaymentActive
+    data:
+      name: aktiv
+      permname: bobshopPaymentActive
+      tracker: '$profileobject:bobshop_payment$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '70'
+      description: '1 = buyer can choose is; 0 = disabled'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
         - public
   -
     type: tracker_option

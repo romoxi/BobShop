@@ -10,14 +10,22 @@
 {$sumPayment = 0}
 {$sumEnd = 0}
 
+
 <form method="post" action="tiki-index.php?page=bobshop_checkout" style="display: inline;" class="">
+
+
 {* display billing adress *}
-<h2>Rechnungsempfänger</h2>
+{if $showPrices}
+	<h2>Rechnungsempfänger</h2>
+{else}
+	<h2>Angebotsempfänger</h2>
+{/if}
 <p>Eingeloggt als: {$user}</p>
 {include file="templates/wiki-plugins/wikiplugin_bobshop_userdetail_inc.tpl" scope="global"}
-<hr>
+<br>
 
 {* payment *}
+{if $showPrices}
 <h2>Zahlungsart</h2>
 <table class="table table-hover">
 	<colgroup>
@@ -36,34 +44,38 @@
 		</th>
 	</tr>
 		{foreach from=$payment key=key item=row}
-			{if $key eq $order.bobshopOrderPayment}
-				{$checked = ' checked="checked" '}
-				{$sumPayment = $row.{$shopConfig['paymentPriceFieldId']}}
-				{$sumPaymentName = $row.{$shopConfig['paymentNameFieldId']}}
-			{else}
-				{$checked = ' '}
-			{/if}
-			<tr>
-				<td>	
-					<input {$checked} type="radio" name="payment" value="{$key}">
-					<label>
-					{wikiplugin _name="IMG" 
-						fileId="{$row.{$shopConfig['paymentIconFieldId']}}"
-						width="100px"
-					}
-					{/wikiplugin}
-					</label>
-				</td>
-				<td>
+			{*show only active payments*}
+			{if {$row.{$shopConfig['paymentActiveFieldId']}} == 1}
+				{if $key eq $order.bobshopOrderPayment}
+					{$checked = ' checked="checked" '}
+					{$sumPayment = $row.{$shopConfig['paymentPriceFieldId']}}
+					{$sumPaymentName = $row.{$shopConfig['paymentNameFieldId']}}
+				{else}
+					{$checked = ' '}
+				{/if}
+				<tr>
+					<td>	
+						<input {$checked} type="radio" name="payment" value="{$key}">
+						<label>
+						{wikiplugin _name="IMG" 
+							fileId="{$row.{$shopConfig['paymentIconFieldId']}}"
+							width="100px"
+						}
+						{/wikiplugin}
+						</label>
+					</td>
+					<td>
 						{$row.{$shopConfig['paymentNameFieldId']}} 
-				</td>
-				<td>
+					</td>
+					<td>
 						{$row.{$shopConfig['paymentPriceFieldId']}|string_format: "%.2f"}
-				</td>
-			</tr>
+					</td>
+				</tr>
+			{/if}
 		{/foreach}
 </table>
-<hr>
+
+{/if}
 
 {* display cart *}
 <h2>Warenkorbübersicht</h2>
@@ -72,19 +84,31 @@
 <hr>
 {*{$smarty.now|date_format:'%Y-%m-%d %H:%M:%S'}<br>*}
 
-{* display revocation notice agreement *}
-<input required type="checkbox" name="revocation" value="{$smarty.now}">
-<label>Ich habe die aktuelle Widerrufsbelehrung gelesen und stimme dieser zu.</label>
-<br><a target='_blank' href="tiki-index.php?page={$shopConfig['shopConfig_TermsOfServicePage']}">Widerrufsbelehrung in neuem Fenster anzeigen.</a>
-<hr>
+{if $showPrices}
+	{* display revocation notice agreement *}
+	<input required type="checkbox" name="revocation" value="{$smarty.now}">
+	<label>Ich habe die aktuelle Widerrufsbelehrung gelesen und stimme dieser zu.</label>
+	<br><a target='_blank' href="tiki-index.php?page={$shopConfig['shopConfig_TermsOfServicePage']}">Widerrufsbelehrung in neuem Fenster anzeigen.</a>
+	<hr>
 
-{* display tos agreement *}
-<input required type="checkbox" name="tos" value="{$smarty.now}">
-<label>Ich habe die aktuellen AGB's gelesen und stimme diesen zu.</label>
-<br><a target='_blank' href="tiki-index.php?page={$shopConfig['shopConfig_RevocationNotice']}">Allgemeine Geschäftsbedingungen in neuem Fenster anzeigen.</a>
-<hr>
+	{* display tos agreement *}
+	<input required type="checkbox" name="tos" value="{$smarty.now}">
+	<label>Ich habe die aktuellen AGB's gelesen und stimme diesen zu.</label>
+	<br><a target='_blank' href="tiki-index.php?page={$shopConfig['shopConfig_RevocationNotice']}">Allgemeine Geschäftsbedingungen in neuem Fenster anzeigen.</a>
+	<hr>
+{else}
+	{* Datenschutz *}
+	Datenschutz zustimmen.
+	<hr>
+{/if}
 
-<input type="hidden" name="action" value="checkout">
 <a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="tiki-index.php?page=bobshop_cart">Back</a>
-<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['shopConfig_checkoutButtonText']|escape}{/tr}">
+
+{if $showPrices}
+	<input type="hidden" name="action" value="checkout">
+	<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['shopConfig_checkoutButtonText']|escape}{/tr}">
+{else}
+	<input type="hidden" name="action" value="invite_offer">
+	<input type="submit" class="btn btn-secondary" value="{tr}Angebot jetzt anfragen{/tr}">
+{/if}
 </form>

@@ -35,7 +35,7 @@ objects:
     type: tracker_field
     ref: bobshop_products_bobshopProductName
     data:
-      name: name
+      name: Name
       permname: bobshopProductName
       tracker: '$profileobject:bobshop_products$'
       options:
@@ -52,7 +52,7 @@ objects:
     type: tracker_field
     ref: bobshop_products_bobshopProductDescription
     data:
-      name: description
+      name: Beschreibung
       permname: bobshopProductDescription
       tracker: '$profileobject:bobshop_products$'
       options:
@@ -229,6 +229,24 @@ objects:
       visby: {  }
       editby: {  }
       flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductActive
+    data:
+      name: aktiv
+      permname: bobshopProductActive
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '130'
+      description: '1 = enabled to be displayed in the product list; 0 = no display but still available in the cart'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
         - public
   -
     type: tracker_option

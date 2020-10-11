@@ -9,14 +9,14 @@ function wikiplugin_bobshop_info()
                 'type' => array(
                     'required' => false,
                     'name' => tra('Type'),
-                    'description' => tra('What to do'),
+                    'description' => tra('show_shop, add_to_cart_button, show_cart, show_cashier, checkout, order_submitted, paypal_after_transaction'),
                     'filter' => 'text',
                     'since' => '1.0',
                 ),
                 'productId' => array(
                     'required' => false,
-                    'name' => tra('Product Number'),
-                    'description' => tra('Product Number to be stored in the order'),
+                    'name' => tra('ProductId'),
+                    'description' => tra('ProductId from tracker bobshop_products to be stored in the order by clicking on the add_to_cart_button. Only used with type = add_to_cart_button'),
                     'filter' => 'text',
                     'since' => '1.0',
                 ),
@@ -36,6 +36,7 @@ function wikiplugin_bobshop($data, $params)
 	global $smarty;
 	
 	$output = '';
+	$showPrices = false;
       
     extract($params, EXTR_SKIP);
 	
@@ -50,6 +51,46 @@ function wikiplugin_bobshop($data, $params)
 	
 	global $tikilib;
 	global $userlib;
+	
+	/**
+	 * operation mode
+	 * 
+	 * paypal sandbox is configured in wikiplugin_bobshop_paypal_inc.php
+	 */
+	switch ($shopConfig['shopConfig_opMode'])
+	{
+		case 'default':
+			$showPrices = true;
+			$buying = true;
+			$cart = true;
+			break;
+		
+		case 'sandbox':
+			$showPrices = true;
+			$buying = true;
+			$cart = true;
+			break;
+		
+		//if showprices = false and buying = true > invite offer is active
+		case 'offer':
+			$showPrices = false;
+			$buying = true;
+			$cart = true;
+			break;
+		
+		case 'presentation':
+			$showPrices = false;
+			$buying = false;
+			$cart = false;
+			break;
+		
+		case 'info':
+			$showPrices = true;
+			$buying = false;
+			$cart = false;
+			break;
+	}
+	
 	
 	//paypal test
 	//paypalREST();
@@ -88,6 +129,20 @@ function wikiplugin_bobshop($data, $params)
 	
 		switch($action)
 		{
+			case 'shop_article_detail':
+				echo '<hr>';
+				$products = get_tracker_shop_products_by_trackerID($shopConfig['productsTrackerId']);
+				//print_r($products);
+				$smarty->assign('showPrices', $showPrices);
+				$smarty->assign('buying', $buying);
+				$smarty->assign('cart', $cart);
+				$smarty->assign('products', $products);
+				$smarty->assign('shopConfig', $shopConfig);
+				$smarty->assign('productId', $jitRequest->productId->text());
+				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_shop_article_detail.tpl');
+				$params['type'] = '';
+				break;
+			
 			case 'quantityAdd':
 				update_tracker_shop_order_items_quantity_add($jitGet->productId->text(), $shopConfig);
 				break;
@@ -134,6 +189,7 @@ function wikiplugin_bobshop($data, $params)
 				}
 				break;
 				
+			//displays a last page with button to buy now
 			case 'checkout':
 				if($user)
 				{
@@ -169,17 +225,7 @@ function wikiplugin_bobshop($data, $params)
 				
 				break;
 			
-			case 'shop_article_detail':
-				echo '<hr>';
-				$products = get_tracker_shop_products_by_trackerID($shopConfig['productsTrackerId']);
-				//print_r($products);
-				$smarty->assign('products', $products);
-				$smarty->assign('shopConfig', $shopConfig);
-				$smarty->assign('productId', $jitRequest->productId->text());
-				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_shop_article_detail.tpl');
-				$params['type'] = '';
-				break;
-			
+			//the buy now button was clicked
 			case 'order_submitted':
 				$sumFields = array(
 					'sumProducts',
@@ -203,9 +249,10 @@ function wikiplugin_bobshop($data, $params)
 				$order = get_tracker_shop_order_by_orderNumber($shopConfig);
 
 				update_tracker_shop_order_submitted($sums, $order, $shopConfig);
+				//update_tracker_shop_order_status(2, $shopConfig);
 				
 				//send a order-received mail
-				$output .= send_order_received($sums, $userDataDetail, $shopConfig);
+				$output .= send_order_received(1, $sums, $userDataDetail, $shopConfig);
 				
 				$payment = get_tracker_shop_payment($shopConfig);
 				
@@ -227,6 +274,7 @@ function wikiplugin_bobshop($data, $params)
 					}
 					else
 					{
+						//ToDo: Vars in order
 						$paypalOrder = '{"intent": "CAPTURE", "purchase_units": [{"amount": {"currency_code": "EUR","value": "'.$sums['sumEnd'].'"}}],
 											"application_context":
 											{
@@ -265,6 +313,40 @@ function wikiplugin_bobshop($data, $params)
 					}
 				}
 				break;
+				
+				
+			//teh invite offer button was clicked
+			case 'invite_offer':
+				$sumFields = array(
+					'sumProducts',
+					'sumTaxrate1',
+					'sumTaxrate2',
+					'sumTaxrate3',
+					'sumTaxrates',
+					'sumShipping',
+					'sumPayment',
+					'sumPaymentName',
+					'sumEnd'
+				);
+				
+				$sums = array();
+				
+				foreach($sumFields AS $value)
+				{
+					$sums[$value] = $jitPost->$value->text();
+				}
+				
+				$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+
+				update_tracker_shop_order_submitted($sums, $order, $shopConfig);
+				update_tracker_shop_order_status(10, $shopConfig);
+				
+				//send a order-received mail
+				$output .= send_order_received(0, $sums, $userDataDetail, $shopConfig);	
+				
+				$params['type'] = 'order_submitted';
+				
+				break;
 		}
 	}
 
@@ -274,6 +356,9 @@ function wikiplugin_bobshop($data, $params)
 	{
 		case 'show_shop':
 			$products = get_tracker_shop_products_by_trackerID($shopConfig['productsTrackerId']);
+			$smarty->assign('showPrices', $showPrices);
+			$smarty->assign('buying', $buying);
+			$smarty->assign('cart', $cart);			
 			$smarty->assign('page', $jitRequest->page->text());
 			$smarty->assign('products', $products);
 			$smarty->assign('shopConfig', $shopConfig);
@@ -282,22 +367,35 @@ function wikiplugin_bobshop($data, $params)
 
 		//print the add to cart button
 		case 'add_to_cart_button':
-			$smarty->assign('productId', $params['productId']);
-			$smarty->assign('add_to_cart_button', $shopConfig['shopConfig_add_to_cart_button_text']);
-			$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_button_add.tpl');
+			if($cart)
+			{
+				$smarty->assign('productId', $params['productId']);
+				$smarty->assign('add_to_cart_button', $shopConfig['shopConfig_add_to_cart_button_text']);
+				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_button_add.tpl');
+			}
 			break;
 		
 		//show the cart
 		case 'show_cart':
-			$orderItems = get_tracker_shop_order_items($shopConfig);
-			if(!empty($orderItems))
+			if($cart)
 			{
-				$smarty->assign('showQuantityModify', 1);
-				$smarty->assign('status', 1);
-				$smarty->assign('showPayment', 0);
-				$smarty->assign('orderItems', $orderItems);
-				$smarty->assign('shopConfig', $shopConfig);
-				$smarty->assign('fieldNamesById', array_flip($shopConfig));
+				$orderItems = get_tracker_shop_order_items($shopConfig);
+				if(!empty($orderItems))
+				{
+					$smarty->assign('showPrices', $showPrices);
+					$smarty->assign('buying', $buying);
+					$smarty->assign('cart', $cart);		
+					$smarty->assign('showQuantityModify', 1);
+					$smarty->assign('status', 1);
+					$smarty->assign('showPayment', 0);
+					$smarty->assign('orderItems', $orderItems);
+					$smarty->assign('shopConfig', $shopConfig);
+					$smarty->assign('fieldNamesById', array_flip($shopConfig));
+				}
+				else
+				{
+					$smarty->assign('status', 0);
+				}
 			}
 			else
 			{
@@ -307,52 +405,61 @@ function wikiplugin_bobshop($data, $params)
 			break;
 		
 		case 'show_cashier':
-			if(isset($user))
+			if($buying)
 			{
-				//print_r($shopConfig);
-				update_tracker_shop_order_username($user, $shopConfig);
-				$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
-				$orderItems = get_tracker_shop_order_items($shopConfig);
-				$order = get_tracker_shop_order_by_orderNumber($shopConfig);
-				//if there ist no payment set, use the default
-				if($order['bobshopOrderPayment'] == 0)
+				if(isset($user))
 				{
-					$order['bobshopOrderPayment'] = $shopConfig['shopConfig_paymentDefault'];
+					//print_r($shopConfig);
+					update_tracker_shop_order_username($user, $shopConfig);
+					$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
+					$orderItems = get_tracker_shop_order_items($shopConfig);
+					$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+					//if there ist no payment set, use the default
+					if($order['bobshopOrderPayment'] == 0)
+					{
+						$order['bobshopOrderPayment'] = $shopConfig['shopConfig_paymentDefault'];
+					}
+					$payment = get_tracker_shop_payment($shopConfig);
+					//print_r($payment);
+					$smarty->assign('showPrices', $showPrices);
+					$smarty->assign('buying', $buying);
+					$smarty->assign('cart', $cart);		
+					$smarty->assign('userBobshop', $userBobshop);
+					$smarty->assign('showPayment', 1);
+					$smarty->assign('payment', $payment);
+					$smarty->assign('order', $order);
+					$smarty->assign('user', $user);
+					$smarty->assign('orderItems', $orderItems);
+					$smarty->assign('shopConfig', $shopConfig);
+					$smarty->assign('fieldNamesById', array_flip($shopConfig));
+					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_cashierpage.tpl');
 				}
-				$payment = get_tracker_shop_payment($shopConfig);
-				//print_r($payment);
-				$smarty->assign('userBobshop', $userBobshop);
-				$smarty->assign('showPayment', 1);
-				$smarty->assign('payment', $payment);
-				$smarty->assign('order', $order);
-				$smarty->assign('user', $user);
-				$smarty->assign('orderItems', $orderItems);
-				$smarty->assign('shopConfig', $shopConfig);
-				$smarty->assign('fieldNamesById', array_flip($shopConfig));
-				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_cashierpage.tpl');
 			}
 			break;
 			
 		case 'checkout':
 			//print_r($shopConfig);
-			if(isset($user))
+			if($buying)
 			{
-				$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
-				$orderItems = get_tracker_shop_order_items($shopConfig);
-				//print_r($orderItems);
-				$order = get_tracker_shop_order_by_orderNumber($shopConfig);
-				//print_r($order);
-				$payment = get_tracker_shop_payment($shopConfig);
-				//print_r($payment);
-				$smarty->assign('userBobshop', $userBobshop);
-				$smarty->assign('payment', $payment);
-				$smarty->assign('showPayment', 1);
-				$smarty->assign('order', $order);
-				$smarty->assign('user', $user);
-				$smarty->assign('orderItems', $orderItems);
-				$smarty->assign('shopConfig', $shopConfig);
-				$smarty->assign('fieldNamesById', array_flip($shopConfig));
-				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_checkout.tpl');
+				if(isset($user))
+				{
+					$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
+					$orderItems = get_tracker_shop_order_items($shopConfig);
+					//print_r($orderItems);
+					$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+					//print_r($order);
+					$payment = get_tracker_shop_payment($shopConfig);
+					//print_r($payment);
+					$smarty->assign('userBobshop', $userBobshop);
+					$smarty->assign('payment', $payment);
+					$smarty->assign('showPayment', 1);
+					$smarty->assign('order', $order);
+					$smarty->assign('user', $user);
+					$smarty->assign('orderItems', $orderItems);
+					$smarty->assign('shopConfig', $shopConfig);
+					$smarty->assign('fieldNamesById', array_flip($shopConfig));
+					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_checkout.tpl');
+				}
 			}
 			break;
 			
@@ -361,67 +468,69 @@ function wikiplugin_bobshop($data, $params)
 			break;
 
 		case 'paypal_after_transaction':
-			include('wikiplugin_bobshop_paypal_inc.php');
-			//GET vars: token => orderId; PayerId => the id from paypal (not used in our shop
-			
-			$orderIdResponse = $jitGet->token->text();
-			
-			//if the is no order in process ...
-			if(empty($orderIdResponse))
+			if($buying)
 			{
-				header("location: index.php");
-			}
+				include('wikiplugin_bobshop_paypal_inc.php');
+				//GET vars: token => orderId; PayerId => the id from paypal (not used in our shop
 
-			$token = getTokenPayPal($clientId, $secret, $paypalURL);
-					
-			//get some new info from the order
-			$response = showOrderPayPal($orderIdResponse, $token, $paypalURL);
+				$orderIdResponse = $jitGet->token->text();
 
-			if($response['status'] != 'APPROVED' && $response['status'] != 'COMPLETED')
-			{
-				//echo '<hr>paypal error 102 - order not approved. Status = '. $response['status'] .' orderId = '. $orderIdResponse .'<hr>';
-				if($response['status'] == 'CREATED')
+				//if the is no order in process ...
+				if(empty($orderIdResponse))
 				{
-					$output .= message('Abbruch', 'Der Bezahlvorgang wurde abgebrochen!', 'errors');
-					update_tracker_shop_order_status(1, $shopConfig);
+					header("location: index.php");
+				}
+
+				$token = getTokenPayPal($clientId, $secret, $paypalURL);
+
+				//get some new info from the order
+				$response = showOrderPayPal($orderIdResponse, $token, $paypalURL);
+
+				if($response['status'] != 'APPROVED' && $response['status'] != 'COMPLETED')
+				{
+					//echo '<hr>paypal error 102 - order not approved. Status = '. $response['status'] .' orderId = '. $orderIdResponse .'<hr>';
+					if($response['status'] == 'CREATED')
+					{
+						$output .= message('Abbruch', 'Der Bezahlvorgang wurde abgebrochen!', 'errors');
+						update_tracker_shop_order_status(1, $shopConfig);
+					}
+					else
+					{
+						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 102: '. $response['status'], $shopConfig);
+						$output .= message('Error', 'paypal error 102 - order not approved. Status = '. $response['status'] .' orderId = '. $orderIdResponse, 'errors');
+						update_tracker_shop_order_status(1, $shopConfig);
+					}
 				}
 				else
 				{
-					storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 102: '. $response['status'], $shopConfig);
-					$output .= message('Error', 'paypal error 102 - order not approved. Status = '. $response['status'] .' orderId = '. $orderIdResponse, 'errors');
-					update_tracker_shop_order_status(1, $shopConfig);
+					if($response['status'] == 'APPROVED')
+					{
+						$payerIdResponse = $jitGet->PayerID->text();
+						storeOrderDataPayPal('orderPaymentPayerIdFieldId', $payerIdResponse, $shopConfig);
+						storeOrderDataPayPal('orderPaymentStatusFieldId', 'APPROVED', $shopConfig);
+
+						//capture the payment
+						$captureResponse = captureOrderPayPal($orderIdResponse, $token, $paypalURL);
+						$response = showOrderPayPal($orderIdResponse, $token, $paypalURL);
+					}
+					if($response['status'] != 'COMPLETED')
+					{
+						//echo '<hr>paypal error 103 - order not completed. Status = '. $response['status'] .'<hr>';
+						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 103: '. $response['status'], $shopConfig);
+						update_tracker_shop_order_status(1, $shopConfig);
+						$output .= message('Error', 'paypal error 103 - order not completed. Status = '. $response['status'], 'errors');
+
+					}
+					else
+					{
+						storeOrderDataPayPal('orderPaymentPayeeMerchantIdFieldId', getMerchantIdPayPal($response), $shopConfig);
+						storeOrderDataPayPal('orderPaymentStatusFieldId', 'COMPLETED', $shopConfig);
+						//echo 'order completed';
+						$smarty->assign('orderIdResponse', $orderIdResponse);
+						$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_completed.tpl');
+					}
 				}
 			}
-			else
-			{
-				if($response['status'] == 'APPROVED')
-				{
-					$payerIdResponse = $jitGet->PayerID->text();
-					storeOrderDataPayPal('orderPaymentPayerIdFieldId', $payerIdResponse, $shopConfig);
-					storeOrderDataPayPal('orderPaymentStatusFieldId', 'APPROVED', $shopConfig);
-
-					//capture the payment
-					$captureResponse = captureOrderPayPal($orderIdResponse, $token, $paypalURL);
-					$response = showOrderPayPal($orderIdResponse, $token, $paypalURL);
-				}
-				if($response['status'] != 'COMPLETED')
-				{
-					//echo '<hr>paypal error 103 - order not completed. Status = '. $response['status'] .'<hr>';
-					storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 103: '. $response['status'], $shopConfig);
-					update_tracker_shop_order_status(1, $shopConfig);
-					$output .= message('Error', 'paypal error 103 - order not completed. Status = '. $response['status'], 'errors');
-					
-				}
-				else
-				{
-					storeOrderDataPayPal('orderPaymentPayeeMerchantIdFieldId', getMerchantIdPayPal($response), $shopConfig);
-					storeOrderDataPayPal('orderPaymentStatusFieldId', 'COMPLETED', $shopConfig);
-					//echo 'order completed';
-					$smarty->assign('orderIdResponse', $orderIdResponse);
-					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_completed.tpl');
-				}
-			}
-
 			break;		
 	}
 	
@@ -489,6 +598,7 @@ function get_tracker_shop_config()
 	
 	//fields in product tracker
 	$shopConfig['productFields'] = array(
+		'productActiveFieldId'			=> 'bobshopProductActive', 
 		'productMakerFieldId'			=> 'bobshopProductMaker', 
 		'productEanFieldId'				=> 'bobshopProductEan', 
 		'productDeliveryTimeFieldId'	=> 'bobshopProductDeliveryTime', 
@@ -505,9 +615,10 @@ function get_tracker_shop_config()
 	{
 		$shopConfig[$key] = get_tracker_shop_fieldId($name, $shopConfig['productsTrackerId']);
 	}
-	
+		
 	//fields in payment tracker
 	$shopConfig['paymentFields'] = array(
+		'paymentActiveFieldId'	=> 'bobshopPaymentActive', 
 		'paymentFollowUpScriptFieldId'	=> 'bobshopPaymentFollowUpScript', 
 		'paymentBuyNowButtonTextExtraTextFieldId'	=> 'bobshopPaymentBuyNowButtonTextExtraText', 
 		'paymentMerchantIdFieldId'	=> 'bobshopPaymentMerchantId', 
@@ -1278,6 +1389,7 @@ function get_tracker_shop_payment($shopConfig)
 		$payment[$row['itemId']][$row['fieldId']] = $row['value'];
 	}
 	
+	//print_r($payment);
 	return $payment;
 }
 
@@ -1325,7 +1437,6 @@ function update_tracker_shop_order_submitted($sums, $order, $shopConfig)
 					]
 				);
 	}
-	//update_tracker_shop_order_status(2, $shopConfig);
 	return;	
 }
 
@@ -1437,7 +1548,7 @@ function update_tracker_shop_order_username($user, $shopConfig)
 	return;	
 }
 
-function send_order_received($sums, $userDataDetail, $shopConfig)
+function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 {
 	//ToDo: check $sums
 	global $tikilib;
@@ -1448,7 +1559,14 @@ function send_order_received($sums, $userDataDetail, $shopConfig)
 	
 	$mailSender = $shopConfig['shopConfig_emailSender'];
 	$shopname = $shopConfig['shopConfig_shopName'];
-	$subject = $shopname .' Bestellbestätigung';
+	if($showPrices)
+	{
+		$subject = $shopname .' Bestellbestätigung';
+	}
+	else
+	{
+		$subject = $shopname .' Angebotsanfrage';		
+	}
 	
 
 /*	//attachments?
@@ -1476,7 +1594,7 @@ function send_order_received($sums, $userDataDetail, $shopConfig)
 	$smartmail->assign('shopConfig', $shopConfig);
 	$smartmail->assign('fieldNamesById', array_flip($shopConfig));
 	
-	$mailText = $smartmail->fetch('wiki-plugins/wikiplugin_bobshop_mail_order_received.tpl');
+	$mailText = $smartmail->fetch('wiki-plugins/wikiplugin_bobshop_mail_invite_offer_received.tpl');
 	 
 	
 	$header = "MIME-Version: 1.0\r\n";
@@ -1511,7 +1629,14 @@ function send_order_received($sums, $userDataDetail, $shopConfig)
 		$header = "MIME-Version: 1.0\r\n";
 		$header .= "Content-Type: text/html; charset=utf-8\r\n";
 		$header .= "From: ". $shopname ."<". $mailSender . ">\r\n";
-		$header .= "To: ". $shopname ." - Info Bestelleingang<". $shopConfig['shopConfig_emailNotifications'] . ">\r\n";
+		if($showPrices)
+		{
+			$header .= "To: ". $shopname ." - Info Bestelleingang<". $shopConfig['shopConfig_emailNotifications'] . ">\r\n";
+		}
+		else 
+		{
+			$header .= "To: ". $shopname ." - Info Angebotsanfrage<". $shopConfig['shopConfig_emailNotifications'] . ">\r\n";
+		}
 		$mail_send = mail($mailReceiver, $subject, $mailText, $header);
 		
 	}

@@ -1,5 +1,6 @@
-# bobshop
-Shopping cart system for TikiWiki
+# BobShop
+Shopping cart plugin for TikiWiki
+BobShop can also be used as an easy product presentation system.
 
 release v1_3 available
 

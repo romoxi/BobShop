@@ -26,11 +26,12 @@ release v1_3 available
 - gifts
 
 ## How to install:
-- Setup trackers with provided YAML files
-- Copy php and tpl files to your installation (currently the templates are mostly written in german)
-- Import the wikipages
-- upload the icons to your file-gallery
-- for PayPal > edit /lib/wiki-plugins/wikiplugin_bobshop_paypal_inc.php and place your REST API app credentials
+To install the trackers and wiki pages you can use the BobShop Profile:
+http://profiles.tiki.org/BobShop
+
+- upload the icons for payment to your file-gallery
+- for PayPal > edit "/lib/wiki-plugins/wikiplugin_bobshop_paypal_inc.php" and place your REST API app credentials
 
 
-Details are soon available
+More details are soon available
+

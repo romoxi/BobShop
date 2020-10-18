@@ -15,7 +15,7 @@ release v1_3 available
 - 3 different shipping costs
 - "addToCart"-button can placed on any wikipage
 - built-in registration and login system
-- works without the TikiWiki Functions/Plugins Payment, shopper_info, Shopping Cart etc.
+- works _without_ the TikiWiki Functions/Plugins Payment, shopper_info, Shopping Cart etc.
 - templates can be modified
 - bootstrap is used for the templates
 - different operation modes (default, sandbox, offer, presentation, info)
@@ -24,6 +24,7 @@ release v1_3 available
 - inventory management
 - invoices
 - gifts
+- product presentation in categories (you can use tikiwiki functionality to do that > structures, catergories, menus etc.)
 
 ## How to install:
 To install the trackers and wiki pages you can use the BobShop Profile:

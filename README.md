@@ -14,9 +14,9 @@ release v1_3 available
 - 3 different tax rates
 - 3 different shipping costs
 - "addToCart"-button can placed on any wikipage
-- built-in registration and login system
+- built-in registration and login system (seamless cart - login/register - purchase flow)
 - works _without_ the TikiWiki Functions/Plugins Payment, shopper_info, Shopping Cart etc.
-- templates can be modified
+- templates can be modified easy
 - bootstrap is used for the templates
 - different operation modes (default, sandbox, offer, presentation, info)
 

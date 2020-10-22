@@ -21,11 +21,20 @@
 				<div style="{$divborder}" class="col-sm-3">
 					{* image with link to detail *}
 					<a href="tiki-index.php?page={$page}&action=shop_article_detail&productId={$row.bobshopProductProductId}">
-						{wikiplugin _name="IMG" 
-							fileId="{$row.bobshopProductPic1}"
-							width="250px"
-						}
-						{/wikiplugin}
+						{if $row.bobshopProductPic1 != ''}
+							{wikiplugin _name="IMG" 
+								fileId="{$row.bobshopProductPic1}"
+								width="250px"
+							}
+							{/wikiplugin}
+						{else}
+							{wikiplugin _name="IMG" 
+								fileId="{$shopConfig['bobshopConfigProductPicMissingPic']}"
+								width="250px"
+							}
+							{/wikiplugin}
+							
+						{/if}
 					</a>
 				</div>
 				
@@ -37,10 +46,10 @@
 
 				{* 3 column *}
 				<div style="{$divborder}" class="col-sm-4 text-right">
-					{assign var="rate" value="shopConfig_taxrate{$row.bobshopProductTaxrateCat}"}
+					{assign var="rate" value="bobshopConfigTaxrate{$row.bobshopProductTaxrateCat}"}
 					{if $showPrices}
 						{$price = $row.bobshopProductPrice + $row.bobshopProductPrice/100 * $shopConfig[$rate]}
-						<h3 style="font-weight: bold;">{$price|string_format:"%.2f"} {$shopConfig['shopConfig_currencySymbol']}</h3>
+						<h3 style="font-weight: bold;">{$price|string_format:"%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</h3>
 						<p class="small">inkl. {$shopConfig[$rate]}% MwSt.<br>zzgl. Versandkosten</p>
 					{/if}
 					<p class="small">Artikelnr.: {$row.bobshopProductProductId}</p>

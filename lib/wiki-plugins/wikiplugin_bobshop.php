@@ -1,4 +1,19 @@
 <?php
+/**
+ * BobShop
+ * This Plugin is for CMS TikiWiki
+ * 
+ * BobShop is a shopping cart system for TikiWiki. 
+ * 
+ * Copyright (c) 2020 by Robert Hartmann
+ * 
+ * Install:
+ * see https://github.com/romoxi/bobshop
+ * 
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 function wikiplugin_bobshop_info()
 {
     return array(
@@ -41,13 +56,20 @@ function wikiplugin_bobshop($data, $params)
     extract($params, EXTR_SKIP);
 	
 	$shopConfig = get_tracker_shop_config();
-	//print_r($shopConfig);
+	
+	//if the shop is closed then exit
+	if($shopConfig['bobshopConfigActive'] == 'n')
+	{
+		return;
+	}
 	
 	$fieldNames['bobshopOrderSessionId'] = $_SESSION['__Laminas']['_VALID']['Laminas\Session\Validator\Id'];
 	$shopConfig['currentOrderNumber'] = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
 	//print_r($_REQUEST);
+	//print_r($params);
 	
-	//echo $shopConfig['shopConfig_companySignature'];
+
+	//echo $shopConfig['bobshopConfigCompanySignature'];
 	
 	global $tikilib;
 	global $userlib;
@@ -57,7 +79,7 @@ function wikiplugin_bobshop($data, $params)
 	 * 
 	 * paypal sandbox is configured in wikiplugin_bobshop_paypal_inc.php
 	 */
-	switch ($shopConfig['shopConfig_opMode'])
+	switch ($shopConfig['bobshopConfigOpMode'])
 	{
 		case 'default':
 			$showPrices = true;
@@ -92,54 +114,56 @@ function wikiplugin_bobshop($data, $params)
 	}
 	
 	
-	//paypal test
-	//paypalREST();
-	
 	/**
 	 * Returns some detailed user info
 	 * userId, email, login ...
 	 */
 	$userDataDetail = $userlib->get_user_info($user);
-	//print_r($userDataDetail); echo '<hr>';
 
 	/**
 	 * Returns
 	 * Array ( [usersTrackerId] => 11 [usersFieldId] => 31 [group] => Registered [user] => admin ) 
 	 */
 	$userData = $userlib->get_usertracker(1);
-	//echo 'uid: '. $uid .'<br>';	print_r($userData);
 	
 	//print_r($shopConfig);
-	
 	//print_r($_SERVER);
-	//echo $_SERVER['SCRIPT_URI'];
 		
+	global $jitRequest;
+	global $jitPost;
+	global $jitGet;
+	$action = $jitRequest->action->text();
+	//
+	if($params['type'] == 'add_to_cart_button')
+	{
+		$action = '';
+	}
+
 	/*
 	 * checks if the "add to cart" button is pressed
 	 * and if yes, then store the action a tracker
 	 * 
 	 */
-	//if ($_SERVER['REQUEST_METHOD'] == 'POST') 
-	if (isset($_REQUEST)) 
+	if (!empty($action)) 
 	{
-		global $jitRequest;
 		global $jitPost;
 		global $jitGet;
-		$action = $jitRequest->action->text();
 	
 		switch($action)
 		{
+			case 'default':
+				break;
+			
 			case 'shop_article_detail':
 				echo '<hr>';
-				$products = get_tracker_shop_products_by_trackerID($shopConfig['productsTrackerId']);
-				//print_r($products);
+				$product = get_tracker_shop_product_by_productId($jitRequest->productId->text(), $shopConfig);
 				$smarty->assign('showPrices', $showPrices);
 				$smarty->assign('buying', $buying);
 				$smarty->assign('cart', $cart);
-				$smarty->assign('products', $products);
+				$smarty->assign('product', $product);
 				$smarty->assign('shopConfig', $shopConfig);
 				$smarty->assign('productId', $jitRequest->productId->text());
-				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_shop_article_detail.tpl');
+				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_shop_product_detail.tpl');
 				$params['type'] = '';
 				break;
 			
@@ -159,21 +183,30 @@ function wikiplugin_bobshop($data, $params)
 				if(isset($_POST['productId']))
 				{
 					$fieldNames['bobshopOrderItemProductId'] = $jitPost->productId->text();
+					$fieldNames['bobshopOrderCreated'] = time();
+					//$fieldNames['bobshopOrderModified'] = time();
+					$fieldNames['bobshopOrderIp'] = $_SERVER['REMOTE_ADDR'];
+					$fieldNames['bobshopOrderBrowser'] = $_SERVER['HTTP_USER_AGENT'];
+					
 					$orderVars = insert_tracker_shop_order($fieldNames, $shopConfig);
-
 					$fieldNames['bobshopOrderItemOrderNumber'] = $orderVars['orderNumber'];
 
 					//insert the articel in the bobshop_order_items tracker
-					insert_tracker_shop_order_items($fieldNames, $shopConfig);
-
-					//show message
-					$output .= message('Artikel wurde zum Warenkorb hinzugefügt.', '');
+					if($orderVars != false)
+					{
+						$shopConfig['currentOrderNumber'] = $ret['orderNumber'];
+						insert_tracker_shop_order_items($fieldNames, $shopConfig);
+						$output .= message('Artikel wurde zum Warenkorb hinzugefügt.', '');
+					}
+					else
+					{
+						$output .= message('Last order number error.', 'error');
+					}
 				}
 				else
 				{
 					showError('productId not set');
 				}
-				
 				break;
 			
 			case 'cashierbutton':
@@ -194,29 +227,31 @@ function wikiplugin_bobshop($data, $params)
 				if($user)
 				{
 					$orderItems = get_tracker_shop_order_items($shopConfig);
-					$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+					$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 					$payment = get_tracker_shop_payment($shopConfig);
 					update_tracker_shop_payment($order, $jitRequest->payment->text(), $shopConfig);
+					$params['type'] = 'checkout';
 					//revocation
 					if($jitPost->revocation->text() != '')
 					{
 						update_tracker_shop_order_revocation(time(), $order, $shopConfig);
 					}
-					else
+					elseif($shopConfig['bobshopConfigRevocationNotice'] != '')
 					{
-						echo 'Widerruf nicht zugestimmt';
+						//echo 'Widerruf nicht zugestimmt';
+						header("location: tiki-index.php?page=bobshop_cashierpage&message=missing_rev");
 					}
 					if($jitPost->tos->text() != '')
 					{
 						update_tracker_shop_order_tos(time(), $order, $shopConfig);
 						update_tracker_shop_order_username($user, $shopConfig);
 					}
-					else
+					elseif($shopConfig['bobshopConfigTermsOfServicePage'] != '')
 					{
-						echo 'AGB nicht zugestimmt';
+						//echo 'AGB nicht zugestimmt';
+						header("location: tiki-index.php?page=bobshop_cashierpage&message=missing_tos");
 					}
 					
-					$params['type'] = 'checkout';
 				}
 				else
 				{
@@ -246,54 +281,45 @@ function wikiplugin_bobshop($data, $params)
 					$sums[$value] = $jitPost->$value->text();
 				}
 				
-				$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+				$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 
 				update_tracker_shop_order_submitted($sums, $order, $shopConfig);
-				//update_tracker_shop_order_status(2, $shopConfig);
+				
+				if($shopConfig['bobshopConfigOpMode'] != 'sandbox')
+				{
+					update_tracker_shop_order_status(2, $shopConfig);
+				}
 				
 				//send a order-received mail
-				$output .= send_order_received(1, $sums, $userDataDetail, $shopConfig);
+				$output .= send_order_received(true, $sums, $userDataDetail, $shopConfig);
 				
 				$payment = get_tracker_shop_payment($shopConfig);
-				
 
 				//if paypal is selected
 				if($payment[$order['bobshopOrderPayment']][$shopConfig['paymentFollowUpScriptFieldId']] == 'PAYPAL')
 				{
 					include('wikiplugin_bobshop_paypal_inc.php');
-					echo 'Sie werden auf die PayPal-Seite weitergeleitet.';
-					
-					//get the token
+
 					$token = getTokenPayPal($clientId, $secret, $paypalURL);
-					echo '<br>token: '. $token .'<hr>';
-					//order json string to place the order
 					if(empty($token))
 					{
 						echo '<hr>paypal error 100 - invailid token<hr>';
 						exit;
 					}
-					else
+					elseif(isset($sums['sumEnd']) && !empty($sums['sumEnd']))
 					{
-						//ToDo: Vars in order
-						$paypalOrder = '{"intent": "CAPTURE", "purchase_units": [{"amount": {"currency_code": "EUR","value": "'.$sums['sumEnd'].'"}}],
-											"application_context":
-											{
-												"brand_name": "IMMERGIE - EuGen GmbH TEST",
-												"landing_page": "LOGIN",
-												"shipping_preference": "NO_SHIPPING",
-												"user_action": "PAY_NOW",
-												"return_url": "'. $_SERVER["SCRIPT_URI"] .'?page=bobshop_paypalAfterTransaction",
-												"cancel_url": "'. $_SERVER["SCRIPT_URI"] .'?page=bobshop_paypalAfterTransaction"
-											}										
-										}';
-						echo $paypalOrder;
+						//echo 'mer'. $payment[$order['bobshopOrderPayment']][$shopConfig['paymentMerchantNameFieldId']];
+						$paypalOrder = getRequestStringPayPal($sums, $payment[$order['bobshopOrderPayment']][$shopConfig['paymentMerchantNameFieldId']], $shopConfig);
 						$orderPayPal = createOrderPayPal($paypalOrder, $token, $paypalURL);
 					}
-					
+					else
+					{
+						$output .= message('Error', 'paypal error 201 - no endsum', 'errors');	
+					}
+
 					//is the order created?
 					if($orderPayPal['status'] != 'CREATED')
 					{
-						//echo '<hr>paypal error 101 - order not created<hr>';
 						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 101: '. $orderPayPal['status'], $shopConfig);
 						$output .= message('Error', 'paypal error 101 - order not created', 'errors');
 						update_tracker_shop_order_status(1, $shopConfig);
@@ -306,12 +332,12 @@ function wikiplugin_bobshop($data, $params)
 						if($approveLink != false)
 						{
 							storeOrderDataPayPal('orderPaymenApproveLinkFieldId', $approveLink, $shopConfig);
-							echo 'link: '. $approveLink;
-							echo 'Sie werden zu PayPal weitergeleitet.';
 							header("location: ". $approveLink);
 						}
 					}
 				}
+				$params['type'] = 'order_submitted';
+				
 				break;
 				
 				
@@ -336,13 +362,13 @@ function wikiplugin_bobshop($data, $params)
 					$sums[$value] = $jitPost->$value->text();
 				}
 				
-				$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+				$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 
 				update_tracker_shop_order_submitted($sums, $order, $shopConfig);
 				update_tracker_shop_order_status(10, $shopConfig);
 				
 				//send a order-received mail
-				$output .= send_order_received(0, $sums, $userDataDetail, $shopConfig);	
+				$output .= send_order_received(false, $sums, $userDataDetail, $shopConfig);	
 				
 				$params['type'] = 'order_submitted';
 				
@@ -350,8 +376,7 @@ function wikiplugin_bobshop($data, $params)
 		}
 	}
 
-	
-     
+ 
     switch($params['type'])
 	{
 		case 'show_shop':
@@ -369,9 +394,18 @@ function wikiplugin_bobshop($data, $params)
 		case 'add_to_cart_button':
 			if($cart)
 			{
-				$smarty->assign('productId', $params['productId']);
-				$smarty->assign('add_to_cart_button', $shopConfig['shopConfig_add_to_cart_button_text']);
-				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_button_add.tpl');
+				//is productId in tracker products
+				$product = get_tracker_shop_product_by_productId($params['productId'], $shopConfig);
+				if($product['bobshopProductProductId'] == $params['productId'])
+				{
+					$smarty->assign('productId', $params['productId']);
+					$smarty->assign('shopConfig', $shopConfig);
+					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_button_add.tpl');
+				}
+				else
+				{
+					$output .= message('Warning', 'Add to cart button can not be displayed.<br>productId ('.$params["productId"].') not in tracker bobshop_products', 'warning');
+				}
 			}
 			break;
 		
@@ -409,18 +443,25 @@ function wikiplugin_bobshop($data, $params)
 			{
 				if(isset($user))
 				{
+					if($jitGet->message->text() == 'missing_tos')
+					{
+						$output .= message('Zustimmung erforderlich', 'AGB nicht zugestimmt', 'warning');
+					}
+					if($jitGet->message->text() == 'missing_rev')
+					{
+						$output .= message('Zustimmung erforderlich', 'Widerruf nicht zugestimmt', 'warning');
+					}
 					//print_r($shopConfig);
 					update_tracker_shop_order_username($user, $shopConfig);
 					$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
 					$orderItems = get_tracker_shop_order_items($shopConfig);
-					$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+					$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 					//if there ist no payment set, use the default
 					if($order['bobshopOrderPayment'] == 0)
 					{
-						$order['bobshopOrderPayment'] = $shopConfig['shopConfig_paymentDefault'];
+						$order['bobshopOrderPayment'] = $shopConfig['bobshopConfigPaymentDefault'];
 					}
 					$payment = get_tracker_shop_payment($shopConfig);
-					//print_r($payment);
 					$smarty->assign('showPrices', $showPrices);
 					$smarty->assign('buying', $buying);
 					$smarty->assign('cart', $cart);		
@@ -446,11 +487,12 @@ function wikiplugin_bobshop($data, $params)
 					$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
 					$orderItems = get_tracker_shop_order_items($shopConfig);
 					//print_r($orderItems);
-					$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+					$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 					//print_r($order);
 					$payment = get_tracker_shop_payment($shopConfig);
 					//print_r($payment);
 					$smarty->assign('userBobshop', $userBobshop);
+					$smarty->assign('showPrices', $showPrices);
 					$smarty->assign('payment', $payment);
 					$smarty->assign('showPayment', 1);
 					$smarty->assign('order', $order);
@@ -533,8 +575,9 @@ function wikiplugin_bobshop($data, $params)
 			}
 			break;		
 	}
-	
+
 	return '~np~' . $output .'~/np~';
+
 }
 
 
@@ -570,7 +613,7 @@ function get_tracker_shop_config()
 	//fields in orders tracker
 	$shopConfig['ordersFields'] = array(
 		'orderPaymentPayerIdFieldId'		=> 'bobshopOrderPaymentPayerId', 
-		'orderPaymentPayeeMerchantIdFieldId'		=> 'bobshopOrderPaymentPayeeMerchantId', 
+		'orderPaymentPayeeMerchantIdFieldId'=> 'bobshopOrderPaymentPayeeMerchantId', 
 		'orderPaymentApproveLinkFieldId'	=> 'bobshopOrderPaymentApproveLink', 
 		'orderPaymentStatusFieldId'			=> 'bobshopOrderPaymentStatus', 
 		'orderPaymentOrderIdFieldId'		=> 'bobshopOrderPaymentOrderId', 
@@ -585,9 +628,15 @@ function get_tracker_shop_config()
 		'orderSumPaymentFieldId'	=> 'bobshopOrderSumPayment', 
 		'orderSumEndFieldId'		=> 'bobshopOrderSumEnd', 
 		'orderOrderNumberFieldId'	=> 'bobshopOrderOrderNumber', 
-		'orderagreedTosDateFieldId'			=> 'bobshopOrderagreedTosDate', 
-		'orderagreedRevocationDateFieldId'	=> 'bobshopOrderagreedRevocationDate', 
+		'orderAgreedTosDateFieldId'			=> 'bobshopOrderAgreedTosDate', 
+		'orderAgreedRevocationDateFieldId'	=> 'bobshopOrderAgreedRevocationDate', 
 		'orderStatusFieldId'		=> 'bobshopOrderStatus', 
+		'orderBrowserFieldId'		=> 'bobshopOrderBrowser', 
+		'orderNoteUserFieldId'		=> 'bobshopOrderNoteUser', 
+		'orderNoteInternalFieldId'	=> 'bobshopOrderNoteInternal', 
+		'orderIpFieldId'			=> 'bobshopOrderIp', 
+		'orderModifiedFieldId'		=> 'bobshopOrderModified', 
+		'orderCreatedFieldId'		=> 'bobshopOrderCreated', 
 		'orderSessionIdFieldId'		=> 'bobshopOrderSessionId', 
 		'orderUserFieldId'			=> 'bobshopOrderUser');
 	
@@ -618,6 +667,7 @@ function get_tracker_shop_config()
 		
 	//fields in payment tracker
 	$shopConfig['paymentFields'] = array(
+		'paymentMerchantNameFieldId'	=> 'bobshopPaymentMerchantName', 
 		'paymentActiveFieldId'	=> 'bobshopPaymentActive', 
 		'paymentFollowUpScriptFieldId'	=> 'bobshopPaymentFollowUpScript', 
 		'paymentBuyNowButtonTextExtraTextFieldId'	=> 'bobshopPaymentBuyNowButtonTextExtraText', 
@@ -653,6 +703,7 @@ function get_tracker_shop_config()
 			"SELECT 
 				tiki_tracker_item_fields.itemId, 
 				tiki_tracker_fields.name, 
+				tiki_tracker_fields.permName, 
 				tiki_tracker_item_fields.value
 			FROM 
 				tiki_tracker_item_fields
@@ -672,8 +723,10 @@ function get_tracker_shop_config()
 	foreach($result as $row)
     {
 		$shopConfig['shopConfigItemId'] = $row['itemId'];
-        $shopConfig['shopConfig_'.$row['name']] = $row['value'];
+        //$shopConfig['shopConfig_'.$row['name']] = $row['value'];
+        $shopConfig[$row['permName']] = $row['value'];
     }
+	//printArray(shopConfig, $shopConfig);
     return $shopConfig;
 }
 
@@ -837,44 +890,6 @@ function insert_tracker_shop_order($fieldNames, $shopConfig)
 	
 	//1.1 
 	
-	
-	
-	/*
-	$result = $tikilib->query(
-			"SELECT 
-				tiki_tracker_item_fields.itemId
-			FROM 
-				tiki_tracker_item_fields
-			LEFT JOIN
-				tiki_tracker_item_fields AS f2 ON f2.itemId = tiki_tracker_item_fields.itemId
-			WHERE 
-				tiki_tracker_item_fields.value = ?
-			AND
-				tiki_tracker_item_fields.fieldId = ?
-			AND
-				f2.fieldId = ?
-			AND
-				(f2.value = '1' OR f2.value = '0' or f2.value = '')
-				
-			",[
-				$fieldNames['bobshopOrderSessionId'], 
-				$shopConfig['orderSessionIdFieldId'],
-				$shopConfig['orderStatusFieldId'] 
-			]
-			);
-	
-	if($result->numrows > 0) 
-	{
-		$res = $result->fetchRow();
-		$orderItemId = $res['itemId']; //the itemId of the order
-		$ret['orderNumber'] = get_tracker_shop_orders_order_number_by_itemId($orderItemId, $shopConfig['orderOrderNumberFieldId']);
-		return $ret;
-	}
-	*/
-	
-	
-	
-	
 	$orderN = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
 	
 	if($orderN > 0)
@@ -882,6 +897,7 @@ function insert_tracker_shop_order($fieldNames, $shopConfig)
 		$ret['orderNumber'] = $orderN;
 		return $ret;
 	}
+	
 	
 	//1.2.
 	//get last (highest) order_number
@@ -899,12 +915,12 @@ function insert_tracker_shop_order($fieldNames, $shopConfig)
 			", [$shopConfig['ordersTrackerId']]
 			);
 	$res = $result->fetchRow();
-	$lastOrderNumber = $res['lastValue'];
-	if(empty($lastOrderNumber))
+	if(empty($res))
 	{
 		showError('last_order_number not found - abort');
 		return false;
 	}	
+	$lastOrderNumber = $res['lastValue'];
 	$fieldNames['bobshopOrderOrderNumber'] = $lastOrderNumber + 1;
 	$ret['orderNumber'] = $fieldNames['bobshopOrderOrderNumber'];
 	//print_r($ret);
@@ -1266,6 +1282,43 @@ function get_tracker_shop_products_by_trackerID($trackerId)
 	}
 
 }
+
+function get_tracker_shop_product_by_productId($productId, $shopConfig)
+{
+	global $tikilib;
+
+	$result = $tikilib->query("
+				SELECT
+					f1.itemId,
+					f1.fieldId,
+					f1.value,
+					permName
+				FROM
+					tiki_tracker_item_fields
+				LEFT JOIN
+					tiki_tracker_item_fields AS f1 ON f1.itemId = tiki_tracker_item_fields.itemId
+				LEFT JOIN
+					tiki_tracker_fields ON f1.fieldId = tiki_tracker_fields.fieldId
+				WHERE
+					tiki_tracker_item_fields.fieldId = ?
+				AND
+					tiki_tracker_item_fields.value = ?
+			",
+			[
+			$shopConfig['productProductIdFieldId'],
+			$productId
+			]
+			
+			);
+
+	while($row = $result->fetchRow())
+	{
+		$product[$row['permName']] = $row['value'];
+		$product['itemId'] = $row['itemId'];
+	}
+	return $product;
+}
+
 /**
  * 
  */
@@ -1320,7 +1373,7 @@ function get_tracker_shop_user_by_user($user, $shopConfig)
 /**
  * 
  */
-function get_tracker_shop_order_by_orderNumber($shopConfig)
+function get_tracker_shop_orders_order_by_orderNumber($shopConfig)
 {
 	global $tikilib;
 
@@ -1456,7 +1509,7 @@ function update_tracker_shop_order_revocation($value, $order, $shopConfig)
 				", [
 					$value,
 					$order['itemId'], 
-					$shopConfig['orderagreedRevocationDateFieldId']
+					$shopConfig['orderAgreedRevocationDateFieldId']
 					]
 				);
 	return;	
@@ -1478,7 +1531,7 @@ function update_tracker_shop_order_tos($value, $order, $shopConfig)
 				", [
 					$value,
 					$order['itemId'], 
-					$shopConfig['orderagreedTosDateFieldId']
+					$shopConfig['orderAgreedTosDateFieldId']
 					]
 				);
 	return;	
@@ -1504,7 +1557,7 @@ function update_tracker_shop_order_status($status, $shopConfig)
 {
 	global $tikilib;
 	
-	$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 
 	$result = $tikilib->query(
 			"UPDATE 
@@ -1528,7 +1581,7 @@ function update_tracker_shop_order_username($user, $shopConfig)
 {
 	global $tikilib;
 	
-	$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 
 	$result = $tikilib->query(
 			"UPDATE 
@@ -1557,8 +1610,8 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	
 	$mailReceiver = $userDataDetail['email'];
 	
-	$mailSender = $shopConfig['shopConfig_emailSender'];
-	$shopname = $shopConfig['shopConfig_shopName'];
+	$mailSender = $shopConfig['bobshopConfigEmailSender'];
+	$shopname = $shopConfig['bobshopConfigShopName'];
 	if($showPrices)
 	{
 		$subject = $shopname .' Bestellbestätigung';
@@ -1581,7 +1634,7 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	
 	$userData = get_tracker_shop_user_by_user($userDataDetail['login'], $shopConfig);
 	$orderItems = get_tracker_shop_order_items($shopConfig);
-	$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 	$payment = get_tracker_shop_payment($shopConfig);
 
 	$smartmail->assign('userBobshop', $userBobshop);
@@ -1589,14 +1642,21 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	$smartmail->assign('showPayment', 1);
 	$smartmail->assign('orderItems', $orderItems);
 	$smartmail->assign('userBobshop', $userData);
+	$smartmail->assign('showPrices', $showPrices);
 	$smartmail->assign('user', $user);
 	$smartmail->assign('order', $order);
 	$smartmail->assign('shopConfig', $shopConfig);
 	$smartmail->assign('fieldNamesById', array_flip($shopConfig));
 	
-	$mailText = $smartmail->fetch('wiki-plugins/wikiplugin_bobshop_mail_invite_offer_received.tpl');
-	 
-	
+	if($showPrices)
+	{
+		$mailText = $smartmail->fetch('wiki-plugins/wikiplugin_bobshop_mail_order_received.tpl');
+	}
+	else
+	{
+		$mailText = $smartmail->fetch('wiki-plugins/wikiplugin_bobshop_mail_invite_offer_received.tpl');
+	}
+		
 	$header = "MIME-Version: 1.0\r\n";
 	$header .= "Content-Type: text/html; charset=utf-8\r\n";
 	$header .= "To: ". $userDataDetail['login'] ."<". $mailSender . ">\r\n";
@@ -1631,11 +1691,11 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 		$header .= "From: ". $shopname ."<". $mailSender . ">\r\n";
 		if($showPrices)
 		{
-			$header .= "To: ". $shopname ." - Info Bestelleingang<". $shopConfig['shopConfig_emailNotifications'] . ">\r\n";
+			$header .= "To: ". $shopname ." - Info Bestelleingang<". $shopConfig['bobshopConfigEmailNotifications'] . ">\r\n";
 		}
 		else 
 		{
-			$header .= "To: ". $shopname ." - Info Angebotsanfrage<". $shopConfig['shopConfig_emailNotifications'] . ">\r\n";
+			$header .= "To: ". $shopname ." - Info Angebotsanfrage<". $shopConfig['bobshopConfigEmailNotifications'] . ">\r\n";
 		}
 		$mail_send = mail($mailReceiver, $subject, $mailText, $header);
 		
@@ -1646,4 +1706,30 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	}	
 	
 	return $output;
+}
+
+
+function printArray($name, $data)
+{
+	//print_r($data); echo '<hr>';
+	if(!is_array($data))
+	{
+		echo '<h2>No Array given in: '. $name .'</h2>';
+		return;
+	}
+	echo '<br><b>'. $name .'</b><br>';
+	echo 'Array (<br>';
+	foreach($data as $key=>$value)
+	{
+		if(is_array($value))
+		{
+			printArray($key .' >> ', $value);
+		}
+		else 
+		{
+			echo '&nbsp&nbsp&nbsp&nbsp'. $key . ' => '. $value .'<br>';
+		}
+	}
+	echo ')<br>'; //array close
+	echo '<hr>';
 }

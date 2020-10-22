@@ -44,12 +44,12 @@
 					{/if}
 				</td>
 
-				{assign var="rate" value="shopConfig_taxrate{$product.{$shopConfig['productTaxrateCatFieldId']}}"}
+				{assign var="rate" value="bobshopConfigTaxrate{$product.{$shopConfig['productTaxrateCatFieldId']}}"}
 				
 				{if $showPrices}
-					<td style="text-align: right">{$product.{$shopConfig['productPriceFieldId']}|string_format: "%.2f"}</td>
-					<td style="text-align: right">{{$product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']}}|string_format: "%.2f"}</td>
-					<td style="text-align: right">{$shopConfig[$rate]}%</td>
+					<td style="text-align: right">{$product.{$shopConfig['productPriceFieldId']}|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</td>
+					<td style="text-align: right">{{$product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']}}|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</td>
+					<td style="text-align: right">{$shopConfig[$rate]} %</td>
 				{/if}
 			</tr>
 
@@ -65,7 +65,7 @@
 			{/if}
 
 			{* shipping costs *}
-			{assign var="cat" value="shopConfig_shippingCostCat{$product.{$shopConfig['productShippingCatFieldId']}}"}
+			{assign var="cat" value="bobshopConfigShippingCostCat{$product.{$shopConfig['productShippingCatFieldId']}}"}
 			{if $sumShipping < $shopConfig[$cat]}
 				{$sumShipping = $shopConfig[$cat]}
 			{/if}
@@ -86,7 +86,7 @@
 	<td></td>
 	<td></td>
 	<td style="text-align: right">
-		<b>{$sumProducts|string_format: "%.2f"}</b>
+		<b>{$sumProducts|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</b>
 	</td>
 	<td></td>
 </tr>
@@ -102,19 +102,19 @@
 	<td></td>
 	<td></td>
 	<td style="text-align: right">
-		{$sumShipping|string_format: "%.2f"}
+		{$sumShipping|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
 	</td>
 	<td style="text-align: right">
-		{assign var="rate" value="shopConfig_taxrate{$shopConfig['shopConfig_shippingCostTaxrateCat']}"}
-		{$shopConfig[$rate]}%
+		{assign var="rate" value="bobshopConfigTaxrate{$shopConfig['bobshopConfigShippingCostTaxrateCat']}"}
+		{$shopConfig[$rate]} %
 	</td>
 </tr>
 
-	{if $product.{$shopConfig['shopConfig_shippingCostTaxrateCat']} eq 1}
+	{if $product.{$shopConfig['bobshopConfigShippingCostTaxrateCat']} eq 1}
 		{$sumTaxrate1 = $sumTaxrate1 + $shopConfig[$rate]/100 * $sumShipping}
-	{elseif $product.{$shopConfig['shopConfig_shippingCostTaxrateCat']} eq 2}
+	{elseif $product.{$shopConfig['bobshopConfigShippingCostTaxrateCat']} eq 2}
 		{$sumTaxrate2 = $sumTaxrate2 + $shopConfig[$rate]/100 * $sumShipping}
-	{elseif $product.{$shopConfig['shopConfig_shippingCostTaxrateCat']} eq 3}
+	{elseif $product.{$shopConfig['bobshopConfigShippingCostTaxrateCat']} eq 3}
 		{$sumTaxrate3 = $sumTaxrate3 + $shopConfig[$rate]/100 * $sumShipping}
 	{/if}
 
@@ -127,11 +127,11 @@
 		</td>
 		<td></td>
 		<td style="text-align: right">
-			{$shopConfig['shopConfig_taxrate1']}%
+			{$shopConfig['bobshopConfigTaxrate1']} %
 		</td>
 		<td></td>
 		<td style="text-align: right">
-			{$sumTaxrate1|string_format: "%.2f"}
+			{$sumTaxrate1|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
 		</td>
 		<td></td>
 		<td></td>
@@ -145,11 +145,11 @@
 		</td>
 		<td></td>
 		<td style="text-align: right">
-			{$shopConfig['shopConfig_taxrate2']}%
+			{$shopConfig['bobshopConfigTaxrate2']} %
 		</td>
 		<td></td>
 		<td style="text-align: right">
-			{$sumTaxrate2|string_format: "%.2f"}
+			{$sumTaxrate2|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
 		</td>
 		<td></td>
 		<td></td>
@@ -163,11 +163,11 @@
 		</td>
 		<td></td>
 		<td style="text-align: right">
-			{$shopConfig['shopConfig_taxrate3']}%
+			{$shopConfig['bobshopConfigTaxrate3']} %
 		</td>
 		<td></td>
 		<td style="text-align: right">
-			{$sumTaxrate3|string_format: "%.2f"}
+			{$sumTaxrate3|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
 		</td>
 		<td></td>
 		<td></td>
@@ -183,7 +183,7 @@
 	<td></td>
 	<td></td>
 	<td style="text-align: right">
-		{$sumTaxrates|string_format: "%.2f"}
+		{$sumTaxrates|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
 	</td>
 	<td></td>
 </tr>
@@ -204,7 +204,7 @@
 		<td></td>
 		<td></td>
 		<td style="text-align: right">
-			{$sumPayment|string_format: "%.2f"}
+			{$sumPayment|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
 		</td>
 		<td></td>
 	</tr>
@@ -212,7 +212,7 @@
 
 
 {* sum End *}
-{$sumEnd = $sumPayment + $sumTaxrates + $sumProducts + {$shopConfig['shopConfig_shippingCostCat1']}}
+{$sumEnd = $sumPayment + $sumTaxrates + $sumProducts + {$shopConfig['bobshopConfigShippingCostCat1']}}
 <tr>
 	<td></td>
 	<td>
@@ -223,7 +223,7 @@
 	<td></td>
 	<td></td>
 	<td style="text-align: right">
-		<b>{$sumEnd|string_format: "%.2f"}</b>
+		<b>{$sumEnd|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</b>
 	</td>
 	<td></td>
 </tr>
@@ -232,5 +232,5 @@
 </table>
 
 {if $showPrices}
-<i>Alle Preisangaben in {$shopConfig['shopConfig_currency']}.</i>
+<i>Alle Preisangaben in {$shopConfig['bobshopConfigCurrency']}.</i>
 {/if}

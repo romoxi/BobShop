@@ -8,7 +8,7 @@
 	<form method="post" action="tiki-index.php?page=bobshop_cashierpage" style="display: inline;" class="">
 		<input type="hidden" name="action" value="cashierbutton">
 		{if $showPrices}
-			<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['shopConfig_cashierButtonText']|escape}{/tr}">
+			<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['bobshopConfigCashierbutton']|escape}{/tr}">
 		{else}
 			<input type="submit" class="btn btn-secondary" value="{tr}Weiter zur Angebotsanfrage{/tr}">
 		{/if}

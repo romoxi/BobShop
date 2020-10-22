@@ -13,7 +13,7 @@
 	<br>
 <p>vielen Dank für Deine Bestellung.</p>
 <br>
-<p>Hiermit bestätigen wir, dass Deine Bestellung bei uns angekommen ist. </p>
+<p>Hiermit bestätigen wir die Bestellung folgender Artikel. </p>
 <br>
 <p>Im nächsten Schritt senden wir Dir eine Auftragsbestätigung.</p>
 <br>
@@ -33,4 +33,4 @@
 <p>Widerrufs- und Rückgaberecht mit Link auf Website oder als Anhang PDF?</p>
 <br>
 <h2>Kontaktinfo oder Verkäufer oder Händler</h2>
-{$shopConfig.shopConfig_companySignature|nl2br}
+{$shopConfig.bobshopConfigCompanySignature|nl2br}

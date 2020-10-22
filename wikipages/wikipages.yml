@@ -1,0 +1,37 @@
+objects:
+ -
+    type: wiki_page
+    data:
+      name: bobshop_cart
+      mode: create_or_update
+      content: Inhalt Warenkorb {bobshop type="show_cart"}
+ -
+    type: wiki_page
+    data:
+      name: bobshop_cashierpage
+      mode: create_or_update
+      content: Kasse {bobshop type="show_cashier"}
+ -
+    type: wiki_page
+    data:
+      name: bobshop_checkout
+      mode: create_or_update
+      content: Checkout/Summary{bobshop type="checkout"}
+ -
+    type: wiki_page
+    data:
+      name: bobshop_order_submitted
+      mode: create_or_update
+      content: Merci! {bobshop type="order_submitted"}
+ -
+    type: wiki_page
+    data:
+      name: bobshop_paypalAfterTransaction
+      mode: create_or_update
+      content: payed {bobshop type="paypal_after_transaction"}
+ -
+    type: wiki_page
+    data:
+      name: Shop
+      mode: create_or_update
+      content: Products {bobshop type="show_shop"}

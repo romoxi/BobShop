@@ -24,5 +24,5 @@
 <p>Widerrufs- und Rückgaberecht mit Link auf Website oder als Anhang PDF?</p>
 <br>
 <h2>Kontaktinfo oder Verkäufer oder Händler</h2>
-{$shopConfig.shopConfig_companySignature|nl2br}
+{$shopConfig.bobshopConfigCompanySignature|nl2br}
 

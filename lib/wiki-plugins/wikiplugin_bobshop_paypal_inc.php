@@ -1,9 +1,17 @@
 <?php
-
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * BobShop PayPal extension
+ * This Plugin is for CMS TikiWiki
+ * 
+ * BobShop is a shopping cart system for TikiWiki. 
+ * 
+ * Copyright (c) 2020 by Robert Hartmann
+ * 
+ * Install:
+ * see https://github.com/romoxi/bobshop
+ * 
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
  */
 
 /**
@@ -14,16 +22,19 @@
 $clientId = '';
 $secret   = '';
 
-if($shopConfig['shopConfig_opMode'] == 'sandbox')
+if($shopConfig['bobshopConfigOpMode'] == 'sandbox')
 {
 	$paypalURL = 'https://api.sandbox.paypal.com';
 }
-elseif($shopConfig['shopConfig_opMode'] == 'default')
+elseif($shopConfig['bobshopConfigOpMode'] == 'default')
 {
 	$paypalURL = 'https://api.paypal.com';
 }
 
 //END Config Section
+
+//echo 'Sie werden auf die PayPal-Seite weitergeleitet.';
+
 
 
 
@@ -31,7 +42,7 @@ function storeOrderDataPayPal($fieldId, $data, $shopConfig)
 {
 	global $tikilib;
 	
-	$order = get_tracker_shop_order_by_orderNumber($shopConfig);
+	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 
 	$result = $tikilib->query(
 			"UPDATE 
@@ -112,7 +123,8 @@ function createOrderPayPal($order, $token, $paypalURL)
 	curl_close($ch);      	
 
 	$out = json_decode($output, true);
-
+	//echo '<hr>'. $out .'<hr>';
+	//print_r($out);
 	return $out;
 }
 
@@ -182,6 +194,29 @@ function getApproveLinkPayPal($response)
 		}
 	}
 	return $href;
+}
+
+/**
+ * 
+ */
+function getRequestStringPayPal($sums, $merchantName, $shopConfig)
+{
+	$paypalOrder = '{"intent": "CAPTURE", "purchase_units": [{"amount": 
+					{
+					"currency_code": "'. $shopConfig['bobshopConfigCurrencyShortcut'] .'",
+					"value": "'. $sums['sumEnd'] .'"}
+					}],
+					"application_context":
+					{
+						"brand_name": "'. $merchantName .'",
+						"landing_page": "LOGIN",
+						"shipping_preference": "NO_SHIPPING",
+						"user_action": "PAY_NOW",
+						"return_url": "'. $_SERVER["SCRIPT_URI"] .'?page=bobshop_paypalAfterTransaction",
+						"cancel_url": "'. $_SERVER["SCRIPT_URI"] .'?page=bobshop_paypalAfterTransaction"
+					}										
+				}';
+	return $paypalOrder;
 }
 
 ?>

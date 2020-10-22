@@ -32,7 +32,6 @@ if (isset($redirect) && ! empty($redirect)) {
 	exit;
 }
 
-
 // disallow robots to index page:
 $smarty->assign('metatag_robots', 'NOINDEX, NOFOLLOW');
 
@@ -46,10 +45,10 @@ if (! empty($prefs['registerKey']) && (empty($_GET['key']) || $_GET['key'] !== $
 }
 
 global $user, $prefs;
-if (! empty($prefs['feature_alternate_registration_page']) && $prefs['feature_alternate_registration_page'] !== 'tiki-register.php') {
-	header("location: " . $prefs['feature_alternate_registration_page']);
-	die;
-}
+//if (! empty($prefs['feature_alternate_registration_page']) && $prefs['feature_alternate_registration_page'] !== 'tiki-register.php') {
+//	header("location: " . $prefs['feature_alternate_registration_page']);
+//	die;
+//}
 $smarty->assign('user_exists', TikiLib::lib('user')->user_exists($user));
 
 $re = $userlib->get_group_info(isset($_REQUEST['chosenGroup']) ? $_REQUEST['chosenGroup'] : 'Registered');
@@ -70,7 +69,6 @@ if($_REQUEST['register'] == 'Register')
 	//echo '<hr>request: '; print_r($_REQUEST);
 	//echo '<hr>check user<hr>';
 	//$requestedUser = $_REQUEST['name'];
-	//$requestedUser = 'tecmo@romoha.de';
 	$ret = $userlib->validate_user($_REQUEST['name'], $_REQUEST['pass']);
 	//$ret = $userlib->validate_user($requestedUser, 'kennwort');
 	if (count($ret) == 3) {$ret[] = null;}
@@ -118,18 +116,16 @@ if($_REQUEST['register'] == 'Register')
 		$url .= ((strpos($url, '?') === false) ? '?' : '&') . SID;
 	}
 
-
 	if(!empty($user))
 	{
-		//echo '<hr>user: '. $user;
 		header("location: tiki-index.php?page=bobshop_cashierpage");
-		
-		//header("Location: tiki-login.php");
-		//$smarty->display('wiki-plugins/wikiplugin_bobshop_redirect_after_registe.tpl');
-		//$smarty->display('tiki.tpl');
-		
 		exit;
 	}
+//	else
+//	{
+//		header("location: tiki-index.php?page=Home");
+//		exit;
+//	}
 
 }
 else

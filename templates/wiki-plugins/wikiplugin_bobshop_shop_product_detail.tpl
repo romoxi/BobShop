@@ -38,7 +38,9 @@
 				{if $showPrices}
 					{$price = $product.bobshopProductPrice + $product.bobshopProductPrice/100 * $shopConfig[$rate]}
 					<h3 style="font-weight: bold;">{$price|string_format:"%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</h3>
-					<p class="small">inkl. {$shopConfig[$rate]}% MwSt.<br>zzgl. Versandkosten</p>
+					<p class="small">inkl. {$shopConfig[$rate]}% MwSt.</p>
+					<p class="small" onClick='javascript:$( "#wpdialog_bobshop_shipping" ).dialog( "open" );'>Versandkostenkategorie: {$product.bobshopProductShippingCat}
+					<br>zzgl. Versandkosten</p>
 				{/if}
 				<p class="small">Artikelnr.: {$product.bobshopProductProductId}</p>
 				{if $showPrices}
@@ -77,3 +79,11 @@
 
 <a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="javascript:history.go(-1)">{tr}Back{/tr}</a>
 
+{wikiplugin _name="DIALOG"
+	autoOpen="n"
+	id="wpdialog_bobshop_shipping"
+	title="Versandkosten"
+	width="400"
+	modal="y"
+	wiki="bobshop_shipping"
+}{/wikiplugin}

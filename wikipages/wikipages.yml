@@ -35,3 +35,9 @@ objects:
       name: Shop
       mode: create_or_update
       content: Products {bobshop type="show_shop"}
+ -
+    type: wiki_page
+    data:
+      name: bobshop_shipping
+      mode: create_or_update
+      content: Shipping Costs

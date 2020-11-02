@@ -78,7 +78,7 @@
 		{/if}
 	{/foreach}
 	
-	{$sumTaxrates = $sumTaxrate1 + $sumTaxrate2 + $sumTaxrate3}
+	
 
 {if $showPrices}
 {* sum of products *}
@@ -116,11 +116,11 @@
 	</td>
 </tr>
 
-	{if $product.{$shopConfig['bobshopConfigShippingCostTaxrateCat']} eq 1}
+	{if $shopConfig.bobshopConfigShippingCostTaxrateCat eq 1}
 		{$sumTaxrate1 = $sumTaxrate1 + $shopConfig[$rate]/100 * $sumShipping}
-	{elseif $product.{$shopConfig['bobshopConfigShippingCostTaxrateCat']} eq 2}
+	{elseif $shopConfig.bobshopConfigShippingCostTaxrateCat eq 2}
 		{$sumTaxrate2 = $sumTaxrate2 + $shopConfig[$rate]/100 * $sumShipping}
-	{elseif $product.{$shopConfig['bobshopConfigShippingCostTaxrateCat']} eq 3}
+	{elseif $shopConfig.bobshopConfigShippingCostTaxrateCat eq 3}
 		{$sumTaxrate3 = $sumTaxrate3 + $shopConfig[$rate]/100 * $sumShipping}
 	{/if}
 
@@ -179,6 +179,7 @@
 		<td></td>
 	</tr>
 {/if}
+{$sumTaxrates = $sumTaxrate1 + $sumTaxrate2 + $sumTaxrate3}
 <tr>
 	<td></td>
 	<td>

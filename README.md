@@ -20,6 +20,7 @@ release v1_6 available
 - bootstrap is used for the templates
 - different operation modes (default, sandbox, offer, presentation, info)
 - saving and reloading the cart by memoryCode (a cart can be transferd to another user/account/browser)
+- by memoryCode you can also create a kind of "share this cart" link
 
 ## What bobshop can not do at this time:
 - inventory management

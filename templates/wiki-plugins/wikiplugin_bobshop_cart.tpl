@@ -12,8 +12,15 @@
 		{else}
 			<input type="submit" class="btn btn-secondary" value="{tr}Weiter zur Angebotsanfrage{/tr}">
 		{/if}
+		
 	</form>
+
+		
+		
 {elseif $status == 0}
 	<h2>Der Warenkorb ist leer.</h2>
 	<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="javascript:history.go(-1)">{tr}Back{/tr}</a>
+
 {/if}
+<hr>
+{include file="templates/wiki-plugins/wikiplugin_bobshop_memory_code_button.tpl" scope="global"}

@@ -283,10 +283,10 @@ objects:
       permname: bobshopConfigPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:5f91351885dbb$'
-        fieldId: '$unknownobject:5f91351885dcd$'
+        trackerId: '$unknownobject:5f9fe3bc66ba1$'
+        fieldId: '$unknownobject:5f9fe3bc66bc2$'
         displayFieldsList:
-          - '$unknownobject:5f91351885dcd$'
+          - '$unknownobject:5f9fe3bc66bc2$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact
@@ -451,6 +451,22 @@ objects:
       type: files
       order: '260'
       description: 'picture to display, if there is no product picture available'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigMemoryOrders
+    data:
+      name: memoryOrders
+      permname: bobshopConfigMemoryOrders
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '270'
+      description: 'y = orders/carts can be saved and reloaded by the shopper using a memoryCode'
       visby: {  }
       editby: {  }
       flags:

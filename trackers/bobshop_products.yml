@@ -23,7 +23,7 @@ objects:
         exact: 'n'
       type: text_field
       order: '0'
-      description: 'unique Id; make sure there are no duplicate IDs'
+      description: 'Unique Id; make sure there are no duplicate IDs.'
       visby: {  }
       editby: {  }
       flags:
@@ -40,9 +40,11 @@ objects:
       tracker: '$profileobject:bobshop_products$'
       options:
         samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
       type: text_field
       order: '10'
-      description: 'the basic name of the product'
+      description: 'The basic name of the product'
       visby: {  }
       editby: {  }
       flags:
@@ -61,7 +63,7 @@ objects:
         samerow: 1
       type: text_area
       order: '20'
-      description: 'description of the product'
+      description: 'Description of the product. See also "wikipageName" and "wikipage" - there can be a whole wikipage linked to the product.'
       visby: {  }
       editby: {  }
       flags:
@@ -133,9 +135,11 @@ objects:
       tracker: '$profileobject:bobshop_products$'
       options:
         samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
       type: text_field
       order: '60'
-      description: 'product category'
+      description: 'Product category; actually not used by bobshop'
       visby: {  }
       editby: {  }
       flags:
@@ -173,7 +177,7 @@ objects:
         exact: 'n'
       type: text_field
       order: '80'
-      description: 'the name of the wikipage that is displayed under the product details page'
+      description: 'The name of the wikipage that is displayed under the product details page; A wikipage will be created by the tracker; No page is created if nothing is entered.'
       visby: {  }
       editby: {  }
       flags:
@@ -197,7 +201,7 @@ objects:
         removeBadChars: 'n'
       type: wiki
       order: '90'
-      description: 'wikipage of the product'
+      description: 'Wikipage of the product; Field wikipageName have to be set in order to save the inputs in this field. The wikipage "wikipageName" will be created.'
       visby: {  }
       editby: {  }
       flags:
@@ -215,7 +219,7 @@ objects:
         exact: 'n'
       type: text_field
       order: '100'
-      description: 'how much time does it need to deliver the product'
+      description: 'How much time does it need to deliver the product'
       visby: {  }
       editby: {  }
       flags:
@@ -261,6 +265,8 @@ objects:
       tracker: '$profileobject:bobshop_products$'
       options:
         samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
       type: text_field
       order: '130'
       description: '1 = enabled to be displayed in the product list; 0 = no display but still available in the cart'

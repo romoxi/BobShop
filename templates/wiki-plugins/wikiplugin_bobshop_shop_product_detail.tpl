@@ -64,10 +64,10 @@
 
 		
 {* include the wikipage *}
-{if $product.bobshopProductWikipage != ''}
-	<hr>
+{if $product.bobshopProductWikipageName != ''}
+	<br><hr>
 	{wikiplugin _name="INCLUDE" 
-		page="{$product.bobshopProductWikipage}"
+		page="{$product.bobshopProductWikipageName}"
 		nopage_text="wikisite not found"
 		parse_included_page="n"
 		max_inclusions="1"

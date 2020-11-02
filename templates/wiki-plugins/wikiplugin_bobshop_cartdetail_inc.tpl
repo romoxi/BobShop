@@ -1,4 +1,7 @@
 <table class="table table-hover">
+	{* for the mails don't colgroup *}
+	{if !isset($mailer) || (isset($mailer) && $mailer == 0)}
+
 	<colgroup>
 		<col width="5%">
 		<col width="45%">
@@ -12,6 +15,7 @@
 			<col width="5%">
 		{/if}
 	</colgroup>
+	{/if}
 	<tr>
 		<th >Produkt#</th>
 		<th >Bezeichnung</th>
@@ -30,17 +34,19 @@
 		
 		{if $product.{$shopConfig['orderItemQuantityFieldId']} > 0}
 			<tr>
-				<td>{$product.{$shopConfig['productProductIdFieldId']}} -{$product.{$shopConfig['productShippingCatFieldId']}} </td>
+				<td>{$product.{$shopConfig['productProductIdFieldId']}}</td>
 				<td>{$product.{$shopConfig['productNameFieldId']}}</td>
 				<td>
 					{if $showQuantityModify == 1}
-					<a style="margin: 0; padding: 0; width: 20px; height: 20px;" class="btn btn-primary" data-role="button" data-inline="true" title="-" href="tiki-index.php?page={$page}&action=quantitySub&productId={$product.{$shopConfig['productProductIdFieldId']}}">-</a>
+						<a class="btn btn-primary btn-xs" data-role="button" data-inline="true" title="-" href="tiki-index.php?page={$page}&action=quantitySub&productId={$product.{$shopConfig['productProductIdFieldId']}}">
+						{icon name="minus"}</a>
 					{/if}
 				</td>
 				<td style="text-align: center;">{$product.{$shopConfig['orderItemQuantityFieldId']}}</td>
 				<td>
 					{if $showQuantityModify == 1}
-					<a style="margin: 0; padding: 0; width: 20px; height: 20px;" class="btn btn-primary" data-role="button" data-inline="true" title="+" href="tiki-index.php?page={$page}&action=quantityAdd&productId={$product.{$shopConfig['productProductIdFieldId']}}">+</a>
+						<a class="btn btn-primary btn-xs" data-role="button" data-inline="true" title="+" href="tiki-index.php?page={$page}&action=quantityAdd&productId={$product.{$shopConfig['productProductIdFieldId']}}">
+						{icon name="create"}</a>
 					{/if}
 				</td>
 

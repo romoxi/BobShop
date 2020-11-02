@@ -1,5 +1,5 @@
 {* $Id$ *}
-{if $productId != 0}
+{if $productId != 0 || $productId != ''}
 <form method="post" action="{query _type=relative _keepall=y}" style="display: inline;" class="">
 	<input type="hidden" name="productId" value="{$productId|escape}">
 	<input type="hidden" name="action" value="add_to_cart">

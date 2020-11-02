@@ -16,3 +16,4 @@ preferences:
  wikiplugin_bobshop: 'y'
  wikiplugin_button: 'y'
  wikiplugininline_remarksbox: 'y'
+ wikiplugin_dialog: 'y'

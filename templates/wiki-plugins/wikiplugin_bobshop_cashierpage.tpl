@@ -90,7 +90,7 @@
 	{if $shopConfig['bobshopConfigTermsOfServicePage'] != ''}
 		<input required type="checkbox" name="tos" value="{$smarty.now}">
 		<label>Ich habe die aktuellen AGB's gelesen und stimme diesen zu.</label>
-		<br><a target='_blank' href="tiki-index.php?page={$shopConfig['bobshopConfigTermsOfServicePage']}">Widerrufsbelehrung in neuem Fenster anzeigen.</a>
+		<br><a target='_blank' href="tiki-index.php?page={$shopConfig['bobshopConfigTermsOfServicePage']}">Allgemeine Geschäftsbedingungen in neuem Fenster anzeigen.</a>
 		<hr>
 	{/if}
 
@@ -98,7 +98,7 @@
 	{if $shopConfig['bobshopConfigRevocationNotice'] != ''}
 		<input required type="checkbox" name="revocation" value="{$smarty.now}">
 		<label>Ich habe die aktuelle Widerrufsbelehrung gelesen und stimme dieser zu.</label>
-		<br><a target='_blank' href="tiki-index.php?page={$shopConfig['bobshopConfigRevocationNotice']}">Allgemeine Geschäftsbedingungen in neuem Fenster anzeigen.</a>
+		<br><a target='_blank' href="tiki-index.php?page={$shopConfig['bobshopConfigRevocationNotice']}">Widerrufsbelehrung in neuem Fenster anzeigen.</a>
 		<hr>
 	{/if}
 {else}

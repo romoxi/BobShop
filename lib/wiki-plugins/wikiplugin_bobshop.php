@@ -1,6 +1,7 @@
 <?php
 /**
  * BobShop
+ * Version: 1_6
  * This Plugin is for CMS TikiWiki
  * 
  * BobShop is a shopping cart system for TikiWiki. 
@@ -24,7 +25,16 @@ function wikiplugin_bobshop_info()
                 'type' => array(
                     'required' => false,
                     'name' => tra('Type'),
-                    'description' => tra('show_shop, add_to_cart_button, show_cart, show_cashier, checkout, order_submitted, paypal_after_transaction'),
+                    'description' => '
+						show_shop, 
+						add_to_cart_button, 
+						show_cart, 
+						show_cashier, 
+						checkout, 
+						order_submitted, 
+						paypal_after_transaction,
+						show_memory_code_button
+						',
                     'filter' => 'text',
                     'since' => '1.0',
                 ),
@@ -52,6 +62,7 @@ function wikiplugin_bobshop($data, $params)
 	
 	$output = '';
 	$showPrices = false;
+	$shopConfig['currentOrderNumber'] = 0;
       
     extract($params, EXTR_SKIP);
 	
@@ -63,16 +74,64 @@ function wikiplugin_bobshop($data, $params)
 		return;
 	}
 	
-	$fieldNames['bobshopOrderSessionId'] = $_SESSION['__Laminas']['_VALID']['Laminas\Session\Validator\Id'];
-	$shopConfig['currentOrderNumber'] = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
-	//print_r($_REQUEST);
-	//print_r($params);
-	
-
-	//echo $shopConfig['bobshopConfigCompanySignature'];
-	
 	global $tikilib;
 	global $userlib;
+	
+	/**
+	 * Returns some detailed user info
+	 * userId, email, login ...
+	 */
+	$userDataDetail = $userlib->get_user_info($user);
+
+	/**
+	 * Returns
+	 * Array ( [usersTrackerId] => 11 [usersFieldId] => 31 [group] => Registered [user] => admin ) 
+	 */
+	$userData = $userlib->get_usertracker(1);
+	
+	//echo $fieldNames['bobshopOrderSessionId']."<br>";
+	//echo '**username: '. $userData['user'];
+	
+	$fieldNames['bobshopOrderSessionId'] = $_SESSION['__Laminas']['_VALID']['Laminas\Session\Validator\Id'];
+
+	//is there a open order for the current session?
+	$shopConfig['currentOrderNumber'] = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
+	
+	//if there is no open order for the current session, is there a open order for the current user?
+	if(isset($userData['user']) && $userData['user'] != '')
+	{
+		$orderNumberByUser = get_tracker_shop_orders_order_number_by_username($userData['user'], $shopConfig);
+		
+		// after login the user should have his old order (cart)
+		if($shopConfig['currentOrderNumber'] == 0 && $orderNumberByUser != 0)
+		{
+			$shopConfig['currentOrderNumber'] = $orderNumberByUser;
+		}
+		//what is, if there are two orders? a new one by sessionId and an old one
+		//elseif($shopConfig['currentOrderNumber'] != 0 && $orderNumberByUser != 0)
+		elseif(($shopConfig['currentOrderNumber'] != $orderNumberByUser)
+				&& $shopConfig['currentOrderNumber'] != 0 
+				&& $orderNumberByUser != 0
+				)
+		{
+			//join this two orders to one	
+			//to join two orders update all orderNumbers in order_items
+			$newNumber = $orderNumberByUser;
+			$oldNumber = $shopConfig['currentOrderNumber'];
+			//disable the old order per status 13
+			update_tracker_shop_order_status(13, $shopConfig);
+			$shopConfig['currentOrderNumber'] = $newNumber;
+			//join the two orders
+			update_tracker_shop_orders_join($oldNumber, $newNumber, $shopConfig);
+		}
+	}
+	
+	//echo 'orderNumber: '. $shopConfig['currentOrderNumber'];
+	
+	//print_r($_REQUEST);
+	//print_r($params);
+
+	//echo $shopConfig['bobshopConfigCompanySignature'];
 	
 	/**
 	 * operation mode
@@ -114,18 +173,8 @@ function wikiplugin_bobshop($data, $params)
 	}
 	
 	
-	/**
-	 * Returns some detailed user info
-	 * userId, email, login ...
-	 */
-	$userDataDetail = $userlib->get_user_info($user);
-
-	/**
-	 * Returns
-	 * Array ( [usersTrackerId] => 11 [usersFieldId] => 31 [group] => Registered [user] => admin ) 
-	 */
-	$userData = $userlib->get_usertracker(1);
 	
+
 	//print_r($shopConfig);
 	//print_r($_SERVER);
 		
@@ -155,7 +204,7 @@ function wikiplugin_bobshop($data, $params)
 				break;
 			
 			case 'shop_article_detail':
-				echo '<hr>';
+				//echo '<hr>';
 				$product = get_tracker_shop_product_by_productId($jitRequest->productId->text(), $shopConfig);
 				$smarty->assign('showPrices', $showPrices);
 				$smarty->assign('buying', $buying);
@@ -172,29 +221,29 @@ function wikiplugin_bobshop($data, $params)
 				break;
 			
 			case 'quantitySub':
-				update_tracker_shop_order_items_quantity_Sub($jitGet->productId->text(), $shopConfig);
+				update_tracker_shop_order_items_quantity_sub($jitGet->productId->text(), $shopConfig);
 				break;
 			
 			case 'add_to_cart':
-				$fieldNames['bobshopOrderUser'] = 'bobshop';
-				$fieldNames['bobshopOrderItemQuantity'] = 1;
 
 				//insert a new order, if there isnt one
 				if(isset($_POST['productId']))
 				{
+					$fieldNames['bobshopOrderUser'] = 'no_login';
+					$fieldNames['bobshopOrderItemQuantity'] = 1;
 					$fieldNames['bobshopOrderItemProductId'] = $jitPost->productId->text();
 					$fieldNames['bobshopOrderCreated'] = time();
 					//$fieldNames['bobshopOrderModified'] = time();
 					$fieldNames['bobshopOrderIp'] = $_SERVER['REMOTE_ADDR'];
 					$fieldNames['bobshopOrderBrowser'] = $_SERVER['HTTP_USER_AGENT'];
 					
-					$orderVars = insert_tracker_shop_order($fieldNames, $shopConfig);
-					$fieldNames['bobshopOrderItemOrderNumber'] = $orderVars['orderNumber'];
+					$orderVars = insert_tracker_shop_order($fieldNames, $shopConfig, $userData['user'], false);
 
 					//insert the articel in the bobshop_order_items tracker
 					if($orderVars != false)
 					{
-						$shopConfig['currentOrderNumber'] = $ret['orderNumber'];
+						$fieldNames['bobshopOrderItemOrderNumber'] = $orderVars['orderNumber'];
+						//$shopConfig['currentOrderNumber'] = $orderVars['orderNumber'];
 						insert_tracker_shop_order_items($fieldNames, $shopConfig);
 						$output .= message('Artikel wurde zum Warenkorb hinzugefügt.', '');
 					}
@@ -373,9 +422,32 @@ function wikiplugin_bobshop($data, $params)
 				$params['type'] = 'order_submitted';
 				
 				break;
+				
+			//save order
+			case 'save_order':
+				if($shopConfig['bobshopConfigMemoryOrders'] == 'y')
+				{
+					$memoryCode = save_order($shopConfig);
+					$output .= message('Info', 'Der Warenkorb wurde unter folgender Nummer gespeichert: '. $memoryCode);
+				}
+				break;
+			
+			case 'load_order':
+				if($shopConfig['bobshopConfigMemoryOrders'] == 'y')
+				{
+					$newCurrentOrderNumber = load_order_by_memoryCode($jitRequest->memory_code->text(), $userData['user'], $shopConfig);
+					if($newCurrentOrderNumber != false)
+					{
+						$shopConfig['currentOrderNumber'] = $newCurrentOrderNumber;
+					}
+				}
+				break;
 		}
 	}
 
+	/**
+	 * plugin params ***************************************************************************
+	 */
  
     switch($params['type'])
 	{
@@ -414,6 +486,7 @@ function wikiplugin_bobshop($data, $params)
 			if($cart)
 			{
 				$orderItems = get_tracker_shop_order_items($shopConfig);
+				$smarty->assign('shopConfig', $shopConfig);
 				if(!empty($orderItems))
 				{
 					$smarty->assign('showPrices', $showPrices);
@@ -423,7 +496,6 @@ function wikiplugin_bobshop($data, $params)
 					$smarty->assign('status', 1);
 					$smarty->assign('showPayment', 0);
 					$smarty->assign('orderItems', $orderItems);
-					$smarty->assign('shopConfig', $shopConfig);
 					$smarty->assign('fieldNamesById', array_flip($shopConfig));
 				}
 				else
@@ -451,7 +523,6 @@ function wikiplugin_bobshop($data, $params)
 					{
 						$output .= message('Zustimmung erforderlich', 'Widerruf nicht zugestimmt', 'warning');
 					}
-					//print_r($shopConfig);
 					update_tracker_shop_order_username($user, $shopConfig);
 					$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
 					$orderItems = get_tracker_shop_order_items($shopConfig);
@@ -486,11 +557,8 @@ function wikiplugin_bobshop($data, $params)
 				{
 					$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
 					$orderItems = get_tracker_shop_order_items($shopConfig);
-					//print_r($orderItems);
 					$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
-					//print_r($order);
 					$payment = get_tracker_shop_payment($shopConfig);
-					//print_r($payment);
 					$smarty->assign('userBobshop', $userBobshop);
 					$smarty->assign('showPrices', $showPrices);
 					$smarty->assign('payment', $payment);
@@ -573,7 +641,16 @@ function wikiplugin_bobshop($data, $params)
 					}
 				}
 			}
-			break;		
+			break;	
+			
+		case 'show_memory_code_button':
+			if($cart)
+			{
+				$smarty->assign('shopConfig', $shopConfig);
+				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_memory_code_button.tpl');
+
+			}
+			break;
 	}
 
 	return '~np~' . $output .'~/np~';
@@ -638,6 +715,7 @@ function get_tracker_shop_config()
 		'orderModifiedFieldId'		=> 'bobshopOrderModified', 
 		'orderCreatedFieldId'		=> 'bobshopOrderCreated', 
 		'orderSessionIdFieldId'		=> 'bobshopOrderSessionId', 
+		'orderMemoryCodeFieldId'	=> 'bobshopOrderMemoryCode', 
 		'orderUserFieldId'			=> 'bobshopOrderUser');
 	
 	foreach($shopConfig['ordersFields']  as $key => $name)
@@ -656,6 +734,7 @@ function get_tracker_shop_config()
 		'productProductIdFieldId'		=> 'bobshopProductProductId', 
 		'productDescriptionFieldId'		=> 'bobshopProductDescription', 
 		'productNameFieldId'			=> 'bobshopProductName', 
+		'productWikipageNameFieldId'	=> 'bobshopProductWikipageName',
 		'productWikipageFieldId'		=> 'bobshopProductWikipage',
 		'productPic1FieldId'			=> 'bobshopProductPic1',
 		'productPriceFieldId'			=> 'bobshopProductPrice');
@@ -830,7 +909,96 @@ function get_tracker_shop_orders_order_number_by_session_id($sessionId, $shopCon
 		);
 	
 	$res = $result->fetchRow();
-	//echo '<hr>'; print_r($res);
+	//echo '<hr>by_session_id'; print_r($res);
+	return $res['value'];
+}
+
+
+/**
+ * 
+ * @returns the orderNumber
+ */
+function get_tracker_shop_orders_order_number_by_username($username, $shopConfig)
+{
+	global $tikilib;
+	
+	if(empty($username)){ return false;}
+	
+	$result = $tikilib->query(
+		"SELECT
+				f3.itemId,
+				f3.fieldId,
+				f3.value
+			FROM
+				tiki_tracker_item_fields
+			LEFT JOIN
+				tiki_tracker_items ON tiki_tracker_items.itemId = tiki_tracker_item_fields.itemId
+			LEFT JOIN
+				tiki_tracker_item_fields AS f2 ON tiki_tracker_items.itemId = f2.itemId
+			LEFT JOIN
+				tiki_tracker_item_fields AS f3 ON tiki_tracker_items.itemId = f3.itemId
+			WHERE
+				tiki_tracker_item_fields.fieldId = ?
+			AND
+				tiki_tracker_item_fields.value = ?
+			AND
+				f2.fieldId = ?
+			AND
+				(f2.value = '1' OR f2.value = '0' OR f2.value = '')
+		",
+		[
+			$shopConfig['orderUserFieldId'], 
+			$username,
+			$shopConfig['orderStatusFieldId'] 
+			]
+		);
+	
+	$res = $result->fetchRow();
+	//echo '<hr>by_username: ' . $username .':'; print_r($res);
+	return $res['value'];
+}
+
+/**
+ * 
+ * @returns the orderNumber
+ */
+function get_tracker_shop_orders_order_number_by_memoryCode($memoryCode, $shopConfig)
+{
+	global $tikilib;
+	
+	if(empty($memoryCode)){ return false;}
+	
+	$result = $tikilib->query(
+		"SELECT
+				f3.itemId,
+				f3.fieldId,
+				f3.value
+			FROM
+				tiki_tracker_item_fields
+			LEFT JOIN
+				tiki_tracker_items ON tiki_tracker_items.itemId = tiki_tracker_item_fields.itemId
+			LEFT JOIN
+				tiki_tracker_item_fields AS f2 ON tiki_tracker_items.itemId = f2.itemId
+			LEFT JOIN
+				tiki_tracker_item_fields AS f3 ON tiki_tracker_items.itemId = f3.itemId
+			WHERE
+				tiki_tracker_item_fields.fieldId = ?
+			AND
+				tiki_tracker_item_fields.value = ?
+			AND
+				f2.fieldId = ?
+			AND
+				(f2.value = '14')
+		",
+		[
+			$shopConfig['orderMemoryCodeFieldId'], 
+			$memoryCode,
+			$shopConfig['orderStatusFieldId'] 
+			]
+		);
+	
+	$res = $result->fetchRow();
+	echo '<hr>by_memoryCode: ' . $username .':'; print_r($res);
 	return $res['value'];
 }
 
@@ -876,29 +1044,42 @@ function get_tracker_shop_fieldId($fieldName, $trackerId)
  * > tracker_items (itemId, trackerId, status)
  * 
  *
- * 1.1. if the session_id already exist, return order_number
+ * 1.1. if the order already exist, return order_number
  * 1.2. lade die bisher höchste order_number
  * 3. insert the the new stuff in tracker_items (itemId will be autoincremented)
  * 4. get the last insertId (itemId)
  * 2. get the fieldId by the fieldname (fields 'sid', 'user')
  * 5. insert in tracker_item_fields
  * 6. inc trackers.items
+ * 
+ * $makeCopy = true to save a copy of the current order and create a memoryCode
  */
-function insert_tracker_shop_order($fieldNames, $shopConfig)
+function insert_tracker_shop_order($fieldNames, $shopConfig, $username, $makeCopy = false)
 {
 	global $tikilib;
 	
-	//1.1 
 	
-	$orderN = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
-	
-	if($orderN > 0)
+	//if makeCopy then insert a new order
+	if($makeCopy == false)
 	{
-		$ret['orderNumber'] = $orderN;
-		return $ret;
+		//1.1 
+		$orderN = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
+
+		if($orderN > 0)
+		{
+			$ret['orderNumber'] = $orderN;
+			return $ret;
+		}
+
+		$orderN = get_tracker_shop_orders_order_number_by_username($username, $shopConfig);
+		if($orderN > 0)
+		{
+			$ret['orderNumber'] = $orderN;
+			return $ret;
+		}
 	}
 	
-	
+
 	//1.2.
 	//get last (highest) order_number
 	$result = $tikilib->query(
@@ -932,7 +1113,7 @@ function insert_tracker_shop_order($fieldNames, $shopConfig)
 				(trackerId, status, created, createdBy, lastModif, lastModifBy)
 			VALUES
 				(?, ?, ?, ?, ?, ?)",
-				[$shopConfig['ordersTrackerId'], 'o', time(), 'bobshop', time(), 'bobshop']
+				[$shopConfig['ordersTrackerId'], 'o', time(), $username, time(), $username]
 			);
 
 	//4.
@@ -971,13 +1152,24 @@ function insert_tracker_shop_order($fieldNames, $shopConfig)
 			[$shopConfig['ordersTrackerId']]);
 		
 	$shopConfig['currentOrderNumber'] = $ret['orderNumber'];
-	update_tracker_shop_order_status(1, $shopConfig);
+	if($makeCopy == false)
+	{
+		update_tracker_shop_order_status(1, $shopConfig);
+	}
+	else
+	{
+		update_tracker_shop_order_status(14, $shopConfig);
+	}
+		
 	return $ret;
 }
 
 /**
  * 
- * 
+ * needs array $fieldNames
+ * [bobshopOrderItemProductId] > productId
+ * [bobshopOrderItemOrderNumber] > current Order Number
+ * [bobshopOrderItemQuantity] > Quantity to be inserted (not added)
  */
 function insert_tracker_shop_order_items($fieldNames, $shopConfig)
 {
@@ -1196,6 +1388,7 @@ function get_tracker_shop_order_items($shopConfig, $productId = false)
 			$orderItems[$row['itemId']][$row['productIdFieldId']] = $row['productName'];
 			//quantity
 			$orderItems[$row['itemId']][$row['quantityFieldId']] = $row['quantitiy'];
+			//print_r($row); echo '<hr>';
 		}
 		
 		//only 1 product should be returned
@@ -1210,7 +1403,7 @@ function get_tracker_shop_order_items($shopConfig, $productId = false)
 				}
 			}
 		}
-		
+		//print_r($orderItems);
 		return $orderItems;
 	}
 }
@@ -1547,6 +1740,13 @@ function update_tracker_shop_order_tos($value, $order, $shopConfig)
  * 4 = order payed; 
  * 5 = payed and shipped; 
  * 6 = not payed and shipped
+ * 7 = deleted
+ * 
+ * 10 = invited offer submitted
+ * 11 = offer under progress
+ * 12 = offer sent
+ * 13 = order joined with another
+ * 14 = a saved order
  * 
  * @global type $tikilib
  * @param type $status
@@ -1577,6 +1777,46 @@ function update_tracker_shop_order_status($status, $shopConfig)
 	return;	
 }
 
+
+/**
+ * 1. get all products from the oldNumber
+ * 2. foreach products > if product exists in new order > add qty
+ *                     > else insert
+ */
+function update_tracker_shop_orders_join($oldNumber, $newNumber, $shopConfig)
+{
+	global $tikilib;
+	$shopConfig['currentOrderNumber'] = $oldNumber;
+	$oldProducts = get_tracker_shop_order_items($shopConfig);
+	$shopConfig['currentOrderNumber'] = $newNumber;
+	
+	if(count($oldProducts) == 0) return;
+	
+	foreach($oldProducts as $item => $product)
+	{
+		//echo '<br>produktID: '. $product[$shopConfig['productProductIdFieldId']];
+		//echo '<br>produktID: '. $product[$shopConfig['orderItemQuantityFieldId']];
+		while($product[$shopConfig['orderItemQuantityFieldId']] > 0)
+		{
+			$fieldNames['bobshopOrderItemProductId'] = $product[$shopConfig['productProductIdFieldId']];
+			$fieldNames['bobshopOrderItemOrderNumber'] = $newNumber;
+			$fieldNames['bobshopOrderItemQuantity'] = 1;
+			insert_tracker_shop_order_items($fieldNames, $shopConfig);
+			//the insert function calls the add function if needed
+			$product[$shopConfig['orderItemQuantityFieldId']] --;
+		}
+	}
+}
+
+
+/**
+ * when the user login, the order gets the username
+ * 
+ * @global type $tikilib
+ * @param type $user
+ * @param type $shopConfig
+ * @return type
+ */
 function update_tracker_shop_order_username($user, $shopConfig)
 {
 	global $tikilib;
@@ -1601,12 +1841,187 @@ function update_tracker_shop_order_username($user, $shopConfig)
 	return;	
 }
 
+
+/**
+ * save the order
+ * make a copy of the complete order
+ * create a memoryCode
+ */
+function save_order($shopConfig)
+{
+	global $tikilib;
+	$products = get_tracker_shop_order_items($shopConfig);
+	
+	if(count($products) == 0) return;
+	
+	//save the current order Number
+	//$currentOrderNumber = $shopConfig['currentOrderNumber'];
+	
+	//insert a new order
+	$fieldNames['bobshopOrderCreated'] = time();
+	$fieldNames['bobshopOrderIp'] = $_SERVER['REMOTE_ADDR'];
+	$fieldNames['bobshopOrderBrowser'] = $_SERVER['HTTP_USER_AGENT'];
+	$fieldNames['bobshopOrderUser'] = 'copyuser';
+	$fieldNames['bobshopOrderItemQuantity'] = 1;
+	$orderVars = insert_tracker_shop_order($fieldNames, $shopConfig, 'copyuser', true);
+
+	//insert the product in the bobshop_order_items tracker
+	if($orderVars != false)
+	{
+		$fieldNames['bobshopOrderItemOrderNumber'] = $orderVars['orderNumber'];
+		$shopConfig['currentOrderNumber'] = $orderVars['orderNumber'];
+
+		//insert all products
+		foreach($products as $item => $product)
+		{
+			while($product[$shopConfig['orderItemQuantityFieldId']] > 0)
+			{
+				$fieldNames['bobshopOrderItemProductId'] = $product[$shopConfig['productProductIdFieldId']];
+				$fieldNames['bobshopOrderItemQuantity'] = 1;
+				insert_tracker_shop_order_items($fieldNames, $shopConfig);
+				//the insert function calls the add function if needed
+				$product[$shopConfig['orderItemQuantityFieldId']] --;
+			}
+		}
+
+		$output .= message('Warenkorb wurde gespeichert.', '');
+	}
+	else
+	{
+		$output .= message('Last order number error. Copy failed', 'error');
+	}
+	
+	//restore the order number
+	//$shopConfig['currentOrderNumber'] = $currentOrderNumber;
+	
+	//create memoryCode
+	$memoryCode = create_memoryCode($shopConfig);
+	
+	return $memoryCode;
+}
+
+/**
+ * load the order
+ * make a copy of the saved order
+ * and make it to the current order
+ */
+function load_order_by_memoryCode($memoryCode, $username, $shopConfig)
+{
+	if(empty($memoryCode)) return;
+	
+	global $tikilib;
+	// 5f9da3153317d
+	// 
+	//save the current order Number
+	$currentOrderNumber = $shopConfig['currentOrderNumber'];
+	//load the products
+	$savedOrderNumber = get_tracker_shop_orders_order_number_by_memoryCode($memoryCode, $shopConfig);
+	$shopConfig['currentOrderNumber'] = $savedOrderNumber;
+	$products = get_tracker_shop_order_items($shopConfig);
+	
+	if(count($products) == 0) return;
+		
+	//insert a new order
+	$fieldNames['bobshopOrderCreated'] = time();
+	$fieldNames['bobshopOrderIp'] = $_SERVER['REMOTE_ADDR'];
+	$fieldNames['bobshopOrderBrowser'] = $_SERVER['HTTP_USER_AGENT'];
+	$fieldNames['bobshopOrderUser'] = $username;
+	$fieldNames['bobshopOrderItemQuantity'] = 1;
+	$fieldNames['bobshopOrderSessionId'] = $_SESSION['__Laminas']['_VALID']['Laminas\Session\Validator\Id'];
+	$orderVars = insert_tracker_shop_order($fieldNames, $shopConfig, 'loaduser', true);
+	echo '<hr>orderVars: '; print_r($orderVars);
+	//insert the product in the bobshop_order_items tracker
+	if($orderVars != false)
+	{
+		$fieldNames['bobshopOrderItemOrderNumber'] = $orderVars['orderNumber'];
+		$shopConfig['currentOrderNumber'] = $orderVars['orderNumber'];
+
+		//insert all products
+		foreach($products as $item => $product)
+		{
+			while($product[$shopConfig['orderItemQuantityFieldId']] > 0)
+			{
+				$fieldNames['bobshopOrderItemProductId'] = $product[$shopConfig['productProductIdFieldId']];
+				$fieldNames['bobshopOrderItemQuantity'] = 1;
+				insert_tracker_shop_order_items($fieldNames, $shopConfig);
+				//the insert function calls the add function if needed
+				$product[$shopConfig['orderItemQuantityFieldId']] --;
+			}
+		}
+		update_tracker_shop_order_status(1, $shopConfig);
+
+		$output .= message('Warenkorb wurde geladen.', '');
+		//restore the order number
+		$shopConfig['currentOrderNumber'] = $currentOrderNumber;
+		//delete the current order
+		update_tracker_shop_order_status(7, $shopConfig);	
+
+		return $orderVars['orderNumber'];
+	}
+	else
+	{
+		$output .= message('Last order number error. Load failed', 'error');
+		return false;
+	}
+	
+}
+
+
+
+
+
+
+/**
+ * 
+ */
+function create_memoryCode($shopConfig)
+{
+	global $tikilib;
+	
+	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
+	
+	$memoryCode = uniqid();
+
+	$result = $tikilib->query(
+			"UPDATE 
+				tiki_tracker_item_fields
+			SET
+				value = ?
+			WHERE
+				itemId = ?
+			AND
+				fieldId = ?
+			", [
+				$memoryCode,
+				$order['itemId'], 
+				$shopConfig['orderMemoryCodeFieldId']
+				]
+			);
+	return $memoryCode;		
+}
+
+
+
+/**
+ * Send an email
+ * 
+ * @global type $tikilib
+ * @global type $user
+ * @global type $smarty
+ * @param type $showPrices
+ * @param type $sums
+ * @param type $userDataDetail
+ * @param type $shopConfig
+ * @return type
+ */
 function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 {
 	//ToDo: check $sums
 	global $tikilib;
+	global $user;
+	global $smarty;
 	
-	$smartmail = new Smarty;
+	//$smartmail = new Smarty;
 	
 	$mailReceiver = $userDataDetail['email'];
 	
@@ -1630,38 +2045,39 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	$dateiinhalt = $doc;
 */
 	
-	$smartmail->assign('userDataDetail', $userDataDetail);
+	$smarty->assign('userDataDetail', $userDataDetail);
 	
 	$userData = get_tracker_shop_user_by_user($userDataDetail['login'], $shopConfig);
 	$orderItems = get_tracker_shop_order_items($shopConfig);
 	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 	$payment = get_tracker_shop_payment($shopConfig);
 
-	$smartmail->assign('userBobshop', $userBobshop);
-	$smartmail->assign('payment', $payment);
-	$smartmail->assign('showPayment', 1);
-	$smartmail->assign('orderItems', $orderItems);
-	$smartmail->assign('userBobshop', $userData);
-	$smartmail->assign('showPrices', $showPrices);
-	$smartmail->assign('user', $user);
-	$smartmail->assign('order', $order);
-	$smartmail->assign('shopConfig', $shopConfig);
-	$smartmail->assign('fieldNamesById', array_flip($shopConfig));
+	//$smartmail->assign('userBobshop', $userBobshop);
+	$smarty->assign('payment', $payment);
+	$smarty->assign('showPayment', 1);
+	$smarty->assign('orderItems', $orderItems);
+	$smarty->assign('userBobshop', $userData);
+	$smarty->assign('showPrices', $showPrices);
+	$smarty->assign('user', $user);
+	$smarty->assign('order', $order);
+	$smarty->assign('shopConfig', $shopConfig);
+	$smarty->assign('fieldNamesById', array_flip($shopConfig));
+	$smarty->assign('mailer', 1);
 	
 	if($showPrices)
 	{
-		$mailText = $smartmail->fetch('wiki-plugins/wikiplugin_bobshop_mail_order_received.tpl');
+		$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_order_received.tpl');
 	}
 	else
 	{
-		$mailText = $smartmail->fetch('wiki-plugins/wikiplugin_bobshop_mail_invite_offer_received.tpl');
+		$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_invite_offer_received.tpl');
 	}
 		
 	$header = "MIME-Version: 1.0\r\n";
 	$header .= "Content-Type: text/html; charset=utf-8\r\n";
-	$header .= "To: ". $userDataDetail['login'] ."<". $mailSender . ">\r\n";
+	$header .= "To: ". $mailReceiver ."\r\n";
 	$header .= "From: ". $shopname ."<". $mailSender . ">\r\n";
-	$header .= "Bcc: ". $shopname ."<". $mailBcc . ">\r\n";
+	$header .= "Bcc: ". $shopname ."<". $shopConfig['bobshopConfigEmailNotifications'] . ">\r\n";
 	$header .= "Reply-To: ". $shopname ."<". $mailSender . ">\r\n";
 	
 	//$anhang = chunk_split(base64_encode($dateiinhalt)); 
@@ -1683,7 +2099,7 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 
 	if ($mail_send)
 	{
-		$output .= message('Info', 'Bestätigungsmail wurde versendet.');
+		$output = message('Info', 'Bestätigungsmail wurde versendet.');
 		
 		//send mail to company
 		$header = "MIME-Version: 1.0\r\n";
@@ -1702,7 +2118,7 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	}
 	else
 	{
-		$output .= message('Error', 'Mail not sent!', 'errors');
+		$output = message('Error', 'Mail not sent!', 'errors');
 	}	
 	
 	return $output;

@@ -1,0 +1,1733 @@
+{maketoc}
+!Introduction
+BobShop is a shopping cart system for TikiWiki.
+
+On Github you find some more information.
+https://github.com/romoxi/bobshop
+
+
+! Features
+- no need to login to use the shopping-cart 
+- individual product fields
+- porducts can be enabled/disabled
+- multiple payment methodes (PayPal integrated)
+- 3 different tax rates
+- 3 different shipping costs
+- "addToCart"-button can placed on any wikipage
+- built-in registration and login system
+- works without the TikiWiki Functions/Plugins Payment, shopper_info, Shopping Cart etc.
+- templates can be modified
+- bootstrap is used for the templates
+- different operation modes (default, sandbox, offer, presentation, info)
+- saving and reloading carts
+
+
+!How to install?
+You need the Plugin BobShop. 
+Feel free to download it from Github.
+https://github.com/romoxi/bobshop
+
+You have to download an copy the files in:
+/lib/wiki-plugins
+/templates/wiki-plugins
+bobshop_register.php
+
+Apply this profile
+
+Modify Item Link for default payment:
+#Trackers > List Trackers
+#click on "bobshop_config"
+#click on "Fields"
+#click on "paymentDefault"
+#go to "Options for Item Link"
+#set "Tracker ID" to "bobshop_payment" and "Field ID" to "name" and Multiple Fields mark "name"
+#Save the changes
+
+
+
+If you want to use PayPal, you have to set up a REST API app in your PayPal-Account. Edit the file /lib/wiki-plugins/bobshop_paypal.inc.php. 
+
+!User
+If you want the registed users to see there own tracker infos (Name, Address ...) you have to change the following:
+Tracker > User > Properties > Permissions
+   > User can see his own items
+   > Item creator can modify his items
+
+
+!Dependencys
+(to make after appling this profile)
+Settings > Control Panels > User Settings > Groups > Registered    
+      > User Registration Tracker > User
+Save now!
+Settings > Control Panels > User Settings > Groups > Registered    
+      > Selekct user field > (User)
+      > Group or User Tracker Registration Fields > (the field ID numbers for the User tracker fields)
+          (typical by a fresh installation is something like that: 81:82:83:84:85:86:87:88)
+
+ > Log In 
+       > User tracker IDs to sync prefs from > User
+       > Tracker ID of tracker required to be filled in > (the User Tracker ID)
+
+(the following should be made by the this profile)
+Settings > Control Panels
+   > General > Navigation > Alternate registration page > bobshop_register.php
+   > Editing and Plugins 
+      > Plugins > BobShop
+      > Plugins > Dialog
+
+   > Trackers > Auto-Increment
+
+   > Log In 
+      > Authentication method > Tiki
+      > User can register
+      > Validate new user registrations by email > DISABLED
+      > Validate user's email server > Yes
+      > Use a tracker to collect more user information
+      > Require users to fill in tracker information
+      > Use email as username
+      > User emails must be unique
+   
+
+!Version
+This profile is for the plugin version v1_6_2.
+
+
+!Manual
+For configuration and administration use the trackers.
+
+Tracker "bobshop_config":
+Create a new item > this will setup the shop. At the moment you can only have one (1) item in this tracker. Do NOT create a second item.
+
+Be sure to call the plugin bobshop only once per page!
+
+
+!Permissions
+The permissions in this profile are for the shopping system only. If your site does need something different feel free to change it.
+
+
+!DEMO
+A simple DEMO-Site is available under:
+http://bobshopdemo.bob360.de/tiki212/tiki-index.php
+
+
+!YAML for Permissions
+{CODE(caption=>YAML,wrap=>0)}
+permissions:
+  Anonymous:
+   allow:
+    - view 
+    - create_tracker_items
+  Registered:
+   allow: 
+    - view
+    - download_files
+    - search
+    - create_tracker_items
+    - modify_tracker_items
+{CODE}
+
+
+!YAML for Settings
+{CODE(caption=>YAML,wrap=>0)}
+preferences:
+ allowRegister: 'y'
+ feature_alternate_registration_page: 'bobshop_register.php'
+ feature_trackers: 'y'
+ feature_userPreferences: 'y'
+ fgal_elfinder_feature: 'y'
+ login_is_email: 'y'
+ pass_chr_num: 'y'
+ tracker_force_fill: 'y'
+ trackerfield_autoincrement: 'y'
+ trackerfield_currency: 'y'
+ userTracker: 'y'
+ user_unique_email: 'y'
+ validateEmail: 'y'
+ validateUsers: 'n'
+ wikiplugin_bobshop: 'y'
+ wikiplugin_button: 'y'
+ wikiplugininline_remarksbox: 'y'
+ wikiplugin_dialog: 'y'
+{CODE}
+
+!YAML for trackers
+
+!!config
+{CODE(caption=>YAML,wrap=>0)}
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: bobshop_config
+    data:
+      name: bobshop_config
+      description: 'Basic configuration stuff for the shop features'
+      admin_only_view: 'y'
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigShopName
+    data:
+      name: shopName
+      permname: bobshopConfigShopName
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '0'
+      description: 'Name of the shop; used in eMail "From: "'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigOpMode
+    data:
+      name: opMode
+      permname: bobshopConfigOpMode
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '10'
+      description: 'Operation Mode: default, sandbox, offer, presentation, info'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigActive
+    data:
+      name: aktiv
+      permname: bobshopConfigActive
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '20'
+      description: "y = shop is open\r\nn = shop is closed"
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigAddToCartButtonText
+    data:
+      name: addToCartButtonText
+      permname: bobshopConfigAddToCartButtonText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '30'
+      description: 'text to display on the add to cart button'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigAddToWatchlistButtonText
+    data:
+      name: addToWatchlistButtonText
+      permname: bobshopConfigAddToWatchlistButtonText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '40'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigCashierbutton
+    data:
+      name: cashierButtonText
+      permname: bobshopConfigCashierbutton
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '50'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigCheckoutButtonText
+    data:
+      name: checkoutButtonText
+      permname: bobshopConfigCheckoutButtonText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '60'
+      description: 'Text for the Checkout Button'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigBuyNowButtonText
+    data:
+      name: buyNowButtonText
+      permname: bobshopConfigBuyNowButtonText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '70'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigShippingCostCat1
+    data:
+      name: shippingCostCat1
+      permname: bobshopConfigShippingCostCat1
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '80'
+      description: 'Shipping costs for category 1'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigShippingCostCat2
+    data:
+      name: shippingCostCat2
+      permname: bobshopConfigShippingCostCat2
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '90'
+      description: 'Shipping costs for category 2'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigShippingCostCat3
+    data:
+      name: shippingCostCat3
+      permname: bobshopConfigShippingCostCat3
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '100'
+      description: 'Shipping costs for category 3'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigTaxrate1
+    data:
+      name: taxrate1
+      permname: bobshopConfigTaxrate1
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '110'
+      description: 'Tax rate for product taxrateCat = 1; usually 0  no tax'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigTaxrate2
+    data:
+      name: taxrate2
+      permname: bobshopConfigTaxrate2
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '120'
+      description: 'Tax for product taxrate2; reduced tax'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigTaxrate3
+    data:
+      name: taxrate3
+      permname: bobshopConfigTaxrate3
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '130'
+      description: 'Tax rate for product taxrateCat = 3; Normal tax'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigShippingCostTaxrateCat
+    data:
+      name: shippingCostTaxrateCat
+      permname: bobshopConfigShippingCostTaxrateCat
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '140'
+      description: 'TaxratCat for shipping Costs'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigPaymentDefault
+    data:
+      name: paymentDefault
+      permname: bobshopConfigPaymentDefault
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        trackerId: '$unknownobject:5fa26066a7a52$'
+        fieldId: '$unknownobject:5fa26066a7a65$'
+        displayFieldsList:
+          - '$unknownobject:5fa26066a7a65$'
+        displayFieldsListType: dropdown
+        status: opc
+        preSelectFieldMethod: exact
+        displayOneItem: multi
+        indexRemote:
+          - 0
+      type: item_link
+      order: '150'
+      description: 'this payment method is selected by default in the cashierpage'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigCurrency
+    data:
+      name: currency
+      permname: bobshopConfigCurrency
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '160'
+      description: 'Currency for this shop; Euro, Dollar, Schilling, Taler'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigCurrencySymbol
+    data:
+      name: currencySymbol
+      permname: bobshopConfigCurrencySymbol
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '190'
+      description: '€, $'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigCurrencyShortcut
+    data:
+      name: currencyShortcut
+      permname: bobshopConfigCurrencyShortcut
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '200'
+      description: 'EUR (is used for the payment systems)'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigEmailSender
+    data:
+      name: emailSender
+      permname: bobshopConfigEmailSender
+      tracker: '$profileobject:bobshop_config$'
+      options: {  }
+      type: email
+      order: '210'
+      description: 'this is the sender mail in the "order-received" mail to the buyer'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigCompanySignature
+    data:
+      name: companySignature
+      permname: bobshopConfigCompanySignature
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        distinct: 'n'
+        wysiwyg: 'n'
+        samerow: 1
+      type: text_area
+      order: '220'
+      description: 'Full name an Address of your company. Is used for mail etc.'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigEmailNotifications
+    data:
+      name: emailNotifications
+      permname: bobshopConfigEmailNotifications
+      tracker: '$profileobject:bobshop_config$'
+      options: {  }
+      type: email
+      order: '230'
+      description: 'mail for notifications about orders, errors etc.; some admins email is a good choice'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigTermsOfServicePage
+    data:
+      name: TermsOfServicePage
+      permname: bobshopConfigTermsOfServicePage
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '240'
+      description: 'Wikipage name; shoppers will be forced to agree to this before purchasing'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigRevocationNotice
+    data:
+      name: RevocationNotice
+      permname: bobshopConfigRevocationNotice
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '250'
+      description: 'Wikipage for RevocationNotice; shoppers will be forced to agree to this before purchasing'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigProductPicMissingPic
+    data:
+      name: productPicMissingPic
+      permname: bobshopConfigProductPicMissingPic
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        replace: 'n'
+        uploadInModal: 'y'
+        addDecriptionOnUpload: 'n'
+        requireTitle: 'n'
+      type: files
+      order: '260'
+      description: 'picture to display, if there is no product picture available'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigMemoryOrders
+    data:
+      name: memoryOrders
+      permname: bobshopConfigMemoryOrders
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '270'
+      description: 'y = orders/carts can be saved and reloaded by the shopper using a memoryCode'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_option
+    ref: bobshop_config_sort_default_field
+    data:
+      tracker: '$profileobject:bobshop_config$'
+      name: sort_default_field
+      value: modification
+{CODE}
+
+!!products
+{CODE(caption=>YAML,wrap=>0)}
+
+{CODE}
+
+!!payment
+{CODE(caption=>YAML,wrap=>0)}
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: bobshop_products
+    data:
+      name: bobshop_products
+      description: 'products to be sold'
+      admin_only_view: 'y'
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductProductId
+    data:
+      name: productId
+      permname: bobshopProductProductId
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '0'
+      description: 'Unique Id; make sure there are no duplicate IDs.'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductName
+    data:
+      name: Name
+      permname: bobshopProductName
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '10'
+      description: 'The basic name of the product'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductDescription
+    data:
+      name: Beschreibung
+      permname: bobshopProductDescription
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        distinct: 'n'
+        wysiwyg: 'n'
+        samerow: 1
+      type: text_area
+      order: '20'
+      description: 'Description of the product. See also "wikipageName" and "wikipage" - there can be a whole wikipage linked to the product.'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductPrice
+    data:
+      name: price
+      permname: bobshopProductPrice
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        decimals: 2
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '30'
+      description: 'the price without VAT'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductTaxrateCat
+    data:
+      name: taxrateCat
+      permname: bobshopProductTaxrateCat
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '40'
+      description: 'tax rate from the config tracker; 1 = 0; 2 = reduced; 3 = default'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductShippingCat
+    data:
+      name: shippingCat
+      permname: bobshopProductShippingCat
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '50'
+      description: 'category from the config tracker for calculate the shipping costs'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductCategory
+    data:
+      name: category
+      permname: bobshopProductCategory
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '60'
+      description: 'Product category; actually not used by bobshop'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductPic1
+    data:
+      name: pic1
+      permname: bobshopProductPic1
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        replace: 'n'
+        uploadInModal: 'y'
+        addDecriptionOnUpload: 'n'
+        requireTitle: 'n'
+      type: files
+      order: '70'
+      description: 'picture of the product'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductWikipageName
+    data:
+      name: wikipageName
+      permname: bobshopProductWikipageName
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '80'
+      description: 'The name of the wikipage that is displayed under the product details page; A wikipage will be created by the tracker; No page is created if nothing is entered.'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductWikipage
+    data:
+      name: wikipage
+      permname: bobshopProductWikipage
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        fieldIdForPagename: '$profileobject:bobshop_products_bobshopProductWikipageName$'
+        namespace: none
+        syncwikipagename: 'n'
+        syncwikipagedelete: 'n'
+        toolbars: 1
+        wysiwyg: 'n'
+        actions: 'n'
+        samerow: 1
+        removeBadChars: 'n'
+      type: wiki
+      order: '90'
+      description: 'Wikipage of the product; Field wikipageName have to be set in order to save the inputs in this field. The wikipage "wikipageName" will be created.'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductDeliveryTime
+    data:
+      name: deliveryTime
+      permname: bobshopProductDeliveryTime
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '100'
+      description: 'How much time does it need to deliver the product'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductEan
+    data:
+      name: ean
+      permname: bobshopProductEan
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '110'
+      description: EAN
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductMaker
+    data:
+      name: maker
+      permname: bobshopProductMaker
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '120'
+      description: 'maker of the product'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductActive
+    data:
+      name: aktiv
+      permname: bobshopProductActive
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '130'
+      description: '1 = enabled to be displayed in the product list; 0 = no display but still available in the cart'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_option
+    ref: bobshop_products_sort_default_field
+    data:
+      tracker: '$profileobject:bobshop_products$'
+      name: sort_default_field
+      value: modification
+{CODE}
+
+!!orders
+{CODE(caption=>YAML,wrap=>0)}
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: bobshop_orders
+    data:
+      name: bobshop_orders
+      description: 'Orders per session'
+      admin_only_view: 'y'
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderOrderNumber
+    data:
+      name: orderNumber
+      permname: bobshopOrderOrderNumber
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        start: 1
+      type: auto_increment
+      order: '10'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSessionId
+    data:
+      name: sessionId
+      permname: bobshopOrderSessionId
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '20'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderUser
+    data:
+      name: Benutzer
+      permname: bobshopOrderUser
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '30'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPayment
+    data:
+      name: payment
+      permname: bobshopOrderPayment
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '40'
+      description: 'payment methode'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumProducts
+    data:
+      name: sumProducts
+      permname: bobshopOrderSumProducts
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '50'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumTaxrate1
+    data:
+      name: sumTaxrate1
+      permname: bobshopOrderSumTaxrate1
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        decimals: 2
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '60'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumTaxrate2
+    data:
+      name: sumTaxrate2
+      permname: bobshopOrderSumTaxrate2
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '70'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumTaxrate3
+    data:
+      name: sumTaxrate3
+      permname: bobshopOrderSumTaxrate3
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        decimals: 2
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '80'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumTaxrates
+    data:
+      name: sumTaxrates
+      permname: bobshopOrderSumTaxrates
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '90'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumShipping
+    data:
+      name: sumShipping
+      permname: bobshopOrderSumShipping
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        decimals: 2
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '100'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumPayment
+    data:
+      name: sumPayment
+      permname: bobshopOrderSumPayment
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        decimals: 2
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '110'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumEnd
+    data:
+      name: sumEnd
+      permname: bobshopOrderSumEnd
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        decimals: 2
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '120'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderStatus
+    data:
+      name: status
+      permname: bobshopOrderStatus
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '130'
+      description: '0 = not set; 1 = cart in use; 2 = order submitted; 3 = order confirmed; 4 = order payed; 5 = payed and shipped; 6 = not payed and shipped; 7 = deleted; 10 = invited offer submitted; 11 = offer under progress; 12 = offer sent; 13 - order joined to another; 14 - a saved order'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderAgreedTosDate
+    data:
+      name: agreedTosDate
+      permname: bobshopOrderAgreedTosDate
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        datetime: dt
+        blankdate: blank
+      type: datetime
+      order: '140'
+      description: 'has aggred Terms of Service at this date'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderAgreedRevocationDate
+    data:
+      name: agreedRevocationDate
+      permname: bobshopOrderAgreedRevocationDate
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        datetime: dt
+        blankdate: blank
+      type: datetime
+      order: '150'
+      description: 'agreed to Revocation Notice at this Date'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderSumPaymentName
+    data:
+      name: sumPaymentName
+      permname: bobshopOrderSumPaymentName
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '160'
+      description: 'The name of the payment service'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentOrderId
+    data:
+      name: paymentOrderId
+      permname: bobshopOrderPaymentOrderId
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '170'
+      description: 'the ID from the payment system (PayPal) when creating an order'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentStatus
+    data:
+      name: paymentStatus
+      permname: bobshopOrderPaymentStatus
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '180'
+      description: "Status from the payment system (PayPal)\r\nCREATED, APPROVED, ELIGIBLE, COMPLETED"
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentApproveLink
+    data:
+      name: paymentApproveLink
+      permname: bobshopOrderPaymentApproveLink
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '190'
+      description: "approve link for the payer to approve the order (Paypal)\r\nthe link will goto the paypal login"
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentPayeeMerchantId
+    data:
+      name: paymentPayeeMerchantId
+      permname: bobshopOrderPaymentPayeeMerchantId
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '200'
+      description: 'received merchant_id from the payment system (PayPal)'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentPayerId
+    data:
+      name: paymentPayerId
+      permname: bobshopOrderPaymentPayerId
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '210'
+      description: 'the payer from the payment system (the payer can differ to our user)'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderIp
+    data:
+      name: ip
+      permname: bobshopOrderIp
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '220'
+      description: 'ip adress for the shopper'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderCreated
+    data:
+      name: erstellt
+      permname: bobshopOrderCreated
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        datetime: dt
+        blankdate: blank
+      type: datetime
+      order: '230'
+      description: 'date and time, the order was created'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderModified
+    data:
+      name: modified
+      permname: bobshopOrderModified
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        datetime: dt
+        blankdate: blank
+      type: datetime
+      order: '240'
+      description: 'date and time the order was last modyfied'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderBrowser
+    data:
+      name: browser
+      permname: bobshopOrderBrowser
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '250'
+      description: 'browser info from the shopper'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderNoteUser
+    data:
+      name: noteUser
+      permname: bobshopOrderNoteUser
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        distinct: 'n'
+        wysiwyg: 'n'
+        samerow: 1
+      type: text_area
+      order: '260'
+      description: 'The user can submit some notes'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderNoteInternal
+    data:
+      name: noteInternal
+      permname: bobshopOrderNoteInternal
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        distinct: 'n'
+        wysiwyg: 'n'
+        samerow: 1
+      type: text_area
+      order: '270'
+      description: 'Note for internal usage'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderMemoryCode
+    data:
+      name: memoryCode
+      permname: bobshopOrderMemoryCode
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+      type: text_field
+      order: '280'
+      description: 'The user can save the order. BobShop creates this memoryCode to have access'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_option
+    ref: bobshop_orders_sort_default_field
+    data:
+      tracker: '$profileobject:bobshop_orders$'
+      name: sort_default_field
+      value: '$profileobject:bobshop_orders_bobshopOrderOrderNumber$'
+{CODE}
+
+!!order_items
+{CODE(caption=>YAML,wrap=>0)}
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: bobshop_order_items
+    data:
+      name: bobshop_order_items
+      description: 'ordered items per order'
+      admin_only_view: 'y'
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: bobshop_order_items_bobshopOrderItemProductId
+    data:
+      name: productId
+      permname: bobshopOrderItemProductId
+      tracker: '$profileobject:bobshop_order_items$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '10'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: bobshop_order_items_bobshopOrderItemOrderNumber
+    data:
+      name: orderNumber
+      permname: bobshopOrderItemOrderNumber
+      tracker: '$profileobject:bobshop_order_items$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '20'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_order_items_bobshopOrderItemQuantity
+    data:
+      name: quantity
+      permname: bobshopOrderItemQuantity
+      tracker: '$profileobject:bobshop_order_items$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '30'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_option
+    ref: bobshop_order_items_sort_default_field
+    data:
+      tracker: '$profileobject:bobshop_order_items$'
+      name: sort_default_field
+      value: modification
+{CODE}
+
+!!user
+{CODE(caption=>YAML,wrap=>0)}
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: user
+    data:
+      name: User
+      description: ''
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+      allow:
+        - user_see_own
+        - creator_modification
+  -
+    type: tracker_field
+    ref: user_userUser
+    data:
+      name: Benutzer
+      permname: userUser
+      tracker: '$profileobject:user$'
+      options:
+        autoassign: 1
+        owner: 1
+        notify_template_format: text
+        groupIds:
+          - 0
+        canChangeGroupIds:
+          - 0
+      type: user
+      order: '0'
+      visby: {  }
+      editby:
+        - admin
+      flags:
+        - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: user_userTitle
+    data:
+      name: Anrede
+      permname: userTitle
+      tracker: '$profileobject:user$'
+      options:
+        options:
+          - Frau
+          - Herr
+          - Firma
+      type: radio
+      order: '10'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userFirstName
+    data:
+      name: Vorname
+      permname: userFirstName
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '20'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userName
+    data:
+      name: Nachname
+      permname: userName
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '30'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userStreet
+    data:
+      name: Straße
+      permname: userStreet
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '40'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userZip
+    data:
+      name: PLZ
+      permname: userZip
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '50'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userCity
+    data:
+      name: Ort
+      permname: userCity
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '60'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userCountry
+    data:
+      name: Land
+      permname: userCountry
+      tracker: '$profileobject:user$'
+      options:
+        options:
+          - Deutschland
+          - Österreich
+      type: dropdown
+      order: '70'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: user_userPhone
+    data:
+      name: Telefon
+      permname: userPhone
+      tracker: '$profileobject:user$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '80'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_option
+    ref: user_sort_default_field
+    data:
+      tracker: '$profileobject:user$'
+      name: sort_default_field
+      value: modification
+{CODE}
+
+
+!YAML for Wiki pages
+
+{CODE(caption=>YAML,wrap=>0)}
+
+{CODE}

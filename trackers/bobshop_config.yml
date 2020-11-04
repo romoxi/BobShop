@@ -7,6 +7,7 @@ objects:
     data:
       name: bobshop_config
       description: 'Basic configuration stuff for the shop features'
+      admin_only_view: 'y'
       restrict_end: '0'
       form_classes: ''
       restrict_start: '0'
@@ -283,10 +284,10 @@ objects:
       permname: bobshopConfigPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:5f9fe3bc66ba1$'
-        fieldId: '$unknownobject:5f9fe3bc66bc2$'
+        trackerId: '$unknownobject:5fa26066a7a52$'
+        fieldId: '$unknownobject:5fa26066a7a65$'
         displayFieldsList:
-          - '$unknownobject:5f9fe3bc66bc2$'
+          - '$unknownobject:5fa26066a7a65$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact

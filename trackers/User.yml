@@ -10,6 +10,9 @@ objects:
       restrict_end: '0'
       form_classes: ''
       restrict_start: '0'
+      allow:
+        - user_see_own
+        - creator_modification
   -
     type: tracker_field
     ref: user_userUser

@@ -1,16 +1,12 @@
 permissions:
   Anonymous:
    allow:
-    -view 
-   deny:
+    - view 
     - create_tracker_items
-    - view_trackers
   Registered:
    allow: 
     - view
     - download_files
     - search
-   deny: 
     - create_tracker_items
-    - view_trackers
     - modify_tracker_items

@@ -35,6 +35,9 @@ http://profiles.tiki.org/BobShop
 - upload the icons for payment to your file-gallery
 - for PayPal > edit "/lib/wiki-plugins/wikiplugin_bobshop_paypal_inc.php" and place your REST API app credentials
 
+## BobShop DEMO
+https://bobshopdemo.bob360.de
+
 
 More details are soon available
 

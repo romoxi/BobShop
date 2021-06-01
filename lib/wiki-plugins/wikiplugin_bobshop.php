@@ -451,8 +451,42 @@ function wikiplugin_bobshop($data, $params)
  
     switch($params['type'])
 	{
+		//shows the product list
+		//wiki syntax {bobshop type="show_shop"}
 		case 'show_shop':
 			$products = get_tracker_shop_products_by_trackerID($shopConfig['productsTrackerId']);
+			//print_r($products);
+			//
+			// sort the array
+			//get the GET-parameter
+			$sortOrderSubmitted = $jitRequest->sort_order->text();
+			
+			switch($sortOrderSubmitted)
+			{
+				case 'sort_sort_order':
+					$sortOrder = array_column($products, 'bobshopProductSortOrder');
+					$sorting = SORT_ASC;
+					break;
+			
+				case 'sort_price_up':
+					$sortOrder = array_column($products, 'bobshopProductPrice');
+					$sorting = SORT_ASC;
+					break;
+				
+				case 'sort_price_down':
+					$sortOrder = array_column($products, 'bobshopProductPrice');
+					$sorting = SORT_DESC;
+					break;
+				
+				case 'sort_name':
+					$sortOrder = array_column($products, 'bobshopProductName');
+					$sorting = SORT_ASC;
+					break;
+			
+			}
+			
+			array_multisort($sortOrder, $sorting, $products);
+			$smarty->assign('lastSort', $sortOrderSubmitted);
 			$smarty->assign('showPrices', $showPrices);
 			$smarty->assign('buying', $buying);
 			$smarty->assign('cart', $cart);			
@@ -724,7 +758,10 @@ function get_tracker_shop_config()
 	}
 	
 	//fields in product tracker
+	//intern var => permanent tracker field
 	$shopConfig['productFields'] = array(
+		'productDetailPageFieldId'		=> 'bobshopProductDetailPage', 
+		'productSortOrderFieldId'		=> 'bobshopProductSortOrder', 
 		'productActiveFieldId'			=> 'bobshopProductActive', 
 		'productMakerFieldId'			=> 'bobshopProductMaker', 
 		'productEanFieldId'				=> 'bobshopProductEan', 

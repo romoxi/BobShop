@@ -19,8 +19,8 @@
  */
 
 //login data from PayPayl REST API app
-$clientId = '';
-$secret   = '';
+$clientId = 'uzD';
+$secret   = '7Yu8';
 
 if($shopConfig['bobshopConfigOpMode'] == 'sandbox')
 {

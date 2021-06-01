@@ -2,6 +2,34 @@
 {$divborder = 'border: solid 1px black;'}
 {$divborder = ''}
 
+{* function for sorting elements dropdown stuff*}
+{function name=sorting_option value="" text="" lastSort="sort_sort_order"}
+	{if $lastSort == $value}
+		{$selected="selected"}
+	{else}
+		{$selected=""}
+	{/if}
+	<option {$selected} value="{$value}">{$text}</option>
+{/function}
+
+
+{* sorting buttons *}
+<div class="col-sm-12" style="text-align: right">
+	<form  action={$page}>
+		<label for="sorting">{$shopConfig['bobshopConfigSortingLabelText']}</label>
+		<select name="sort_order" id="sort_order" onchange="this.form.submit()">
+			{sorting_option lastSort={$lastSort} value="sort_sort_order" text={$shopConfig['bobshopConfigSortingDefaultText']}}
+			{sorting_option lastSort={$lastSort} value="sort_price_up" text={$shopConfig['bobshopConfigSortingPriceUpText']}}
+			{sorting_option lastSort={$lastSort} value="sort_price_down" text={$shopConfig['bobshopConfigSortingPriceDownText']}}
+			{sorting_option lastSort={$lastSort} value="sort_name" text={$shopConfig['bobshopConfigSortingNameText']}}
+			
+		</select>
+		{*<input type="submit" value="Sub">*}
+	</form>
+
+</div>
+
+
 {foreach from=$products item=row}
 	
 	{if $row.bobshopProductActive == 1}
@@ -86,6 +114,7 @@
 	{/if}
 {/foreach}
 
+{* popup by click on shipping costs *}
 {wikiplugin _name="DIALOG"
 	autoOpen="n"
 	id="wpdialog_bobshop_shipping"
@@ -94,3 +123,4 @@
 	modal="y"
 	wiki="bobshop_shipping"
 }{/wikiplugin}
+

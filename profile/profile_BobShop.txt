@@ -96,7 +96,7 @@ Settings > Control Panels
    
 
 !Version
-This profile is for the plugin version v1_7_0.
+This profile is for the plugin version v1_7_1.
 
 
 !Manual
@@ -2143,42 +2143,42 @@ objects:
     type: wiki_page
     data:
       name: bobshop_cart
-      mode: create
+      mode: create_or_update 
       content: Inhalt Warenkorb {bobshop type="show_cart"}
  -
     type: wiki_page
     data:
       name: bobshop_cashierpage
-      mode: create
+      mode: create_or_update 
       content: Kasse {bobshop type="show_cashier"}
  -
     type: wiki_page
     data:
       name: bobshop_checkout
-      mode: create
+      mode: create_or_update 
       content: Checkout/Summary{bobshop type="checkout"}
  -
     type: wiki_page
     data:
       name: bobshop_order_submitted
-      mode: create
+      mode: create_or_update 
       content: Merci! {bobshop type="order_submitted"}
  -
     type: wiki_page
     data:
       name: bobshop_paypalAfterTransaction
-      mode: create
+      mode: create_or_update 
       content: payed {bobshop type="paypal_after_transaction"}
  -
     type: wiki_page
     data:
       name: Shop
-      mode: create
+      mode: create_or_update 
       content: Products {bobshop type="show_shop"}
  -
     type: wiki_page
     data:
       name: bobshop_shipping
-      mode: create
+      mode: create_or_update 
       content: Shipping Costs
 {CODE}

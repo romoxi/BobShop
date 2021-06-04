@@ -46,7 +46,6 @@ Modify Item Link for default payment:
 #Save the changes
 
 
-
 If you want to use PayPal, you have to set up a REST API app in your PayPal-Account. Edit the file /lib/wiki-plugins/bobshop_paypal.inc.php. 
 
 

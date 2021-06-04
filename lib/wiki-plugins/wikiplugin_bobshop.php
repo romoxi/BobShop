@@ -1,7 +1,7 @@
 <?php
 /**
  * BobShop
- * Version: 1_6
+ * Version: 1_7
  * This Plugin is for CMS TikiWiki
  * 
  * BobShop is a shopping cart system for TikiWiki. 
@@ -200,7 +200,7 @@ function wikiplugin_bobshop($data, $params)
 	
 		switch($action)
 		{
-			case 'default':
+			default:
 				break;
 			
 			case 'shop_article_detail':
@@ -482,7 +482,11 @@ function wikiplugin_bobshop($data, $params)
 					$sortOrder = array_column($products, 'bobshopProductName');
 					$sorting = SORT_ASC;
 					break;
-			
+				
+				default:
+					$sortOrder = array_column($products, 'bobshopProductSortOrder');
+					$sorting = SORT_ASC;
+					break;
 			}
 			
 			array_multisort($sortOrder, $sorting, $products);

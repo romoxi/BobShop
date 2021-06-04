@@ -22,7 +22,6 @@
 			{sorting_option lastSort={$lastSort} value="sort_price_up" text={$shopConfig['bobshopConfigSortingPriceUpText']}}
 			{sorting_option lastSort={$lastSort} value="sort_price_down" text={$shopConfig['bobshopConfigSortingPriceDownText']}}
 			{sorting_option lastSort={$lastSort} value="sort_name" text={$shopConfig['bobshopConfigSortingNameText']}}
-			
 		</select>
 		{*<input type="submit" value="Sub">*}
 	</form>
@@ -30,6 +29,7 @@
 </div>
 
 
+{* display a list of products*}
 {foreach from=$products item=row}
 	
 	{if $row.bobshopProductActive == 1}

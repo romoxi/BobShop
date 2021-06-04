@@ -7,10 +7,7 @@ objects:
     data:
       name: bobshop_products
       description: 'products to be sold'
-      admin_only_view: 'y'
-      restrict_end: '0'
       form_classes: ''
-      restrict_start: '0'
   -
     type: tracker_field
     ref: bobshop_products_bobshopProductProductId
@@ -276,6 +273,44 @@ objects:
       flags:
         - link
         - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductSortOrder
+    data:
+      name: sortOrder
+      permname: bobshopProductSortOrder
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '140'
+      description: 'to use as a manual order'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductDetailPage
+    data:
+      name: productDetailPage
+      permname: bobshopProductDetailPage
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        options:
+          - 1=Detailpage_and_Wikipage
+          - 2=Detailpage
+          - 3=Wikipage
+      type: dropdown
+      order: '150'
+      description: 'content of the detailpage'
+      visby: {  }
+      editby: {  }
+      flags:
         - public
   -
     type: tracker_option

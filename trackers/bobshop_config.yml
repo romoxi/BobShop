@@ -7,10 +7,7 @@ objects:
     data:
       name: bobshop_config
       description: 'Basic configuration stuff for the shop features'
-      admin_only_view: 'y'
-      restrict_end: '0'
       form_classes: ''
-      restrict_start: '0'
   -
     type: tracker_field
     ref: bobshop_config_bobshopConfigShopName
@@ -284,10 +281,10 @@ objects:
       permname: bobshopConfigPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:5fa26066a7a52$'
-        fieldId: '$unknownobject:5fa26066a7a65$'
+        trackerId: '$unknownobject:60ba0c42a2bd6$'
+        fieldId: '$unknownobject:60ba0c42a2bde$'
         displayFieldsList:
-          - '$unknownobject:5fa26066a7a65$'
+          - '$unknownobject:60ba0c42a2bde$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact
@@ -468,6 +465,92 @@ objects:
       type: text_field
       order: '270'
       description: 'y = orders/carts can be saved and reloaded by the shopper using a memoryCode'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigSortingLabelText
+    data:
+      name: sortingLabelText
+      permname: bobshopConfigSortingLabelText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '280'
+      description: 'Text to print at the product sorting box'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigSortingDefaultText
+    data:
+      name: sortingDefaultText
+      permname: bobshopConfigSortingDefaultText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '290'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigSortingPriceUpText
+    data:
+      name: sortingPriceUpText
+      permname: bobshopConfigSortingPriceUpText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '300'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigSortingPriceDownText
+    data:
+      name: sortingPriceDownText
+      permname: bobshopConfigSortingPriceDownText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '310'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigSortingNameText
+    data:
+      name: sortingNameText
+      permname: bobshopConfigSortingNameText
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '320'
       visby: {  }
       editby: {  }
       flags:

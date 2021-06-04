@@ -3,7 +3,7 @@ Shopping cart plugin for TikiWiki
 
 BobShop can also be used as an easy product presentation system. See operation-modes in Wiki.
 
-release v1_6_4 available
+release v1_7_1 available
 
 ## Features
 - easy to install and configure
@@ -21,6 +21,7 @@ release v1_6_4 available
 - different operation modes (default, sandbox, offer, presentation, info)
 - saving and reloading the cart by memoryCode (a cart can be transferd to another user/account/browser)
 - by memoryCode you can also create a kind of "share this cart" link
+- sorting in products list by name, relevance, price up/down
 
 ## What bobshop can not do at this time:
 - inventory management

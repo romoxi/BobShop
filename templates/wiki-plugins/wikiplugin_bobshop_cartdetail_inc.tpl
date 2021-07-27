@@ -219,7 +219,9 @@
 
 
 {* sum End *}
-{$sumEnd = $sumPayment + $sumTaxrates + $sumProducts + {$shopConfig['bobshopConfigShippingCostCat1']}}
+{* {$sumEnd = $sumPayment + $sumTaxrates + $sumProducts + {$shopConfig['bobshopConfigShippingCostCat1']}} *}
+{$sumEnd = $sumPayment + $sumTaxrates + $sumProducts + $sumShipping}
+
 <tr>
 	<td></td>
 	<td>

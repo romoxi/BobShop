@@ -36,6 +36,10 @@ http://profiles.tiki.org/BobShop
 - upload the icons for payment to your file-gallery
 - for PayPal > edit "/lib/wiki-plugins/wikiplugin_bobshop_paypal_inc.php" and place your REST API app credentials
 
+## Add the "Add to cart" Button
+Add the following in your wikisite.
+bobshop type="add_to_cart_button" productId="1004"}
+
 ## BobShop DEMO
 https://bobshopdemo.bob360.de
 

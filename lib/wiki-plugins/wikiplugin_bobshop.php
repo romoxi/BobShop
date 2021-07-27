@@ -1,17 +1,17 @@
 <?php
 /**
  * BobShop
- * Version: 1_7_1
+ * Version: 1_7_2
  * This Plugin is for CMS TikiWiki
  * 
  * BobShop is a shopping cart system for TikiWiki. 
  * 
- * Copyright (c) 2020 by Robert Hartmann
+ * Copyright (c) 2021 by Robert Hartmann
  * 
  * Install:
  * see https://github.com/romoxi/bobshop
  * 
- * THE SOFTWARE IS PROVIDED ‚ÄúAS IS‚Äù, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED ìAS ISî, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
@@ -45,6 +45,13 @@ function wikiplugin_bobshop_info()
                     'filter' => 'text',
                     'since' => '1.0',
                 ),
+                'showdetails' => array(
+                    'required' => false,
+                    'name' => tra('Show details'),
+                    'description' => tra('1 = after clicking the "Add to Cart button", the '),
+                    'filter' => 'number',
+                    'since' => '1.7.2',
+                ),
          ),
     );
 }
@@ -59,6 +66,8 @@ function wikiplugin_bobshop($data, $params)
 {	
     global $user;
 	global $smarty;
+	
+	setlocale(LC_NUMERIC, 'de_DE@euro', 'de_DE', 'de-DE', 'de', 'ge', 'de_DE.ISO_8859-1', 'German');
 	
 	$output = '';
 	$showPrices = false;
@@ -173,8 +182,6 @@ function wikiplugin_bobshop($data, $params)
 	}
 	
 	
-	
-
 	//print_r($shopConfig);
 	//print_r($_SERVER);
 		
@@ -182,8 +189,9 @@ function wikiplugin_bobshop($data, $params)
 	global $jitPost;
 	global $jitGet;
 	$action = $jitRequest->action->text();
-	//
-	if($params['type'] == 'add_to_cart_button')
+	
+	//only show the Add to Cart button
+	if($params['type'] == 'add_to_cart_button' && $action == 'shop_article_detail')
 	{
 		$action = '';
 	}
@@ -193,27 +201,20 @@ function wikiplugin_bobshop($data, $params)
 	 * and if yes, then store the action a tracker
 	 * 
 	 */
+	//print_r($jitRequest); echo '<hr>';
+	//print_r($_REQUEST); echo '<hr>';
+	
 	if (!empty($action)) 
 	{
-		global $jitPost;
-		global $jitGet;
+		//global $jitPost;
+		//global $jitGet;
+		
+		// show the product details-page > wikiplugin_bobshop_shop_product_detail.tpl
+		$showdetails = false;
 	
 		switch($action)
 		{
 			default:
-				break;
-			
-			case 'shop_article_detail':
-				//echo '<hr>';
-				$product = get_tracker_shop_product_by_productId($jitRequest->productId->text(), $shopConfig);
-				$smarty->assign('showPrices', $showPrices);
-				$smarty->assign('buying', $buying);
-				$smarty->assign('cart', $cart);
-				$smarty->assign('product', $product);
-				$smarty->assign('shopConfig', $shopConfig);
-				$smarty->assign('productId', $jitRequest->productId->text());
-				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_shop_product_detail.tpl');
-				$params['type'] = '';
 				break;
 			
 			case 'quantityAdd':
@@ -225,9 +226,9 @@ function wikiplugin_bobshop($data, $params)
 				break;
 			
 			case 'add_to_cart':
-
 				//insert a new order, if there isnt one
-				if(isset($_POST['productId']))
+				//if(isset($_POST['productId']))
+				if(!empty($jitRequest->productId->text()))
 				{
 					$fieldNames['bobshopOrderUser'] = 'no_login';
 					$fieldNames['bobshopOrderItemQuantity'] = 1;
@@ -245,7 +246,7 @@ function wikiplugin_bobshop($data, $params)
 						$fieldNames['bobshopOrderItemOrderNumber'] = $orderVars['orderNumber'];
 						//$shopConfig['currentOrderNumber'] = $orderVars['orderNumber'];
 						insert_tracker_shop_order_items($fieldNames, $shopConfig);
-						$output .= message('Artikel wurde zum Warenkorb hinzugef√ºgt.', '');
+						$output .= message('Artikel wurde zum Warenkorb hinzugef¸gt.', '');
 					}
 					else
 					{
@@ -256,18 +257,38 @@ function wikiplugin_bobshop($data, $params)
 				{
 					showError('productId not set');
 				}
-				break;
-			
-			case 'cashierbutton':
-				if($user)
+				//$params['type'] = '';
+				if($params['type'] != 'add_to_cart_button' && $jitRequest->showdetails->text() == 1)
 				{
-					$action = 'cashierpage';
-					//for mail testing
-					//send_order_received($sums, $userDataDetail, $shopConfig);
+					$showdetails = true;
 				}
-				else
+				$_REQUEST['action'] = 'add_to_cart_allread_done';
+				$_GET['action'] = 'add_to_cart_allread_done';
+				$jitRequest['action'] = 'add_to_cart_allread_done';
+				break;
+
+			case 'shop_article_detail':
+				$showdetails = true;
+				break;
+				
+			case 'cashierbutton':
+				//print_r($shopConfig);
+				if($shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
 				{
-					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_login.tpl');
+					if($user)
+					{
+						$action = 'cashierpage';
+						//for mail testing
+						//send_order_received($sums, $userDataDetail, $shopConfig);
+					}
+					else
+					{
+						$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_login.tpl');
+					}
+				}
+				elseif($shopConfig['bobshopConfigTikiUserRegistration'] == 'n')
+				{
+					echo 'hooooo';
 				}
 				break;
 				
@@ -389,8 +410,7 @@ function wikiplugin_bobshop($data, $params)
 				
 				break;
 				
-				
-			//teh invite offer button was clicked
+			//the invite offer button was clicked
 			case 'invite_offer':
 				$sumFields = array(
 					'sumProducts',
@@ -432,6 +452,7 @@ function wikiplugin_bobshop($data, $params)
 				}
 				break;
 			
+			//load the order
 			case 'load_order':
 				if($shopConfig['bobshopConfigMemoryOrders'] == 'y')
 				{
@@ -442,6 +463,22 @@ function wikiplugin_bobshop($data, $params)
 					}
 				}
 				break;
+		}
+		
+		//show the product details page
+		if($showdetails)
+		{
+			//echo '<hr>';
+			$product = get_tracker_shop_product_by_productId($jitRequest->productId->text(), $shopConfig);
+			$smarty->assign('showPrices', $showPrices);
+			$smarty->assign('buying', $buying);
+			$smarty->assign('cart', $cart);
+			$smarty->assign('product', $product);
+			$smarty->assign('shopConfig', $shopConfig);
+			$smarty->assign('productId', $jitRequest->productId->text());
+			$smarty->assign('showdetails', $showdetails);
+			$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_shop_product_detail.tpl');
+			$params['type'] = '';
 		}
 	}
 
@@ -497,10 +534,18 @@ function wikiplugin_bobshop($data, $params)
 			$smarty->assign('page', $jitRequest->page->text());
 			$smarty->assign('products', $products);
 			$smarty->assign('shopConfig', $shopConfig);
+			
+			// it the 'add to cart button' is set to showdetails, make sure $showdetails is set to 1
+			if(!$showdetails)
+			{
+				$showdetails = $params['showdetails'];
+			}
+			$smarty->assign('showdetails', $showdetails);
 			$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_shop.tpl');
 			break;
 
 		//print the add to cart button
+		//{bobshop type="add_to_cart_button" productId="1004"}
 		case 'add_to_cart_button':
 			if($cart)
 			{
@@ -510,6 +555,7 @@ function wikiplugin_bobshop($data, $params)
 				{
 					$smarty->assign('productId', $params['productId']);
 					$smarty->assign('shopConfig', $shopConfig);
+					$smarty->assign('showdetails', $showdetails);
 					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_button_add.tpl');
 				}
 				else
@@ -1086,7 +1132,7 @@ function get_tracker_shop_fieldId($fieldName, $trackerId)
  * 
  *
  * 1.1. if the order already exist, return order_number
- * 1.2. lade die bisher h√∂chste order_number
+ * 1.2. lade die bisher hˆchste order_number
  * 3. insert the the new stuff in tracker_items (itemId will be autoincremented)
  * 4. get the last insertId (itemId)
  * 2. get the fieldId by the fieldname (fields 'sid', 'user')
@@ -2070,7 +2116,7 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	$shopname = $shopConfig['bobshopConfigShopName'];
 	if($showPrices)
 	{
-		$subject = $shopname .' Bestellbest√§tigung';
+		$subject = $shopname .' Bestellbest‰tigung';
 	}
 	else
 	{
@@ -2140,7 +2186,7 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 
 	if ($mail_send)
 	{
-		$output = message('Info', 'Best√§tigungsmail wurde versendet.');
+		$output = message('Info', 'Best‰tigungsmail wurde versendet.');
 		
 		//send mail to company
 		$header = "MIME-Version: 1.0\r\n";

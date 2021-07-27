@@ -1,4 +1,5 @@
 {* $Id$ *}
+{* prints a single product with it's details *}
 {* container *}
 
 {if $product.bobshopProductActive == 1}
@@ -66,11 +67,23 @@
 
 	{* include the wikipage *}
 	{if $product.bobshopProductWikipageName != '' && ($product.bobshopProductDetailPage == 1 || $product.bobshopProductDetailPage == 3 )}
-		<br><hr>
+		{*
+		{wikiplugin _name="TRANSCLUDE" 
+			page="{$product.bobshopProductWikipageName}"
+			key1="test1"
+			key2="test2"
+		}
+		hallo
+		zwei
+		
+		{/wikiplugin}
+		*}
+		
 		{wikiplugin _name="INCLUDE" 
 			page="{$product.bobshopProductWikipageName}"
 			nopage_text="wikisite not found"
-			parse_included_page="n"
+			parse_included_page="y"
+			
 			max_inclusions="1"
 		}
 		{/wikiplugin}

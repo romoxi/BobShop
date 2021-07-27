@@ -1,4 +1,5 @@
 {* $Id$ *}
+{* prints a list of all products *}
 {$divborder = 'border: solid 1px black;'}
 {$divborder = ''}
 
@@ -52,13 +53,11 @@
 						{if $row.bobshopProductPic1 != ''}
 							{wikiplugin _name="IMG" 
 								fileId="{$row.bobshopProductPic1}"
-								width="250px"
 							}
 							{/wikiplugin}
 						{else}
 							{wikiplugin _name="IMG" 
 								fileId="{$shopConfig['bobshopConfigProductPicMissingPic']}"
-								width="250px"
 							}
 							{/wikiplugin}
 							

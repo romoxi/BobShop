@@ -1,21 +1,21 @@
 <table class="table table-hover">
 	{* for the mails don't colgroup *}
 	{if !isset($mailer) || (isset($mailer) && $mailer == 0)}
-
-	<colgroup>
-		<col width="5%">
-		<col width="45%">
-		<col width="5%">
-		<col width="5%">
-		<col width="5%">
-		
-		{if $showPrices}
-			<col width="15%">
-			<col width="15%">
+		<colgroup>
 			<col width="5%">
-		{/if}
-	</colgroup>
+			<col width="45%">
+			<col width="5%">
+			<col width="5%">
+			<col width="5%">
+
+			{if $showPrices}
+				<col width="15%">
+				<col width="15%">
+				<col width="5%">
+			{/if}
+		</colgroup>
 	{/if}
+	
 	<tr>
 		<th >Produkt#</th>
 		<th >Bezeichnung</th>
@@ -51,15 +51,17 @@
 				</td>
 
 				{assign var="rate" value="bobshopConfigTaxrate{$product.{$shopConfig['productTaxrateCatFieldId']}}"}
-				
+				{assign var="quantity" value="{$product.{$shopConfig['orderItemQuantityFieldId']}}"}
 				{if $showPrices}
+					
 					<td style="text-align: right">{$product.{$shopConfig['productPriceFieldId']}|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</td>
-					<td style="text-align: right">{{$product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']}}|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</td>
+					<td style="text-align: right">{math equation="q * p" q=$quantity p=$product.{$shopConfig['productPriceFieldId']} format="%.2f"}</td>
 					<td style="text-align: right">{$shopConfig[$rate]} %</td>
 				{/if}
 			</tr>
 
-			{$sumProducts = $sumProducts + ($product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']} )}
+			{*$sumProducts = $sumProducts + ($product.{$shopConfig['orderItemQuantityFieldId']} * $product.{$shopConfig['productPriceFieldId']} )*}
+			{$sumProducts = $sumProducts + ($quantity * $product.{$shopConfig['productPriceFieldId']} )}
 
 			{* calculate the sum of taxes *}
 			{if $product.{$shopConfig['productTaxrateCatFieldId']} eq 1}
@@ -216,12 +218,9 @@
 		<td></td>
 	</tr>
 {/if}
-
-
+	
 {* sum End *}
-{* {$sumEnd = $sumPayment + $sumTaxrates + $sumProducts + {$shopConfig['bobshopConfigShippingCostCat1']}} *}
 {$sumEnd = $sumPayment + $sumTaxrates + $sumProducts + $sumShipping}
-
 <tr>
 	<td></td>
 	<td>
@@ -241,5 +240,5 @@
 </table>
 
 {if $showPrices}
-<i>Alle Preisangaben in {$shopConfig['bobshopConfigCurrency']}.</i>
+	<i>Alle Preisangaben in {$shopConfig['bobshopConfigCurrency']}.</i>
 {/if}

@@ -12,19 +12,19 @@
 
 {* calculate the payment costs *}
 {foreach from=$payment key=key item=row}
-
-{if $key eq $order.bobshopOrderPayment}
-	{$checked = ' checked="checked" '}
-	{$sumPayment = $row.{$shopConfig['paymentPriceFieldId']}}
-{else}
-	{$checked = ' '}
-{/if}
+	{if $key eq $order.bobshopOrderPayment}
+		{$checked = ' checked="checked" '}
+		{$sumPayment = $row.{$shopConfig['paymentPriceFieldId']}}
+	{else}
+		{$checked = ' '}
+	{/if}
 {/foreach}
 
 <form method="post" action="tiki-index.php?page=bobshop_order_submitted" style="display: inline;" class="">
 	<h2>Rechnungsempfänger</h2>
 	{include file="templates/wiki-plugins/wikiplugin_bobshop_userdetail_inc.tpl" scope="global"}
-
+	{*{$user}*}
+	<br><br>
 	<h2>Warenkorb</h2>
 	{include file="templates/wiki-plugins/wikiplugin_bobshop_cartdetail_inc.tpl" scope="global"}
 

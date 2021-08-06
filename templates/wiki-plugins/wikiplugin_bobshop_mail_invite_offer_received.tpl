@@ -1,7 +1,7 @@
 {* $Id$ *}
 
 <h1>Angebotsanfrage</h1>
-<p>Hallo {$userDataDetail['login']},<p>
+<p>Sehr geehrte Damen und Herren,<p>
 <br>
 <p>vielen Dank für Ihre Anfrage.</p>
 <br>

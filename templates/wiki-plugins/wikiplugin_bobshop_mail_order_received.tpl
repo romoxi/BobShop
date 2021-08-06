@@ -9,12 +9,14 @@
 
 <h1>Bestellbestätigung</h1>
 
-<p>Hallo {$userDataDetail['login']},<p>
+<p>Sehr geehrte Damen und Herren,<p>
 <br>
 <p>vielen Dank für Ihre Bestellung.</p>
 <br>
-<p>Hiermit bestätigen wir die Bestellung folgender Artikel. </p>
+<p>Bestellnummer: {$order.bobshopOrderOrderNumber}</p>
 <br>
+<br>
+<p>Hiermit bestätigen wir die Bestellung folgender Artikel. </p>
 <p>Im nächsten Schritt senden wir Ihnen eine Auftragsbestätigung.</p>
 <br>
 <br>

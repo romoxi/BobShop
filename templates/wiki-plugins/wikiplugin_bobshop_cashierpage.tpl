@@ -18,13 +18,62 @@
 {else}
 	<h2>Angebotsempfänger</h2>
 {/if}
+{*
 <p>Eingeloggt als: {$user}</p>
 {include file="templates/wiki-plugins/wikiplugin_bobshop_userdetail_inc.tpl" scope="global"}
 <br>
+*}
+
+<table class="table table-hover">
+	<colgroup>
+		<col width='20%'>
+		<col width='80%'>
+	</colgroup>
+
+	{foreach $bobshopUserFields as $fieldname}
+		{$required = ''}
+		{$type = 'text'}
+
+
+		{if !is_array($fieldname)} 
+			{if array_key_exists($fieldname, $bobshopUserFields)}
+				{if is_array($bobshopUserFields[$fieldname])}
+					{if $bobshopUserFields[$fieldname][0] eq 'required'} 
+						{$required = 'required'}
+					{/if}
+					{if $bobshopUserFields[$fieldname][0] eq 'email'} 
+						{$type = 'email'}
+					{/if}
+				{/if}
+			{/if}
+
+		
+			{if isset($bobshopUserData[$fieldname])}
+				{$value = $bobshopUserData[$fieldname]}
+			{else}
+				{$value = ''}
+			{/if}
+			<tr>
+				<td>
+					<label class="col-from-label" for="f{$fieldname}">{tr}{$fieldname}{/tr}<label/>
+				</td>
+				<td>
+					<input class="form-control" {$required} id="f{$fieldname}" type="{$type}" name="{$fieldname}" value="{$value}">
+
+				</td>
+			</tr>
+		{/if}
+
+	{/foreach}
+
+</table>
+
+
+<h2>Zahlungsmethode</h2>
 
 {* payment *}
 {if $showPrices}
-<h2>Zahlungsart</h2>
+{*<h2>Zahlungsart</h2>*}
 <table class="table table-hover">
 	<colgroup>
 		<col width='30%'>
@@ -32,7 +81,9 @@
 		<col width='20%'>
 	</colgroup>
 	<tr>
-		<th></th>
+		<th>
+			Auswahl
+		</th>
 		<th>
 			Service
 		</th>
@@ -79,13 +130,75 @@
 {/if}
 
 {* display cart *}
+{*
 <h2>Warenkorbübersicht</h2>
 {include file="templates/wiki-plugins/wikiplugin_bobshop_cartdetail_inc.tpl" scope="global"}
-
 <hr>
-{*{$smarty.now|date_format:'%Y-%m-%d %H:%M:%S'}<br>*}
+*}
 
 {if $showPrices}
+	{* display shipping *}
+	
+	{* shipping costs *}
+	{foreach from=$orderItems item=product}
+		{if $product.{$shopConfig['orderItemQuantityFieldId']} > 0}
+			{assign var="cat" value="bobshopConfigShippingCostCat{$product.{$shopConfig['productShippingCatFieldId']}}"}
+			{if $sumShipping < $shopConfig[$cat]}
+				{$sumShipping = $shopConfig[$cat]}
+			{/if}	
+		{/if}
+	{/foreach}
+	{assign var="rate" value="bobshopConfigTaxrate{$shopConfig['bobshopConfigShippingCostTaxrateCat']}"}
+	{if $shopConfig.bobshopConfigShippingCostTaxrateCat eq 1}
+		{$sumShipping = $sumShipping + $shopConfig[$rate]/100 * $sumShipping}
+	{elseif $shopConfig.bobshopConfigShippingCostTaxrateCat eq 2}
+		{$sumShipping = $sumShipping + $shopConfig[$rate]/100 * $sumShipping}
+	{elseif $shopConfig.bobshopConfigShippingCostTaxrateCat eq 3}
+		{$sumShipping = $sumShipping + $shopConfig[$rate]/100 * $sumShipping}
+	{/if}
+	
+	<h2>Versandart</h2><br>
+	{* as long ther is only 1 shipping method it is checked by default *}
+	{$checked = "checked='checked'"}
+	<table class="table table-hover">
+		<colgroup>
+			<col width='30%'>
+			<col width='50%'>
+			<col width='20%'>
+		</colgroup>
+		<tr>
+			<th>
+				Auswahl
+			</th>
+			<th>
+				Service
+			</th>
+			<th>
+				Kosten
+			</th>
+		</tr>
+		<tr>
+			<td>	
+				<input {$checked} type="radio" name="shipping" value="{$key}">
+				<label>
+				</label>
+			</td>
+			<td>
+				DHL 
+			</td>
+			<td>
+				{$sumShipping|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
+			</td>
+		</tr>
+	</table>	
+
+
+	<hr>
+	{*{$smarty.now|date_format:'%Y-%m-%d %H:%M:%S'}<br>*}
+
+	<br>
+	<h2>AGB und Widerruf</h2>
+	<br>
 	{* display revocation notice agreement *}
 	{if $shopConfig['bobshopConfigTermsOfServicePage'] != ''}
 		<input required type="checkbox" name="tos" value="{$smarty.now}">
@@ -107,7 +220,7 @@
 	<hr>
 {/if}
 
-<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="tiki-index.php?page=bobshop_cart">Back</a>
+<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="tiki-index.php?page=bobshop_cart">{tr}Back{/tr}</a>
 
 {if $showPrices}
 	<input type="hidden" name="action" value="checkout">

@@ -19,16 +19,20 @@
  */
 
 //login data from PayPayl REST API app
-$clientId = 'uzD';
+$clientId = 'uzDk';
 $secret   = '7Yu8';
 
 if($shopConfig['bobshopConfigOpMode'] == 'sandbox')
 {
-	$paypalURL = 'https://api.sandbox.paypal.com';
+	$paypalURL = 'https://api-m.sandbox.paypal.com';
+	// mit -m von schak
+	//$paypalURL = 'https://api.sandbox.paypal.com';
 }
 elseif($shopConfig['bobshopConfigOpMode'] == 'default')
 {
-	$paypalURL = 'https://api.paypal.com';
+	$paypalURL = 'https://api-m.paypal.com';
+	// mit -m von schak
+	//$paypalURL = 'https://api.paypal.com';
 }
 
 //END Config Section
@@ -204,7 +208,7 @@ function getRequestStringPayPal($sums, $merchantName, $shopConfig)
 	$paypalOrder = '{"intent": "CAPTURE", "purchase_units": [{"amount": 
 					{
 					"currency_code": "'. $shopConfig['bobshopConfigCurrencyShortcut'] .'",
-					"value": "'. $sums['sumEnd'] .'"}
+					"value": "'. sprintf("%.2F", str_replace(",", ".", $sums['sumEnd'])).'"}
 					}],
 					"application_context":
 					{

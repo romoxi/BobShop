@@ -1,7 +1,7 @@
 <?php
 /**
  * BobShop
- * Version: 1_7_2
+ * Version: 1_8_0
  * This Plugin is for CMS TikiWiki
  * 
  * BobShop is a shopping cart system for TikiWiki. 
@@ -11,7 +11,7 @@
  * Install:
  * see https://github.com/romoxi/bobshop
  * 
- * THE SOFTWARE IS PROVIDED ìAS ISî, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED ÔøΩAS ISÔøΩ, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
@@ -86,57 +86,69 @@ function wikiplugin_bobshop($data, $params)
 	global $tikilib;
 	global $userlib;
 	
-	/**
-	 * Returns some detailed user info
-	 * userId, email, login ...
-	 */
-	$userDataDetail = $userlib->get_user_info($user);
-
-	/**
-	 * Returns
-	 * Array ( [usersTrackerId] => 11 [usersFieldId] => 31 [group] => Registered [user] => admin ) 
-	 */
-	$userData = $userlib->get_usertracker(1);
-	
-	//echo $fieldNames['bobshopOrderSessionId']."<br>";
-	//echo '**username: '. $userData['user'];
-	
+		
 	$fieldNames['bobshopOrderSessionId'] = $_SESSION['__Laminas']['_VALID']['Laminas\Session\Validator\Id'];
+	
+	echo $fieldNames['bobshopOrderSessionId']."<br>";
+	//echo 'username: '. $userData['user'];
 
 	//is there a open order for the current session?
 	$shopConfig['currentOrderNumber'] = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
 	
 	//if there is no open order for the current session, is there a open order for the current user?
-	if(isset($userData['user']) && $userData['user'] != '')
+	if($shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
 	{
-		$orderNumberByUser = get_tracker_shop_orders_order_number_by_username($userData['user'], $shopConfig);
+		/**
+		 * Returns some detailed user info
+		 * userId, email, login ...
+		 */
+		$userDataDetail = $userlib->get_user_info($user);
+		//print_r($userDataDetail);
+
+		/**
+		 * Returns
+		 * Array ( [usersTrackerId] => 11 [usersFieldId] => 31 [group] => Registered [user] => admin ) 
+		 */
+		$userData = $userlib->get_usertracker($userDataDetail["userId"]);
 		
-		// after login the user should have his old order (cart)
-		if($shopConfig['currentOrderNumber'] == 0 && $orderNumberByUser != 0)
+		if(isset($userData['user']) && $userData['user'] != '')
 		{
-			$shopConfig['currentOrderNumber'] = $orderNumberByUser;
-		}
-		//what is, if there are two orders? a new one by sessionId and an old one
-		//elseif($shopConfig['currentOrderNumber'] != 0 && $orderNumberByUser != 0)
-		elseif(($shopConfig['currentOrderNumber'] != $orderNumberByUser)
-				&& $shopConfig['currentOrderNumber'] != 0 
-				&& $orderNumberByUser != 0
-				)
-		{
-			//join this two orders to one	
-			//to join two orders update all orderNumbers in order_items
-			$newNumber = $orderNumberByUser;
-			$oldNumber = $shopConfig['currentOrderNumber'];
-			//disable the old order per status 13
-			update_tracker_shop_order_status(13, $shopConfig);
-			$shopConfig['currentOrderNumber'] = $newNumber;
-			//join the two orders
-			update_tracker_shop_orders_join($oldNumber, $newNumber, $shopConfig);
+			$orderNumberByUser = get_tracker_shop_orders_order_number_by_username($userData['user'], $shopConfig);
+
+			// after login the user should have his old order (cart)
+			if($shopConfig['currentOrderNumber'] == 0 && $orderNumberByUser != 0)
+			{
+				$shopConfig['currentOrderNumber'] = $orderNumberByUser;
+			}
+			//what is, if there are two orders? a new one by sessionId and an old one
+			//elseif($shopConfig['currentOrderNumber'] != 0 && $orderNumberByUser != 0)
+			elseif(($shopConfig['currentOrderNumber'] != $orderNumberByUser)
+					&& $shopConfig['currentOrderNumber'] != 0 
+					&& $orderNumberByUser != 0
+					)
+			{
+				//join this two orders to one	
+				//to join two orders update all orderNumbers in order_items
+				$newNumber = $orderNumberByUser;
+				$oldNumber = $shopConfig['currentOrderNumber'];
+				//disable the old order per status 13
+				update_tracker_shop_order_status(13, $shopConfig);
+				$shopConfig['currentOrderNumber'] = $newNumber;
+				//join the two orders
+				update_tracker_shop_orders_join($oldNumber, $newNumber, $shopConfig);
+			}
 		}
 	}
-	
+	elseif($shopConfig['bobshopConfigTikiUserRegistration'] == 'n')
+	{
+		//echo "bobshop own user system active<br>";
+		//get the userdata
+		//$bobshopOrderBobshopUser = get_tracker_shop_orders_order_by_orderNumber($shopConfig)['bobshopOrderBobshopUser'];
+		//echo 'useroder: '. $bobshopOrderBobshopUser;
+		$bobshopOrderBobshopUser = bobshop_user_data_decode($shopConfig);
+		//var_dump($bobshopOrderBobshopUser);
+	}
 	//echo 'orderNumber: '. $shopConfig['currentOrderNumber'];
-	
 	//print_r($_REQUEST);
 	//print_r($params);
 
@@ -206,9 +218,6 @@ function wikiplugin_bobshop($data, $params)
 	
 	if (!empty($action)) 
 	{
-		//global $jitPost;
-		//global $jitGet;
-		
 		// show the product details-page > wikiplugin_bobshop_shop_product_detail.tpl
 		$showdetails = false;
 	
@@ -246,7 +255,7 @@ function wikiplugin_bobshop($data, $params)
 						$fieldNames['bobshopOrderItemOrderNumber'] = $orderVars['orderNumber'];
 						//$shopConfig['currentOrderNumber'] = $orderVars['orderNumber'];
 						insert_tracker_shop_order_items($fieldNames, $shopConfig);
-						$output .= message('Artikel wurde zum Warenkorb hinzugef¸gt.', '');
+						$output .= message('Artikel wurde zum Warenkorb hinzugef√ºgt.', '');
 					}
 					else
 					{
@@ -271,30 +280,58 @@ function wikiplugin_bobshop($data, $params)
 				$showdetails = true;
 				break;
 				
+			//shows the login oder register pages with payment and shipping choice
 			case 'cashierbutton':
-				//print_r($shopConfig);
 				if($shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
 				{
 					if($user)
 					{
 						$action = 'cashierpage';
-						//for mail testing
-						//send_order_received($sums, $userDataDetail, $shopConfig);
 					}
 					else
 					{
+						//shows the Login Form and link to register
 						$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_login.tpl');
 					}
 				}
+				//if the bobshop own user system is used
 				elseif($shopConfig['bobshopConfigTikiUserRegistration'] == 'n')
 				{
-					echo 'hooooo';
+					$action = 'cashierpage';
 				}
 				break;
 				
 			//displays a last page with button to buy now
 			case 'checkout':
-				if($user)
+				if($shopConfig['bobshopConfigTikiUserRegistration'] == 'n')
+				{
+					//are there any data submitted?
+					$userDataArray = [];
+					//$bobshopUserFields = explode('|', $shopConfig['bobshopConfigUserFields']);
+					$bobshopUserFields = bobshop_user_fields($shopConfig);
+					foreach($bobshopUserFields as $key => $field)
+					{
+						$userDataArray[$field] = $jitRequest->$field->text();
+					}
+					bobshop_user_data_encode($userDataArray, $shopConfig);
+					$bobshopOrderBobshopUser = bobshop_user_data_decode($shopConfig);
+					//var_dump($bobshopOrderBobshopUser);
+				}
+				
+				if(!$user && $shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
+				{
+					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_login.tpl');
+				}
+				elseif(empty($bobshopOrderBobshopUser) && $shopConfig['bobshopConfigTikiUserRegistration'] == 'n')
+				{
+					$action = 'cashierpage';
+					/*echo '<hr><hr>empty';
+					$output .= message('Fehler', 'Addressdaten fehlen.');
+					$smarty->assign('shopConfig', $shopConfig);
+					$smarty->assign('bobshopUserFields', $bobshopUserFields);
+					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_cashierpage.tpl');*/
+				}
+				else
 				{
 					$orderItems = get_tracker_shop_order_items($shopConfig);
 					$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
@@ -323,10 +360,6 @@ function wikiplugin_bobshop($data, $params)
 					}
 					
 				}
-				else
-				{
-					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_login.tpl');
-				}	
 				
 				break;
 			
@@ -352,28 +385,30 @@ function wikiplugin_bobshop($data, $params)
 				}
 				
 				$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
+				//echo 'onr: '. $order['bobshopOrderOrderNumber'];
 
 				update_tracker_shop_order_submitted($sums, $order, $shopConfig);
 				
+				//mark the order as submitted - not for sandbox
 				if($shopConfig['bobshopConfigOpMode'] != 'sandbox')
 				{
 					update_tracker_shop_order_status(2, $shopConfig);
 				}
 				
 				//send a order-received mail
-				$output .= send_order_received(true, $sums, $userDataDetail, $shopConfig);
+				$output .= send_order_received(true, $sums, $shopConfig);
 				
 				$payment = get_tracker_shop_payment($shopConfig);
 
 				//if paypal is selected
 				if($payment[$order['bobshopOrderPayment']][$shopConfig['paymentFollowUpScriptFieldId']] == 'PAYPAL')
 				{
-					include('wikiplugin_bobshop_paypal_inc.php');
+					include_once('wikiplugin_bobshop_paypal_inc.php');
 
 					$token = getTokenPayPal($clientId, $secret, $paypalURL);
 					if(empty($token))
 					{
-						echo '<hr>paypal error 100 - invailid token<hr>';
+						echo '<hr>paypal error 100 - invalid token<hr>';
 						exit;
 					}
 					elseif(isset($sums['sumEnd']) && !empty($sums['sumEnd']))
@@ -404,6 +439,31 @@ function wikiplugin_bobshop($data, $params)
 							storeOrderDataPayPal('orderPaymenApproveLinkFieldId', $approveLink, $shopConfig);
 							header("location: ". $approveLink);
 						}
+					}
+				}
+				else
+				{				
+					//reading the message in the followUpScript field
+					//[tpl] marks a template file
+					if(substr($payment[$order['bobshopOrderPayment']][$shopConfig['paymentFollowUpScriptFieldId']], 0, 5) == '[tpl]')
+					{
+						$tplFile = 'wiki-plugins/wikiplugin_bobshop_'. substr($payment[$order['bobshopOrderPayment']][$shopConfig['paymentFollowUpScriptFieldId']], 5) .'.tpl';
+						if(file_exists('./templates/'. $tplFile))
+						{
+							$smarty->assign('payment', $payment);
+							$smarty->assign('order', $order);
+							$smarty->assign('shopConfig', $shopConfig);
+							$smarty->assign('fieldNamesById', array_flip($shopConfig));
+							$output .= $smarty->fetch($tplFile);
+						}
+						else
+						{
+							$output .= message('Error!', 'Templatefile not found!');
+						}
+					}
+					else
+					{
+						$output .= message('Vielen Dank!', $payment[$order['bobshopOrderPayment']][$shopConfig['paymentFollowUpScriptFieldId']]);
 					}
 				}
 				$params['type'] = 'order_submitted';
@@ -437,7 +497,7 @@ function wikiplugin_bobshop($data, $params)
 				update_tracker_shop_order_status(10, $shopConfig);
 				
 				//send a order-received mail
-				$output .= send_order_received(false, $sums, $userDataDetail, $shopConfig);	
+				$output .= send_order_received(false, $sums, $shopConfig);	
 				
 				$params['type'] = 'order_submitted';
 				
@@ -597,7 +657,8 @@ function wikiplugin_bobshop($data, $params)
 		case 'show_cashier':
 			if($buying)
 			{
-				if(isset($user))
+				if(isset($user) || $shopConfig['bobshopConfigTikiUserRegistration'] == 'n')
+				//if(isset($user) )
 				{
 					if($jitGet->message->text() == 'missing_tos')
 					{
@@ -620,7 +681,16 @@ function wikiplugin_bobshop($data, $params)
 					$smarty->assign('showPrices', $showPrices);
 					$smarty->assign('buying', $buying);
 					$smarty->assign('cart', $cart);		
-					$smarty->assign('userBobshop', $userBobshop);
+					if($shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
+					{
+						$smarty->assign('userBobshop', $userBobshop);
+					}
+					else
+					{
+						$smarty->assign('bobshopUserData', bobshop_user_data_decode($shopConfig));
+						$smarty->assign('bobshopUserFields', bobshop_user_fields($shopConfig));						
+						$smarty->assign('bobshopOrderBobshopUser', $bobshopOrderBobshopUser);
+					}
 					$smarty->assign('showPayment', 1);
 					$smarty->assign('payment', $payment);
 					$smarty->assign('order', $order);
@@ -637,34 +707,45 @@ function wikiplugin_bobshop($data, $params)
 			//print_r($shopConfig);
 			if($buying)
 			{
-				if(isset($user))
+				if(isset($user) || !empty($bobshopOrderBobshopUser))
 				{
 					$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
 					$orderItems = get_tracker_shop_order_items($shopConfig);
 					$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 					$payment = get_tracker_shop_payment($shopConfig);
-					$smarty->assign('userBobshop', $userBobshop);
+					if($shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
+					{
+						$smarty->assign('userBobshop', $userBobshop);
+						$smarty->assign('user', $user);
+					}
+					else
+					{
+						$smarty->assign('bobshopOrderBobshopUser', $bobshopOrderBobshopUser);
+					}
 					$smarty->assign('showPrices', $showPrices);
 					$smarty->assign('payment', $payment);
 					$smarty->assign('showPayment', 1);
 					$smarty->assign('order', $order);
-					$smarty->assign('user', $user);
 					$smarty->assign('orderItems', $orderItems);
 					$smarty->assign('shopConfig', $shopConfig);
 					$smarty->assign('fieldNamesById', array_flip($shopConfig));
 					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_checkout.tpl');
 				}
+				else
+				{
+					header("location: tiki-index.php?page=bobshop_cashierpage");
+				}
 			}
 			break;
 			
 		case 'order_submitted':
-
+			//nothing to do
 			break;
 
 		case 'paypal_after_transaction':
 			if($buying)
 			{
-				include('wikiplugin_bobshop_paypal_inc.php');
+				include_once('wikiplugin_bobshop_paypal_inc.php');
 				//GET vars: token => orderId; PayerId => the id from paypal (not used in our shop
 
 				$orderIdResponse = $jitGet->token->text();
@@ -719,6 +800,9 @@ function wikiplugin_bobshop($data, $params)
 					{
 						storeOrderDataPayPal('orderPaymentPayeeMerchantIdFieldId', getMerchantIdPayPal($response), $shopConfig);
 						storeOrderDataPayPal('orderPaymentStatusFieldId', 'COMPLETED', $shopConfig);
+						//send a order-received mail
+						//von schak > $output wird ver√§ndert???
+						//$output .= send_order_received(true, $sums, $userDataDetail, $shopConfig);
 						//echo 'order completed';
 						$smarty->assign('orderIdResponse', $orderIdResponse);
 						$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_completed.tpl');
@@ -800,6 +884,7 @@ function get_tracker_shop_config()
 		'orderCreatedFieldId'		=> 'bobshopOrderCreated', 
 		'orderSessionIdFieldId'		=> 'bobshopOrderSessionId', 
 		'orderMemoryCodeFieldId'	=> 'bobshopOrderMemoryCode', 
+		'orderBobshopUserFieldId'	=> 'bobshopOrderBobshopUser', 
 		'orderUserFieldId'			=> 'bobshopOrderUser');
 	
 	foreach($shopConfig['ordersFields']  as $key => $name)
@@ -1048,6 +1133,7 @@ function get_tracker_shop_orders_order_number_by_username($username, $shopConfig
 /**
  * 
  * @returns the orderNumber
+ * f2.value = '14' > a saved order status
  */
 function get_tracker_shop_orders_order_number_by_memoryCode($memoryCode, $shopConfig)
 {
@@ -1132,7 +1218,7 @@ function get_tracker_shop_fieldId($fieldName, $trackerId)
  * 
  *
  * 1.1. if the order already exist, return order_number
- * 1.2. lade die bisher hˆchste order_number
+ * 1.2. lade die bisher hÔøΩchste order_number
  * 3. insert the the new stuff in tracker_items (itemId will be autoincremented)
  * 4. get the last insertId (itemId)
  * 2. get the fieldId by the fieldname (fields 'sid', 'user')
@@ -1497,6 +1583,17 @@ function get_tracker_shop_order_items($shopConfig, $productId = false)
 
 
 /**
+ * shows a messagebox
+ * $type
+ * - confirm
+ * - comment
+ * - errors
+ * - information
+ * - note
+ * - tip
+ * - warning
+ * see: https://doc.tiki.org/PluginRemarksbox
+ * 
  * 
  * @global type $smarty
  * @param type $text
@@ -1709,7 +1806,6 @@ function get_tracker_shop_payment($shopConfig)
 					tiki_tracker_fields
 				LEFT JOIN
 					tiki_tracker_item_fields ON tiki_tracker_fields.fieldId = tiki_tracker_item_fields.fieldId
-				
 				WHERE
 					tiki_tracker_fields.trackerId = ?
 				ORDER BY itemId
@@ -1718,10 +1814,8 @@ function get_tracker_shop_payment($shopConfig)
 
 	while($row = $result->fetchRow())
 	{
-		//echo '<hr>'. $row["permName"];print_r($row); echo '<br>';
 		$payment[$row['itemId']][$row['fieldId']] = $row['value'];
 	}
-	
 	//print_r($payment);
 	return $payment;
 }
@@ -1748,6 +1842,30 @@ function update_tracker_shop_payment($order, $payment, $shopConfig)
 	
 }
 
+//Update the bobshop own user data
+function update_tracker_shop_order_bobshop_user($order, $userData, $shopConfig)
+{
+	global $tikilib;
+	
+	$result = $tikilib->query(
+			"UPDATE 
+				tiki_tracker_item_fields
+			SET
+				value = ?
+			WHERE
+				itemId = ?
+			AND
+				fieldId = ?
+			", [
+				$userData,
+				$order['itemId'], 
+				$shopConfig['orderBobshopUserFieldId']]
+			);
+	return;	
+	
+}
+
+
 function update_tracker_shop_order_submitted($sums, $order, $shopConfig)
 {
 	global $tikilib;
@@ -1769,6 +1887,8 @@ function update_tracker_shop_order_submitted($sums, $order, $shopConfig)
 					$shopConfig['order'.ucfirst($key).'FieldId']
 					]
 				);
+	
+		//echo 'key: '. $key . 'value: '. $value . '<br>';
 	}
 	return;	
 }
@@ -2101,22 +2221,39 @@ function create_memoryCode($shopConfig)
  * @param type $shopConfig
  * @return type
  */
-function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
+function send_order_received($showPrices, $sums, $shopConfig)
 {
 	//ToDo: check $sums
 	global $tikilib;
+	global $userlib;
 	global $user;
 	global $smarty;
 	
 	//$smartmail = new Smarty;
 	
-	$mailReceiver = $userDataDetail['email'];
+	if($shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
+	{
+		/**
+		 * Returns some detailed user info
+		 * userId, email, login ...
+		 */
+		$userDataDetail = $userlib->get_user_info($user);
+		$mailReceiver = $userDataDetail['email'];
+		$userData = get_tracker_shop_user_by_user($userDataDetail['login'], $shopConfig);
+	}
+	elseif($shopConfig['bobshopConfigTikiUserRegistration'] == 'n')
+	{
+		//get the userdata from the tracker bobshop_orders
+		$bobshopOrderBobshopUser = bobshop_user_data_decode($shopConfig);
+		$mailReceiver = $bobshopOrderBobshopUser['Email'];
+		//print_r($bobshopOrderBobshopUser);
+	}	
 	
 	$mailSender = $shopConfig['bobshopConfigEmailSender'];
 	$shopname = $shopConfig['bobshopConfigShopName'];
 	if($showPrices)
 	{
-		$subject = $shopname .' Bestellbest‰tigung';
+		$subject = $shopname .' Bestellbest√§tigung';
 	}
 	else
 	{
@@ -2132,18 +2269,25 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	$dateiinhalt = $doc;
 */
 	
-	$smarty->assign('userDataDetail', $userDataDetail);
-	
-	$userData = get_tracker_shop_user_by_user($userDataDetail['login'], $shopConfig);
 	$orderItems = get_tracker_shop_order_items($shopConfig);
 	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 	$payment = get_tracker_shop_payment($shopConfig);
 
-	//$smartmail->assign('userBobshop', $userBobshop);
 	$smarty->assign('payment', $payment);
 	$smarty->assign('showPayment', 1);
 	$smarty->assign('orderItems', $orderItems);
-	$smarty->assign('userBobshop', $userData);
+
+	if($shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
+	{
+		$smarty->assign('userBobshop', $userData);
+	}
+	else
+	{
+		$smarty->assign('bobshopUserData', bobshop_user_data_decode($shopConfig));
+		$smarty->assign('bobshopUserFields', bobshop_user_fields($shopConfig));						
+		$smarty->assign('bobshopOrderBobshopUser', $bobshopOrderBobshopUser);
+	}
+
 	$smarty->assign('showPrices', $showPrices);
 	$smarty->assign('user', $user);
 	$smarty->assign('order', $order);
@@ -2164,7 +2308,8 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	$header .= "Content-Type: text/html; charset=utf-8\r\n";
 	$header .= "To: ". $mailReceiver ."\r\n";
 	$header .= "From: ". $shopname ."<". $mailSender . ">\r\n";
-	$header .= "Bcc: ". $shopname ."<". $shopConfig['bobshopConfigEmailNotifications'] . ">\r\n";
+	//mail to company will be sent after sending to the customer is ok
+	//$header .= "Bcc: ". $shopname ."<". $shopConfig['bobshopConfigEmailNotifications'] . ">\r\n";
 	$header .= "Reply-To: ". $shopname ."<". $mailSender . ">\r\n";
 	
 	//$anhang = chunk_split(base64_encode($dateiinhalt)); 
@@ -2184,9 +2329,9 @@ function send_order_received($showPrices, $sums, $userDataDetail, $shopConfig)
 	
 	$mail_send = mail($mailReceiver, $subject, $mailText, $header);
 
-	if ($mail_send)
+	if($mail_send)
 	{
-		$output = message('Info', 'Best‰tigungsmail wurde versendet.');
+		$output = message('Info', 'Best√§tigungsmail wurde versendet.');
 		
 		//send mail to company
 		$header = "MIME-Version: 1.0\r\n";
@@ -2235,4 +2380,103 @@ function printArray($name, $data)
 	}
 	echo ')<br>'; //array close
 	echo '<hr>';
+}
+
+/*
+ * used for the bobshop own user system
+ * 
+ * $shopConfig['bobshopConfigUserFields'] holds the fields for contact data
+ * the fields are separated by |
+ * * after fieldname is a requierd field
+ * @ after fieldname is a email type field
+ * 
+ * returns a array with all fields for contact
+ * 
+ */
+
+function bobshop_user_fields($shopConfig)
+{
+	$fieldArray = [];
+	$fields = explode('|', $shopConfig['bobshopConfigUserFields']);
+	foreach($fields as $key => $field)
+	{
+		//search for *
+		$asterixPos = strpos($field, '*');
+		$emailPos = strpos($field, '@');
+		if($asterixPos)
+		{
+			$fieldRaw = substr($field, 0, $asterixPos);
+			$fieldArray[] .= $fieldRaw;
+			$fieldArray[$fieldRaw][] .= 'required';
+		}
+		if($emailPos)
+		{
+			$fieldRaw = substr($field, 0, $emailPos);
+			$fieldArray[] .= $fieldRaw;
+			$fieldArray[$fieldRaw][] .= 'email';
+		}
+		if(!$asterixPos && !$emailPos)
+		{
+			$fieldRaw = $field;
+			$fieldArray[] .= $fieldRaw;
+		}
+	}
+	//print_r($fieldArray);
+	return $fieldArray;
+}
+
+
+/*
+ * used for the bobshop own user system
+ * 
+ * returns a array with user data ['Name'] => 'Jones' etc.
+ */
+
+function bobshop_user_data_decode($shopConfig)
+{
+	$secret = 'x=3i_w#'; // >= 8 characters
+	$text = base64_decode(get_tracker_shop_orders_order_by_orderNumber($shopConfig)['bobshopOrderBobshopUser']);
+	//print_r(openssl_get_cipher_methods());
+	//echo 'text'. $text;
+	if(!empty($text))
+	{
+		$algorithm = 'aes-128-cbc';
+
+		//$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($algorithm));
+		$iv = substr($secret . $secret, openssl_cipher_iv_length($algorithm));
+		$data = openssl_decrypt(
+				$text,
+				$algorithm,
+				$secret, 
+				OPENSSL_RAW_DATA,
+				$iv
+				);
+
+		//echo "DATAd: ". $data . "<hr>" . $text;
+		return json_decode($data, true);
+		
+	}
+
+}
+
+function bobshop_user_data_encode($userDataArray, $shopConfig)
+{
+	$secret = 'x=3i_w#';
+	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
+	
+	$algorithm = 'aes-128-cbc';
+	//$iv = openssl_cipher_iv_length($algorithm);
+	//$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($algorithm));
+	$iv = substr($secret . $secret, openssl_cipher_iv_length($algorithm));
+	$text = json_encode($userDataArray);
+	$data = openssl_encrypt(
+			$text,
+			$algorithm,
+			$secret, 
+			OPENSSL_RAW_DATA,
+			$iv
+			);
+	//echo "DATAe: ". $data . "<hr>" . $text;
+	update_tracker_shop_order_bobshop_user($order, base64_encode($data), $shopConfig);
+
 }

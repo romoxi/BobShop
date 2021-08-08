@@ -24,7 +24,7 @@ release v1_7_1 available
 - sorting in products list by name, relevance, price up/down
 
 ## What bobshop can not do at this time:
-- inventory management
+- inventory management (comes with 1_8_x)
 - invoices
 - gifts
 - product presentation in categories (you can use tikiwiki functionality to do that > structures, catergories, menus etc.)

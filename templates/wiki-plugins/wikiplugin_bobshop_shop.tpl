@@ -92,10 +92,31 @@
 						*}
 					{/if}
 					<p class="small">Artikelnr.: {$row.bobshopProductProductId}</p>
-					{if $showPrices}
-						<p>Lieferzeit.: {$row.bobshopProductDeliveryTime}</p>
+
+					{* stock control*}
+					{if $shopConfig.bobshopConfigStockControl eq "y"}
+						{* <p>Lagerbestand: {$row.bobshopProductStockQuantity}<p> *}
+						<p>Lieferzeit: 
+						{if $row.bobshopProductStockQuantity > 0}
+							{if 
+								($row.bobshopProductStockWarning == 0 and $row.bobshopProductStockQuantity < $shopConfig.bobshopConfigStockWarning)
+								or
+								($row.bobshopProductStockWarning  > 0 and $row.bobshopProductStockQuantity < $row.bobshopProductStockWarning)
+							}
+								<span style="color: orange;">Lagerbestand gering!</span>
+							{else}
+								<span style="color: green;">Ab Lager.</span>
+							{/if}
+						{else}
+							<span style="color: red;">Derzeit nicht lieferbar!</span>
+						{/if}
+						</p>
 					{/if}
 
+					{if $showPrices and $shopConfig.bobshopConfigStockControl eq "n"}
+						<p>Lieferzeit: {$row.bobshopProductDeliveryTime}</p>
+					{/if}
+					
 					{if $cart}
 						{$productId = $row.bobshopProductProductId}
 						{include file="templates/wiki-plugins/wikiplugin_bobshop_button_add.tpl"}
@@ -122,4 +143,3 @@
 	modal="y"
 	wiki="bobshop_shipping"
 }{/wikiplugin}
-

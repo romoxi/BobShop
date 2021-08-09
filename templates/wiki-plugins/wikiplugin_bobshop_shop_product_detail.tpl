@@ -48,6 +48,12 @@
 						{if $showPrices}
 							<p>Lieferzeit: {$product.bobshopProductDeliveryTime}</p>
 						{/if}
+						
+						{* stock control*}
+				
+						{if $shopConfig['bobshopConfigStockControl'] eq "y"}
+							<p>Lagerbestand: {$product.bobshopProductStockQuantity}<p>
+						{/if}
 
 						{if $cart}
 							{include file="templates/wiki-plugins/wikiplugin_bobshop_button_add.tpl"}

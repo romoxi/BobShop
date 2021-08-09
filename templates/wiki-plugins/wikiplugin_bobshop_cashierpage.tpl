@@ -18,56 +18,55 @@
 {else}
 	<h2>Angebotsempfänger</h2>
 {/if}
-{*
-<p>Eingeloggt als: {$user}</p>
-{include file="templates/wiki-plugins/wikiplugin_bobshop_userdetail_inc.tpl" scope="global"}
-<br>
-*}
+{if $shopConfig['bobshopConfigTikiUserRegistration'] == 'y'} 
+	<p>Eingeloggt als: {$user}</p>
+		{include file="templates/wiki-plugins/wikiplugin_bobshop_userdetail_inc.tpl" scope="global"}
+	<br>
+{else}
+	<table class="table table-hover">
+		<colgroup>
+			<col width='20%'>
+			<col width='80%'>
+		</colgroup>
 
-<table class="table table-hover">
-	<colgroup>
-		<col width='20%'>
-		<col width='80%'>
-	</colgroup>
-
-	{foreach $bobshopUserFields as $fieldname}
-		{$required = ''}
-		{$type = 'text'}
+		{foreach $bobshopUserFields as $fieldname}
+			{$required = ''}
+			{$type = 'text'}
 
 
-		{if !is_array($fieldname)} 
-			{if array_key_exists($fieldname, $bobshopUserFields)}
-				{if is_array($bobshopUserFields[$fieldname])}
-					{if $bobshopUserFields[$fieldname][0] eq 'required'} 
-						{$required = 'required'}
-					{/if}
-					{if $bobshopUserFields[$fieldname][0] eq 'email'} 
-						{$type = 'email'}
+			{if !is_array($fieldname)} 
+				{if array_key_exists($fieldname, $bobshopUserFields)}
+					{if is_array($bobshopUserFields[$fieldname])}
+						{if $bobshopUserFields[$fieldname][0] eq 'required'} 
+							{$required = 'required'}
+						{/if}
+						{if $bobshopUserFields[$fieldname][0] eq 'email'} 
+							{$type = 'email'}
+						{/if}
 					{/if}
 				{/if}
+
+
+				{if isset($bobshopUserData[$fieldname])}
+					{$value = $bobshopUserData[$fieldname]}
+				{else}
+					{$value = ''}
+				{/if}
+				<tr>
+					<td>
+						<label class="col-from-label" for="f{$fieldname}">{tr}{$fieldname}{/tr}<label/>
+					</td>
+					<td>
+						<input class="form-control" {$required} id="f{$fieldname}" type="{$type}" name="{$fieldname}" value="{$value}">
+
+					</td>
+				</tr>
 			{/if}
 
-		
-			{if isset($bobshopUserData[$fieldname])}
-				{$value = $bobshopUserData[$fieldname]}
-			{else}
-				{$value = ''}
-			{/if}
-			<tr>
-				<td>
-					<label class="col-from-label" for="f{$fieldname}">{tr}{$fieldname}{/tr}<label/>
-				</td>
-				<td>
-					<input class="form-control" {$required} id="f{$fieldname}" type="{$type}" name="{$fieldname}" value="{$value}">
+		{/foreach}
 
-				</td>
-			</tr>
-		{/if}
-
-	{/foreach}
-
-</table>
-
+	</table>
+{/if}
 
 <h2>Zahlungsmethode</h2>
 

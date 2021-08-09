@@ -4,9 +4,9 @@
 		<colgroup>
 			<col width="5%">
 			<col width="45%">
-			<col width="5%">
-			<col width="5%">
-			<col width="5%">
+			<col width="3%">
+			<col width="9%">
+			<col width="3%">
 
 			{if $showPrices}
 				<col width="15%">
@@ -19,9 +19,9 @@
 	<tr>
 		<th >Produkt#</th>
 		<th >Bezeichnung</th>
-		<th ></th>
-		<th >Anzahl</th>
-		<th ></th>
+		<th colspan="3" style="text-align: center;">Anzahl</th>
+		{*<th >Anzahl</th>
+		<th ></th>*}
 		{if $showPrices}
 			<th >Einzelpreis</th>
 			<th >Gesamt</th>
@@ -30,20 +30,53 @@
 	</tr>
 
 	{* display the products *}	
+	{if $showQuantityModify == 1}
+	<form method="post" id="2" action="tiki-index.php?page=bobshop_cart" style="display: inline;" class="">
+	{/if}
 	{foreach from=$orderItems item=product}
 		
 		{if $product.{$shopConfig['orderItemQuantityFieldId']} > 0}
 			<tr>
-				<td>{$product.{$shopConfig['productProductIdFieldId']}}</td>
-				<td>{$product.{$shopConfig['productNameFieldId']}}</td>
-				<td>
+				<td><a href="tiki-index.php?page={$page}&action=shop_article_detail&productId={$product.{$shopConfig['productProductIdFieldId']}}">
+					{$product.{$shopConfig['productProductIdFieldId']}}
+					</a>
+				</td>
+				<td>{$product.{$shopConfig['productNameFieldId']}}
+					{* stock control*}
+					{if $shopConfig['bobshopConfigStockControl'] eq "y"}
+						<p style="font-size: small">Lieferzeit: 
+						{if $product.{$shopConfig['productStockQuantityFieldId']} >= $product.{$shopConfig['orderItemQuantityFieldId']}}
+							{if 
+								($product.{$shopConfig['productStockWaringFieldId']} == 0 and $product.{$shopConfig['productStockQuantityFieldId']} < $shopConfig['bobshopConfigStockWarning'])
+								or
+								($product.{$shopConfig['productStockWarningFieldId']}  > 0 and $product.{$shopConfig['productStockQuantityFieldId']} < $product.{$shopConfig['productStockWarningFieldId']})
+							}
+								<span style="color: orange;">Lagerbestand gering!</span>
+							{else}
+								<span style="color: green;">Ab Lager.</span>
+							{/if}
+						{else}
+							<span style="color: red;">Lagerbestand nicht ausreichend!</span>
+						{/if}
+						</p>
+					{/if}					
+					
+					
+				</td>
+				<td style="padding-left: 0; padding-right: 5px;">
 					{if $showQuantityModify == 1}
 						<a class="btn btn-primary btn-xs" data-role="button" data-inline="true" title="-" href="tiki-index.php?page={$page}&action=quantitySub&productId={$product.{$shopConfig['productProductIdFieldId']}}">
 						{icon name="minus"}</a>
 					{/if}
 				</td>
-				<td style="text-align: center;">{$product.{$shopConfig['orderItemQuantityFieldId']}}</td>
-				<td>
+				{if $showQuantityModify == 1}
+					<td style="padding-left: 0; padding-right: 0;">
+						<input type="text" name="quantity{$product.{$shopConfig['productProductIdFieldId']}}" value="{$product.{$shopConfig['orderItemQuantityFieldId']}}" class="form-control">
+					</td>
+				{else}
+					<td style="text-align: center;">{$product.{$shopConfig['orderItemQuantityFieldId']}}</td>
+				{/if}
+				<td style="padding-left: 5px; padding-right: 0;">
 					{if $showQuantityModify == 1}
 						<a class="btn btn-primary btn-xs" data-role="button" data-inline="true" title="+" href="tiki-index.php?page={$page}&action=quantityAdd&productId={$product.{$shopConfig['productProductIdFieldId']}}">
 						{icon name="create"}</a>
@@ -133,11 +166,11 @@
 		<td>
 			MwSt
 		</td>
-		<td></td>
-		<td style="text-align: right">
+		{*<td></td>*}
+		<td colspan="3" style="text-align: right">
 			{$shopConfig['bobshopConfigTaxrate1']} %
 		</td>
-		<td></td>
+		{*<td></td>*}
 		<td style="text-align: right">
 			{$sumTaxrate1|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
 		</td>
@@ -151,11 +184,11 @@
 		<td>
 			MwSt
 		</td>
-		<td></td>
-		<td style="text-align: right">
+		{*<td></td>*}
+		<td colspan="3" style="text-align: right">
 			{$shopConfig['bobshopConfigTaxrate2']} %
 		</td>
-		<td></td>
+		{*<td></td>*}
 		<td style="text-align: right">
 			{$sumTaxrate2|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
 		</td>
@@ -169,11 +202,11 @@
 		<td>
 			MwSt
 		</td>
-		<td></td>
-		<td style="text-align: right">
+		{*<td></td>*}
+		<td colspan="3" style="text-align: right">
 			{$shopConfig['bobshopConfigTaxrate3']} %
 		</td>
-		<td></td>
+		{*<td></td>*}
 		<td style="text-align: right">
 			{$sumTaxrate3|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
 		</td>
@@ -242,3 +275,10 @@
 {if $showPrices}
 	<i>Alle Preisangaben in {$shopConfig['bobshopConfigCurrency']}.</i>
 {/if}
+
+	{if $showQuantityModify == 1}
+		<br><br>
+		<input type="hidden" name="action" value="modify_quantity">
+		<input type="submit" class="btn btn-primary" value="{tr}Warenkorb aktualisieren{/tr}">
+		</form>
+	{/if}

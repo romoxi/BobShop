@@ -1,11 +1,11 @@
 {* $Id$ *}
 {if $status == 1}
 	<h2>Warenkorb</h2>
-	{include file="templates/wiki-plugins/wikiplugin_bobshop_cartdetail_inc.tpl"}
-	<hr>
-	<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="javascript:history.go(-1)">{tr}Back{/tr}</a>
+		{include file="templates/wiki-plugins/wikiplugin_bobshop_cartdetail_inc.tpl"}
+		<hr>
+		<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="javascript:history.go(-1)">{tr}Back{/tr}</a>
 
-	<form method="post" action="tiki-index.php?page=bobshop_cashierpage" style="display: inline;" class="">
+	<form method="post" id="1" action="tiki-index.php?page=bobshop_cashierpage" style="display: inline;" class="">
 		<input type="hidden" name="action" value="cashierbutton">
 		{if $showPrices}
 			<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['bobshopConfigCashierbutton']|escape}{/tr}">

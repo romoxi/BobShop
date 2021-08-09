@@ -281,10 +281,10 @@ objects:
       permname: bobshopConfigPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:60ba0c42a2bd6$'
-        fieldId: '$unknownobject:60ba0c42a2bde$'
+        trackerId: '$unknownobject:61113d63e53ac$'
+        fieldId: '$unknownobject:61113d63e53b4$'
         displayFieldsList:
-          - '$unknownobject:60ba0c42a2bde$'
+          - '$unknownobject:61113d63e53b4$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact
@@ -551,6 +551,78 @@ objects:
         exact: 'n'
       type: text_field
       order: '320'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigTikiUserRegistration
+    data:
+      name: tikiUserRegistration
+      permname: bobshopConfigTikiUserRegistration
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '330'
+      description: 'y = use the tikiwiki user system to login and order; n = use the BobShop own user contact form (user data will be stored in seperate files)'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigUserFields
+    data:
+      name: userFields
+      permname: bobshopConfigUserFields
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '340'
+      description: 'if tikiUserRegistration=n this field is used for contact information: firstname*|lastname|street|zip|city|Email@; * = requiered; @ = email; the field ''Email'' is used to send email at the end of buying'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigStockControl
+    data:
+      name: stockControl
+      permname: bobshopConfigStockControl
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '350'
+      description: 'y = turns the stock control (inventory) system on;'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigStockWarning
+    data:
+      name: stockWarning
+      permname: bobshopConfigStockWarning
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '360'
+      description: 'if stockQuantity  lower stockWarning there is a hint in the products page'
       visby: {  }
       editby: {  }
       flags:

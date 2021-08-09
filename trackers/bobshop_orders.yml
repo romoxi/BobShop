@@ -7,10 +7,7 @@ objects:
     data:
       name: bobshop_orders
       description: 'Orders per session'
-      admin_only_view: 'y'
-      restrict_end: '0'
       form_classes: ''
-      restrict_start: '0'
   -
     type: tracker_field
     ref: bobshop_orders_bobshopOrderOrderNumber
@@ -107,10 +104,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '60'
       visby: {  }
       editby: {  }
@@ -125,9 +119,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '70'
       visby: {  }
       editby: {  }
@@ -142,10 +134,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '80'
       visby: {  }
       editby: {  }
@@ -160,9 +149,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '90'
       visby: {  }
       editby: {  }
@@ -177,10 +164,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '100'
       visby: {  }
       editby: {  }
@@ -195,10 +179,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '110'
       visby: {  }
       editby: {  }
@@ -213,10 +194,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '120'
       visby: {  }
       editby: {  }
@@ -410,6 +388,7 @@ objects:
       visby: {  }
       editby: {  }
       flags:
+        - list
         - public
   -
     type: tracker_field
@@ -420,13 +399,13 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         datetime: dt
-        blankdate: blank
       type: datetime
       order: '240'
       description: 'date and time the order was last modyfied'
       visby: {  }
       editby: {  }
       flags:
+        - list
         - public
   -
     type: tracker_field
@@ -496,6 +475,24 @@ objects:
       editby: {  }
       flags:
         - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderBobshopUser
+    data:
+      name: bobshopUser
+      permname: bobshopOrderBobshopUser
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '290'
+      visby: {  }
+      editby: {  }
+      flags:
         - list
         - public
   -

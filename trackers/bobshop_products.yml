@@ -313,6 +313,44 @@ objects:
       flags:
         - public
   -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductStockQuantity
+    data:
+      name: stockQuantity
+      permname: bobshopProductStockQuantity
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '160'
+      description: 'holds the current quantity that are available for selling'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductStockWarning
+    data:
+      name: stockWarning
+      permname: bobshopProductStockWarning
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '170'
+      description: 'if stockQuantity is lower than stockWarning there is a hint in the product page; if "0" the value from bobshop_Config. stockWarning is used'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
     type: tracker_option
     ref: bobshop_products_sort_default_field
     data:

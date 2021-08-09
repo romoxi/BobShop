@@ -29,7 +29,6 @@
 									width="250px"
 								}
 								{/wikiplugin}
-
 							{/if}
 						</a>
 					</div>

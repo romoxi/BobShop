@@ -1,4 +1,5 @@
 {* $Id$ *}
+{* not used since v1_7 *}
 {foreach from=$products item=row}
 	{if $row.bobshopProductProductId == $productId}	
 	

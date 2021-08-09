@@ -89,7 +89,7 @@ function wikiplugin_bobshop($data, $params)
 		
 	$fieldNames['bobshopOrderSessionId'] = $_SESSION['__Laminas']['_VALID']['Laminas\Session\Validator\Id'];
 	
-	echo $fieldNames['bobshopOrderSessionId']."<br>";
+	//echo $fieldNames['bobshopOrderSessionId']."<br>";
 	//echo 'username: '. $userData['user'];
 
 	//is there a open order for the current session?

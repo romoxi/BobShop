@@ -7,14 +7,15 @@ https://github.com/romoxi/bobshop
 
 
 ! Features
-- no need to login to use the shopping-cart 
+- no need to login to use the shopping-cart
+- bobshop own user management available (no need to set any permission for tiki users)
 - individual product fields
-- porducts can be enabled/disabled
+- products can be enabled/disabled
 - multiple payment methodes (PayPal integrated)
 - 3 different tax rates
 - 3 different shipping costs
 - "addToCart"-button can placed on any wikipage
-- built-in registration and login system
+- built-in registration and login system (or bobshop own user management)
 - works without the TikiWiki Functions/Plugins Payment, shopper_info, Shopping Cart etc.
 - templates can be modified
 - bootstrap is used for the templates
@@ -22,6 +23,8 @@ https://github.com/romoxi/bobshop
 - saving and reloading carts
 - default sorting 
 - sorting in product list template (price up/down, name, product tracker field for default sorting)
+- inventory management (stock control) with low in stock warning per product or global
+- individual pages/messages after submitting the order/cart
 
 
 !How to install?
@@ -32,7 +35,7 @@ https://github.com/romoxi/bobshop
 You have to download an copy the files in:
 /lib/wiki-plugins
 /templates/wiki-plugins
-bobshop_register.php
+bobshop_register.php (not used if bobshop own user system is active)
 
 Apply this profile
 
@@ -54,6 +57,7 @@ Just run the profile and upload the newest files, again.
 
 
 !User
+(This is not necessary if bobshop own user system is active)
 If you want the registed users to see there own tracker infos (Name, Address ...) you have to change the following:
 Tracker > User > Properties > Permissions
    > User can see his own items
@@ -62,6 +66,7 @@ Tracker > User > Properties > Permissions
 
 !Dependencys
 (to make after appling this profile)
+(This is not necessary if bobshop own user system is active)
 Settings > Control Panels > User Settings > Groups > Registered    
       > User Registration Tracker > User
 Save now!
@@ -83,7 +88,7 @@ Settings > Control Panels
 
    > Trackers > Auto-Increment
 
-   > Log In 
+   > Log In (This is not necessary if bobshop own user system is active)
       > Authentication method > Tiki
       > User can register
       > Validate new user registrations by email > DISABLED
@@ -95,7 +100,7 @@ Settings > Control Panels
    
 
 !Version
-This profile is for the plugin version v1_7_1.
+This profile is for the plugin version v1_8_1.
 
 
 !Manual
@@ -155,6 +160,7 @@ preferences:
  wikiplugininline_remarksbox: 'y'
  wikiplugin_dialog: 'y'
 {CODE}
+
 
 !YAML for trackers
 
@@ -443,10 +449,10 @@ objects:
       permname: bobshopConfigPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:60ba0c42a2bd6$'
-        fieldId: '$unknownobject:60ba0c42a2bde$'
+        trackerId: '$unknownobject:61113d63e53ac$'
+        fieldId: '$unknownobject:61113d63e53b4$'
         displayFieldsList:
-          - '$unknownobject:60ba0c42a2bde$'
+          - '$unknownobject:61113d63e53b4$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact
@@ -713,6 +719,78 @@ objects:
         exact: 'n'
       type: text_field
       order: '320'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigTikiUserRegistration
+    data:
+      name: tikiUserRegistration
+      permname: bobshopConfigTikiUserRegistration
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '330'
+      description: 'y = use the tikiwiki user system to login and order; n = use the BobShop own user contact form (user data will be stored in seperate files)'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigUserFields
+    data:
+      name: userFields
+      permname: bobshopConfigUserFields
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '340'
+      description: 'if tikiUserRegistration=n this field is used for contact information: firstname*|lastname|street|zip|city|Email@; * = requiered; @ = email; the field ''Email'' is used to send email at the end of buying'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigStockControl
+    data:
+      name: stockControl
+      permname: bobshopConfigStockControl
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '350'
+      description: 'y = turns the stock control (inventory) system on;'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigStockWarning
+    data:
+      name: stockWarning
+      permname: bobshopConfigStockWarning
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '360'
+      description: 'if stockQuantity  lower stockWarning there is a hint in the products page'
       visby: {  }
       editby: {  }
       flags:
@@ -1043,6 +1121,44 @@ objects:
       flags:
         - public
   -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductStockQuantity
+    data:
+      name: stockQuantity
+      permname: bobshopProductStockQuantity
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '160'
+      description: 'holds the current quantity that are available for selling'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductStockWarning
+    data:
+      name: stockWarning
+      permname: bobshopProductStockWarning
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        dec_point: .
+        thousands: ','
+      type: numeric
+      order: '170'
+      description: 'if stockQuantity is lower than stockWarning there is a hint in the product page; if "0" the value from bobshop_Config. stockWarning is used'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
     type: tracker_option
     ref: bobshop_products_sort_default_field
     data:
@@ -1352,10 +1468,7 @@ objects:
     data:
       name: bobshop_orders
       description: 'Orders per session'
-      admin_only_view: 'y'
-      restrict_end: '0'
       form_classes: ''
-      restrict_start: '0'
   -
     type: tracker_field
     ref: bobshop_orders_bobshopOrderOrderNumber
@@ -1452,10 +1565,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '60'
       visby: {  }
       editby: {  }
@@ -1470,9 +1580,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '70'
       visby: {  }
       editby: {  }
@@ -1487,10 +1595,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '80'
       visby: {  }
       editby: {  }
@@ -1505,9 +1610,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '90'
       visby: {  }
       editby: {  }
@@ -1522,10 +1625,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '100'
       visby: {  }
       editby: {  }
@@ -1540,10 +1640,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '110'
       visby: {  }
       editby: {  }
@@ -1558,10 +1655,7 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         samerow: 1
-        decimals: 2
-        dec_point: .
-        thousands: ','
-      type: numeric
+      type: text_field
       order: '120'
       visby: {  }
       editby: {  }
@@ -1755,6 +1849,7 @@ objects:
       visby: {  }
       editby: {  }
       flags:
+        - list
         - public
   -
     type: tracker_field
@@ -1765,13 +1860,13 @@ objects:
       tracker: '$profileobject:bobshop_orders$'
       options:
         datetime: dt
-        blankdate: blank
       type: datetime
       order: '240'
       description: 'date and time the order was last modyfied'
       visby: {  }
       editby: {  }
       flags:
+        - list
         - public
   -
     type: tracker_field
@@ -1841,6 +1936,24 @@ objects:
       editby: {  }
       flags:
         - link
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderBobshopUser
+    data:
+      name: bobshopUser
+      permname: bobshopOrderBobshopUser
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '290'
+      visby: {  }
+      editby: {  }
+      flags:
         - list
         - public
   -

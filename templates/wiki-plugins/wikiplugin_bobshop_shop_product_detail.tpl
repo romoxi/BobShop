@@ -45,15 +45,33 @@
 							<br>zzgl. Versandkosten</p>
 						{/if}
 						<p class="small">Artikelnr.: {$product.bobshopProductProductId}</p>
-						{if $showPrices}
+						
+						{if $showPrices and $shopConfig.bobshopConfigStockControl eq "n"}
 							<p>Lieferzeit: {$product.bobshopProductDeliveryTime}</p>
 						{/if}
-						
+							
 						{* stock control*}
-				
-						{if $shopConfig['bobshopConfigStockControl'] eq "y"}
-							<p>Lagerbestand: {$product.bobshopProductStockQuantity}<p>
+						{if $shopConfig.bobshopConfigStockControl eq "y"}
+							<p>Lieferzeit: 
+							{if $product.bobshopProductStockQuantity > 0}
+								{if 
+									($product.bobshopProductStockWarning == 0 and $product.bobshopProductStockQuantity < $shopConfig.bobshopConfigStockWarning)
+									or
+									($product.bobshopProductStockWarning  > 0 and $product.bobshopProductStockQuantity < $product.bobshopProductStockWarning)
+								}
+									<span style="color: orange;">Lagerbestand gering!</span>
+								{else}
+									<span style="color: green;">Ab Lager.</span>
+								{/if}
+							{else}
+								<span style="color: red;">Derzeit nicht lieferbar!</span>
+							{/if}
+							</p>
 						{/if}
+
+							{*if $shopConfig['bobshopConfigStockControl'] eq "y"}
+							<p>Lagerbestand: {$product.bobshopProductStockQuantity}<p>
+						{/if*}
 
 						{if $cart}
 							{include file="templates/wiki-plugins/wikiplugin_bobshop_button_add.tpl"}

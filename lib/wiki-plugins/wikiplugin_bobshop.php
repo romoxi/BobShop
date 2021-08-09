@@ -94,10 +94,12 @@ function wikiplugin_bobshop($data, $params)
 
 	//is there a open order for the current session?
 	$shopConfig['currentOrderNumber'] = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
+	//echo 'currentOrderNumber: '. $shopConfig['currentOrderNumber'];
 	
 	//if there is no open order for the current session, is there a open order for the current user?
 	if($shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
 	{
+		//echo 'tikiUserSystem';
 		/**
 		 * Returns some detailed user info
 		 * userId, email, login ...
@@ -114,11 +116,12 @@ function wikiplugin_bobshop($data, $params)
 		if(isset($userData['user']) && $userData['user'] != '')
 		{
 			$orderNumberByUser = get_tracker_shop_orders_order_number_by_username($userData['user'], $shopConfig);
-
+			//echo 'orderNumberByUser: '. $orderNumberByUser;
 			// after login the user should have his old order (cart)
 			if($shopConfig['currentOrderNumber'] == 0 && $orderNumberByUser != 0)
 			{
 				$shopConfig['currentOrderNumber'] = $orderNumberByUser;
+				//echo 'currentOrderNumber: '. $shopConfig['currentOrderNumber'];
 			}
 			//what is, if there are two orders? a new one by sessionId and an old one
 			//elseif($shopConfig['currentOrderNumber'] != 0 && $orderNumberByUser != 0)
@@ -136,6 +139,8 @@ function wikiplugin_bobshop($data, $params)
 				$shopConfig['currentOrderNumber'] = $newNumber;
 				//join the two orders
 				update_tracker_shop_orders_join($oldNumber, $newNumber, $shopConfig);
+				//echo 'join 2 orders';
+			
 			}
 		}
 	}
@@ -232,6 +237,17 @@ function wikiplugin_bobshop($data, $params)
 			
 			case 'quantitySub':
 				update_tracker_shop_order_items_quantity_sub($jitGet->productId->text(), $shopConfig);
+				break;
+			
+			case 'modify_quantity':
+				$orderItems = $orderItems = get_tracker_shop_order_items($shopConfig);
+				foreach($orderItems as $itemId => $item)
+				{
+					$var = 'quantity'. $item[$shopConfig['productProductIdFieldId']];
+					$productNewQuantity = $jitRequest->$var->text();
+					//echo "pid". $productNewQuantity .'<br>';
+					update_tracker_shop_order_item_quantity_mod($itemId, $productNewQuantity, $shopConfig);
+				}
 				break;
 			
 			case 'add_to_cart':
@@ -393,6 +409,18 @@ function wikiplugin_bobshop($data, $params)
 				if($shopConfig['bobshopConfigOpMode'] != 'sandbox')
 				{
 					update_tracker_shop_order_status(2, $shopConfig);
+				}
+				
+				//stock control
+				if($shopConfig['bobshopConfigStockControl'] == 'y')
+				{
+					//load the ordered items
+					$orderItems = get_tracker_shop_order_items($shopConfig);
+					foreach($orderItems as $key => $value)
+					{
+						//dec the stock quantity
+						update_tracker_shop_product_quantity($value[$shopConfig['productProductIdFieldId']], $shopConfig, $value[$shopConfig['orderItemQuantityFieldId']] );
+					}
 				}
 				
 				//send a order-received mail
@@ -629,6 +657,7 @@ function wikiplugin_bobshop($data, $params)
 		case 'show_cart':
 			if($cart)
 			{
+				check_duplicate_order_items_by_current_order_number($shopConfig);
 				$orderItems = get_tracker_shop_order_items($shopConfig);
 				$smarty->assign('shopConfig', $shopConfig);
 				if(!empty($orderItems))
@@ -909,6 +938,8 @@ function get_tracker_shop_config()
 		'productWikipageNameFieldId'	=> 'bobshopProductWikipageName',
 		'productWikipageFieldId'		=> 'bobshopProductWikipage',
 		'productPic1FieldId'			=> 'bobshopProductPic1',
+		'productStockQuantityFieldId'	=> 'bobshopProductStockQuantity',
+		'productStockWarningFieldId'	=> 'bobshopProductStockWarning',
 		'productPriceFieldId'			=> 'bobshopProductPrice');
 	
 	foreach($shopConfig['productFields']  as $key => $name)
@@ -1350,6 +1381,7 @@ function insert_tracker_shop_order_items($fieldNames, $shopConfig)
 
 	//is the article_number already in the order?
 	//if already exist, do not insert
+	//returns the itemId from the productId
 	$itemId = check_is_productId_in_cart($fieldNames['bobshopOrderItemProductId'], $shopConfig);
 	//echo '<hr>itemId: '. $itemId;
 	if($itemId != false)
@@ -1413,8 +1445,8 @@ function insert_tracker_shop_order_items($fieldNames, $shopConfig)
 
 
 /**
- * check if a articleNumber is already in the cart
- * 
+ * check if a productId is already in the cart
+ * returns itemId for the productId
  */
 function check_is_productId_in_cart($productId, $shopConfig)
 {
@@ -1425,6 +1457,7 @@ function check_is_productId_in_cart($productId, $shopConfig)
 	{
 		if($item[$shopConfig['productProductIdFieldId']] == $productId)
 		{
+			//update_tracker_shop_order_items_delete($itemId, $shopConfig);
 			return $itemId;
 		}
 	}
@@ -1494,10 +1527,119 @@ function update_tracker_shop_order_items_quantity_sub($productId, $shopConfig)
 }
 
 
+/*
+ * new quantity for productId
+ */
+function update_tracker_shop_order_item_quantity_mod($itemId, $quantity, $shopConfig)
+{
+	global $tikilib;
+	//echo 'productId<hr>'. $productId;
+	//$product = get_tracker_shop_order_items($shopConfig, $productId);
+	//$itemId = array_key_first($product);
+	//echo 'itemId: '. $itemId;
+	//return;
+	
+	$result = $tikilib->query(
+			"UPDATE 
+				tiki_tracker_item_fields
+			SET
+				value = ?
+			WHERE
+				itemId = ?
+			AND
+				fieldId = ?
+			", [$quantity, $itemId, $shopConfig['orderItemQuantityFieldId']]
+			);
+	return;
+}
+
+
+/*
+ * delete a productId from the bobshop_order_items tracker
+ * do not really delete 
+ * assign the orderNumber 0
+ */
+function update_tracker_shop_order_items_delete($itemId, $shopConfig)
+{
+	//echo 'itemId del: '. $itemId .'<br>';
+	//return;
+	global $tikilib;
+	//echo 'productId<hr>'. $productId;
+	//$product = get_tracker_shop_order_items($shopConfig, $productId);
+	//$itemId = array_key_first($product);
+	//echo 'itemId: '. $itemId;
+	//return;
+	
+	$result = $tikilib->query(
+			"UPDATE 
+				tiki_tracker_item_fields
+			SET
+				value = 0
+			WHERE
+				itemId = ?
+			AND
+				fieldId = ?
+			", [$itemId, $shopConfig['orderItemOrderNumberFieldId']]
+			);
+	return;
+}
+
+/*
+ * check for duplicate products in the cart
+ * 
+ */
+function check_duplicate_order_items_by_current_order_number($shopConfig)
+{
+	//return;
+	$orderItems =  get_tracker_shop_order_items($shopConfig);
+
+	//return if empty
+	if(empty($orderItems)) return;
+	
+	$itemIdPositive = [];	//all itemId with positive quantity
+	foreach($orderItems as $itemId => $item)
+	{
+		//if  the quantity is 0 delete the item
+		if($item[$shopConfig['orderItemQuantityFieldId']] == 0)
+		{
+			update_tracker_shop_order_items_delete($itemId, $shopConfig);
+		}
+		
+		foreach($orderItems as $key => $value)
+		{
+			//are the productIds the same?
+			if(
+				$item[$shopConfig['productProductIdFieldId']] == $value[$shopConfig['productProductIdFieldId']]
+				&&
+				$item[$shopConfig['orderItemQuantityFieldId']] > 0
+				&&
+				$value[$shopConfig['orderItemQuantityFieldId']] > 0
+				&&
+				$itemId != $key
+				&&
+				!in_array($itemId, $itemIdPositive)
+			)
+			{
+				$itemIdPositive[] .= $key;
+				//echo 'i: '. $key .'<br>';
+			}
+		}
+	}
+		
+	foreach($itemIdPositive as $itemIdDel)
+	{
+		update_tracker_shop_order_items_delete($itemIdDel, $shopConfig);
+	}
+
+	return;	
+}
+
+
 /**
  * get all products for one order
  * 
  * @return array with all products in that order
+ * 
  */
 function get_tracker_shop_order_items($shopConfig, $productId = false)
 {
@@ -2047,6 +2189,37 @@ function update_tracker_shop_order_username($user, $shopConfig)
 			);
 	return;	
 }
+
+
+/**
+ * update productStockQuantiy
+ * 
+ *
+ */
+function update_tracker_shop_product_quantity($productId, $shopConfig, $quantity)
+{
+	global $tikilib;
+	//echo 'productId: '. $productId .'<br>';
+	//echo 'quantity: '. $quantity .'<br>';
+	//get the itemId
+	$product = get_tracker_shop_product_by_productId($productId, $shopConfig);
+	
+	$result = $tikilib->query(
+			"UPDATE 
+				tiki_tracker_item_fields
+			SET
+				value = value - ?
+			WHERE
+				itemId = ?
+			AND
+				fieldId = ?
+			", [$quantity,
+				$product['itemId'], 
+				$shopConfig['productStockQuantityFieldId']]
+			);
+	return;
+}
+
 
 
 /**

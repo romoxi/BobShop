@@ -37,10 +37,12 @@
 			{if !is_array($fieldname)} 
 				{if array_key_exists($fieldname, $bobshopUserFields)}
 					{if is_array($bobshopUserFields[$fieldname])}
-						{if $bobshopUserFields[$fieldname][0] eq 'required'} 
-							{$required = 'required'}
+						{*if $bobshopUserFields[$fieldname][0] eq 'required'*} 
+						{if in_array('required', $bobshopUserFields[$fieldname])} 
+							{$required = ' required="required" '}
 						{/if}
-						{if $bobshopUserFields[$fieldname][0] eq 'email'} 
+						{*if $bobshopUserFields[$fieldname][0] eq 'email'*} 
+						{if in_array('email', $bobshopUserFields[$fieldname])} 
 							{$type = 'email'}
 						{/if}
 					{/if}
@@ -58,7 +60,6 @@
 					</td>
 					<td>
 						<input class="form-control" {$required} id="f{$fieldname}" type="{$type}" name="{$fieldname}" value="{$value}">
-
 					</td>
 				</tr>
 			{/if}

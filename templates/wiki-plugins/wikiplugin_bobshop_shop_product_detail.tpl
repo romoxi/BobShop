@@ -83,7 +83,8 @@
 		{* Detail container *}
 		<div style="{$divborder} margin-top: 20px;" class="row">
 			<div style="{$divborder}" class="col-sm-12">
-				<p>{$product.bobshopProductDescription|nl2br}</p>
+				{*<p>{$product.bobshopProductDescription|nl2br}</p>*}
+				{wiki}{$product.bobshopProductDescription}{/wiki}
 			</div>
 		</div>
 	{/if}

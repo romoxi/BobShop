@@ -67,7 +67,8 @@
 				
 				{* 2 column *}
 				<div style="{$divborder}" class="col-sm-5">
-					<p>{$row.bobshopProductDescription|nl2br}</p>
+					{*<p>{$row.bobshopProductDescription|nl2br}</p>*}
+					{wiki}{$row.bobshopProductDescription}{/wiki}
 				</div>
 
 

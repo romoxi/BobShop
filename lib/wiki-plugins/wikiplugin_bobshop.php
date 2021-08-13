@@ -274,7 +274,7 @@ function wikiplugin_bobshop($data, $params)
 						$fieldNames['bobshopOrderItemOrderNumber'] = $orderVars['orderNumber'];
 						//$shopConfig['currentOrderNumber'] = $orderVars['orderNumber'];
 						insert_tracker_shop_order_items($fieldNames, $shopConfig);
-						$output .= message('Artikel wurde zum Warenkorb hinzugefügt.', '');
+						$output .= message('Artikel wurde zum Warenkorb hinzugefügt.', '((bobshop_cart|Zum Warenkorb))');
 					}
 					else
 					{
@@ -334,7 +334,16 @@ function wikiplugin_bobshop($data, $params)
 					}
 					bobshop_user_data_encode($userDataArray, $shopConfig);
 					$bobshopOrderBobshopUser = bobshop_user_data_decode($shopConfig);
-					//var_dump($bobshopOrderBobshopUser);
+					//print_r($bobshopOrderBobshopUser);
+					$bobshopUserEmail = bobshop_user_data_get_mail($bobshopOrderBobshopUser, $bobshopUserFields);
+					//check the mail
+					//echo($bobshopOrderBobshopUser['Email']);
+					$mailInvalid = false;
+					if(!preg_match("/^([a-zA-Z0-9]+([-_\.]?[a-zA-Z0-9])+@[a-zA-Z0-9]+([-_\.]?[a-zA-Z0-9])+\.[a-z]{2,4}){0,}$/", $bobshopUserEmail))
+					{
+						//mail invalid
+						$mailInvalid = true;
+					}
 				}
 				
 				if(!$user && $shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
@@ -376,6 +385,12 @@ function wikiplugin_bobshop($data, $params)
 					{
 						//echo 'AGB nicht zugestimmt';
 						header("location: tiki-index.php?page=bobshop_cashierpage&message=missing_tos");
+					}
+					
+					if($mailInvalid)
+					{
+						header("location: tiki-index.php?page=bobshop_cashierpage&message=mail_invalid");
+						
 					}
 					
 				}
@@ -699,6 +714,10 @@ function wikiplugin_bobshop($data, $params)
 					if($jitGet->message->text() == 'missing_rev')
 					{
 						$output .= message('Zustimmung erforderlich', 'Widerruf nicht zugestimmt', 'warning');
+					}
+					if($jitGet->message->text() == 'mail_invalid')
+					{
+						$output .= message('Mailadresse fehlerhaft', 'Bitte gültige Mailadresse eingeben', 'warning');
 					}
 					update_tracker_shop_order_username($user, $shopConfig);
 					$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
@@ -2421,7 +2440,11 @@ function send_order_received($showPrices, $sums, $shopConfig)
 	{
 		//get the userdata from the tracker bobshop_orders
 		$bobshopOrderBobshopUser = bobshop_user_data_decode($shopConfig);
-		$mailReceiver = $bobshopOrderBobshopUser['Email'];
+		
+		//get the mailaddress
+		$bobshopUserFields = bobshop_user_fields($shopConfig);
+		$mailReceiver = bobshop_user_data_get_mail($bobshopOrderBobshopUser, $bobshopUserFields);
+		//$mailReceiver = $bobshopOrderBobshopUser['Email'];
 		//print_r($bobshopOrderBobshopUser);
 	}	
 	
@@ -2579,23 +2602,19 @@ function bobshop_user_fields($shopConfig)
 		//search for *
 		$asterixPos = strpos($field, '*');
 		$emailPos = strpos($field, '@');
+		$fieldRaw = preg_replace('[@|\*]', '', $field);
+		$fieldArray[] .= $fieldRaw;
 		if($asterixPos)
 		{
-			$fieldRaw = substr($field, 0, $asterixPos);
-			$fieldArray[] .= $fieldRaw;
 			$fieldArray[$fieldRaw][] .= 'required';
 		}
 		if($emailPos)
 		{
-			$fieldRaw = substr($field, 0, $emailPos);
-			$fieldArray[] .= $fieldRaw;
 			$fieldArray[$fieldRaw][] .= 'email';
+			//speziel field for mail
+			$fieldArray['mailReceiver']['userMailField'] = $fieldRaw;
 		}
-		if(!$asterixPos && !$emailPos)
-		{
-			$fieldRaw = $field;
-			$fieldArray[] .= $fieldRaw;
-		}
+
 	}
 	//print_r($fieldArray);
 	return $fieldArray;
@@ -2630,9 +2649,18 @@ function bobshop_user_data_decode($shopConfig)
 
 		//echo "DATAd: ". $data . "<hr>" . $text;
 		return json_decode($data, true);
-		
 	}
+}
 
+
+/*
+ * returns the mailaddress from the bobshop own user system
+ */
+function bobshop_user_data_get_mail($data, $fields)
+{
+	//print_r($data); echo '<hr>'; print_r($fields);
+	$mail = $data[$fields['mailReceiver']['userMailField']];
+	return $mail;
 }
 
 function bobshop_user_data_encode($userDataArray, $shopConfig)

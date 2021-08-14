@@ -334,7 +334,6 @@ function wikiplugin_bobshop($data, $params)
 					}
 					bobshop_user_data_encode($userDataArray, $shopConfig);
 					$bobshopOrderBobshopUser = bobshop_user_data_decode($shopConfig);
-					//print_r($bobshopOrderBobshopUser);
 					$bobshopUserEmail = bobshop_user_data_get_mail($bobshopOrderBobshopUser, $bobshopUserFields);
 					//check the mail
 					//echo($bobshopOrderBobshopUser['Email']);

@@ -2601,6 +2601,8 @@ function bobshop_user_fields($shopConfig)
 		//search for *
 		$asterixPos = strpos($field, '*');
 		$emailPos = strpos($field, '@');
+		
+		//remove useless stuff
 		$fieldRaw = preg_replace('[@|\*]', '', $field);
 		$fieldArray[] .= $fieldRaw;
 		if($asterixPos)

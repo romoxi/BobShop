@@ -1,7 +1,7 @@
 <?php
 /**
  * BobShop
- * Version: 1_8_2
+ * Version: 1_9_0
  * This Plugin is for CMS TikiWiki
  * 
  * BobShop is a shopping cart system for TikiWiki. 

@@ -234,7 +234,7 @@ objects:
         blankdate: blank
       type: datetime
       order: '140'
-      description: 'has aggred Terms of Service at this date'
+      description: 'has aggreed Terms of Service at this date'
       visby: {  }
       editby: {  }
       flags:
@@ -401,7 +401,7 @@ objects:
         datetime: dt
       type: datetime
       order: '240'
-      description: 'date and time the order was last modyfied'
+      description: 'date and time the order was last modified'
       visby: {  }
       editby: {  }
       flags:
@@ -494,6 +494,24 @@ objects:
       editby: {  }
       flags:
         - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentResponse
+    data:
+      name: paymentResponse
+      permname: bobshopOrderPaymentResponse
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        distinct: 'n'
+        wysiwyg: 'n'
+        samerow: 1
+      type: text_area
+      order: '300'
+      description: 'response notice by payment service'
+      visby: {  }
+      editby: {  }
+      flags:
         - public
   -
     type: tracker_option

@@ -25,6 +25,8 @@ https://github.com/romoxi/bobshop
 - sorting in product list template (price up/down, name, product tracker field for default sorting)
 - inventory management (stock control) with low in stock warning per product or global
 - individual pages/messages after submitting the order/cart
+- product variations (eg. small, medium, large or red, blue, green)
+- custom language file for easy translating in your language
 
 
 !How to install?
@@ -100,7 +102,7 @@ Settings > Control Panels
    
 
 !Version
-This profile is for the plugin version v1_8_1.
+This profile is for the plugin version v1_9_0.
 
 
 !Manual
@@ -269,10 +271,10 @@ objects:
         - public
   -
     type: tracker_field
-    ref: bobshop_config_bobshopConfigCashierbutton
+    ref: bobshop_config_bobshopConfigCashierButtonText
     data:
       name: cashierButtonText
-      permname: bobshopConfigCashierbutton
+      permname: bobshopConfigCashierButtonText
       tracker: '$profileobject:bobshop_config$'
       options:
         samerow: 1
@@ -449,10 +451,10 @@ objects:
       permname: bobshopConfigPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:61113d63e53ac$'
-        fieldId: '$unknownobject:61113d63e53b4$'
+        trackerId: '$unknownobject:611d37f10637a$'
+        fieldId: '$unknownobject:611d37f106384$'
         displayFieldsList:
-          - '$unknownobject:61113d63e53b4$'
+          - '$unknownobject:611d37f106384$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact
@@ -911,7 +913,6 @@ objects:
       visby: {  }
       editby: {  }
       flags:
-        - list
         - public
   -
     type: tracker_field
@@ -930,7 +931,6 @@ objects:
       visby: {  }
       editby: {  }
       flags:
-        - list
         - public
   -
     type: tracker_field
@@ -949,7 +949,6 @@ objects:
       visby: {  }
       editby: {  }
       flags:
-        - list
         - public
   -
     type: tracker_field
@@ -1075,7 +1074,7 @@ objects:
         exact: 'n'
       type: text_field
       order: '130'
-      description: '1 = enabled to be displayed in the product list; 0 = no display but still available in the cart'
+      description: '1 = enabled to be displayed in the product list; 0 = no display but still available in the cart; 2 = product is a subset (variant)'
       visby: {  }
       editby: {  }
       flags:
@@ -1099,7 +1098,6 @@ objects:
       visby: {  }
       editby: {  }
       flags:
-        - list
         - public
   -
     type: tracker_field
@@ -1153,6 +1151,62 @@ objects:
       type: numeric
       order: '170'
       description: 'if stockQuantity is lower than stockWarning there is a hint in the product page; if "0" the value from bobshop_Config. stockWarning is used'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductVariantName
+    data:
+      name: variantName
+      permname: bobshopProductVariantName
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '190'
+      description: 'Name for different variants of the product (e.g. small, medium, large); see also variantProductsIds and variantSuperset'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductVariantProductIds
+    data:
+      name: variantProductIds
+      permname: bobshopProductVariantProductIds
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '200'
+      description: 'productIds from different product variants; (e.g. 1006| 1006a|1006b)'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductVariantSuperset
+    data:
+      name: variantSuperset
+      permname: bobshopProductVariantSuperset
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '210'
+      description: 'Base productId for the differen variants of a product'
       visby: {  }
       editby: {  }
       flags:
@@ -1695,7 +1749,7 @@ objects:
         blankdate: blank
       type: datetime
       order: '140'
-      description: 'has aggred Terms of Service at this date'
+      description: 'has aggreed Terms of Service at this date'
       visby: {  }
       editby: {  }
       flags:
@@ -1862,7 +1916,7 @@ objects:
         datetime: dt
       type: datetime
       order: '240'
-      description: 'date and time the order was last modyfied'
+      description: 'date and time the order was last modified'
       visby: {  }
       editby: {  }
       flags:
@@ -1955,6 +2009,24 @@ objects:
       editby: {  }
       flags:
         - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderPaymentResponse
+    data:
+      name: paymentResponse
+      permname: bobshopOrderPaymentResponse
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        distinct: 'n'
+        wysiwyg: 'n'
+        samerow: 1
+      type: text_area
+      order: '300'
+      description: 'response notice by payment service'
+      visby: {  }
+      editby: {  }
+      flags:
         - public
   -
     type: tracker_option

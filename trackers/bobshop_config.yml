@@ -101,10 +101,10 @@ objects:
         - public
   -
     type: tracker_field
-    ref: bobshop_config_bobshopConfigCashierbutton
+    ref: bobshop_config_bobshopConfigCashierButtonText
     data:
       name: cashierButtonText
-      permname: bobshopConfigCashierbutton
+      permname: bobshopConfigCashierButtonText
       tracker: '$profileobject:bobshop_config$'
       options:
         samerow: 1
@@ -281,10 +281,10 @@ objects:
       permname: bobshopConfigPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:61113d63e53ac$'
-        fieldId: '$unknownobject:61113d63e53b4$'
+        trackerId: '$unknownobject:611d37f10637a$'
+        fieldId: '$unknownobject:611d37f106384$'
         displayFieldsList:
-          - '$unknownobject:61113d63e53b4$'
+          - '$unknownobject:611d37f106384$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact

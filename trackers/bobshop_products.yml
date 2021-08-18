@@ -103,7 +103,6 @@ objects:
       visby: {  }
       editby: {  }
       flags:
-        - list
         - public
   -
     type: tracker_field
@@ -122,7 +121,6 @@ objects:
       visby: {  }
       editby: {  }
       flags:
-        - list
         - public
   -
     type: tracker_field
@@ -141,7 +139,6 @@ objects:
       visby: {  }
       editby: {  }
       flags:
-        - list
         - public
   -
     type: tracker_field
@@ -267,7 +264,7 @@ objects:
         exact: 'n'
       type: text_field
       order: '130'
-      description: '1 = enabled to be displayed in the product list; 0 = no display but still available in the cart'
+      description: '1 = enabled to be displayed in the product list; 0 = no display but still available in the cart; 2 = product is a subset (variant)'
       visby: {  }
       editby: {  }
       flags:
@@ -291,7 +288,6 @@ objects:
       visby: {  }
       editby: {  }
       flags:
-        - list
         - public
   -
     type: tracker_field
@@ -345,6 +341,62 @@ objects:
       type: numeric
       order: '170'
       description: 'if stockQuantity is lower than stockWarning there is a hint in the product page; if "0" the value from bobshop_Config. stockWarning is used'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductVariantName
+    data:
+      name: variantName
+      permname: bobshopProductVariantName
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '190'
+      description: 'Name for different variants of the product (e.g. small, medium, large); see also variantProductsIds and variantSuperset'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductVariantProductIds
+    data:
+      name: variantProductIds
+      permname: bobshopProductVariantProductIds
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '200'
+      description: 'productIds from different product variants; (e.g. 1006| 1006a|1006b)'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_products_bobshopProductVariantSuperset
+    data:
+      name: variantSuperset
+      permname: bobshopProductVariantSuperset
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '210'
+      description: 'Base productId for the differen variants of a product'
       visby: {  }
       editby: {  }
       flags:

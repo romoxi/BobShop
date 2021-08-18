@@ -14,13 +14,12 @@
 
 {* display billing adress *}
 {if $showPrices}
-	<h2>Rechnungsempfänger</h2>
+	<h2>{tr}Invoice Recipient{/tr}</h2>
 {else}
-	<h2>Angebotsempfänger</h2>
+	<h2>{tr}Offeree{/tr}</h2>
 {/if}
 {if $shopConfig['bobshopConfigTikiUserRegistration'] == 'y'} 
-	<p>Eingeloggt als: {$user}</p>
-		{include file="templates/wiki-plugins/wikiplugin_bobshop_userdetail_inc.tpl" scope="global"}
+	{include file="templates/wiki-plugins/wikiplugin_bobshop_userdetail_inc.tpl" scope="global"}
 	<br>
 {else}
 	<table class="table table-hover">
@@ -69,7 +68,7 @@
 	</table>
 {/if}
 
-<h2>Zahlungsmethode</h2>
+<h2>{tr}Payment Method{/tr}</h2>
 
 {* payment *}
 {if $showPrices}
@@ -82,13 +81,13 @@
 	</colgroup>
 	<tr>
 		<th>
-			Auswahl
+			{tr}Choice{/tr}
 		</th>
 		<th>
-			Service
+			{tr}Service{/tr}
 		</th>
 		<th>
-			Kosten
+			{tr}Costs{/tr}
 		</th>
 	</tr>
 	{foreach from=$payment key=key item=row}
@@ -168,13 +167,13 @@
 		</colgroup>
 		<tr>
 			<th>
-				Auswahl
+				{tr}Choice{/tr}
 			</th>
 			<th>
-				Service
+				{tr}Service{/tr}
 			</th>
 			<th>
-				Kosten
+				{tr}Costs{/tr}
 			</th>
 		</tr>
 		<tr>
@@ -184,7 +183,7 @@
 				</label>
 			</td>
 			<td>
-				DHL 
+				DHL
 			</td>
 			<td>
 				{$sumShipping|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
@@ -197,21 +196,21 @@
 	{*{$smarty.now|date_format:'%Y-%m-%d %H:%M:%S'}<br>*}
 
 	<br>
-	<h2>AGB und Widerruf</h2>
+	<h2>{tr}TOS and REVN{/tr}</h2>
 	<br>
 	{* display revocation notice agreement *}
 	{if $shopConfig['bobshopConfigTermsOfServicePage'] != ''}
 		<input required type="checkbox" name="tos" value="{$smarty.now}">
-		<label>Ich habe die aktuellen AGB's gelesen und stimme diesen zu.</label>
-		<br><a target='_blank' href="tiki-index.php?page={$shopConfig['bobshopConfigTermsOfServicePage']}">Allgemeine Geschäftsbedingungen in neuem Fenster anzeigen.</a>
+		<label>{tr}I have read and accept the Terms of Service{/tr}</label>
+		<br><a target='_blank' href="tiki-index.php?page={$shopConfig['bobshopConfigTermsOfServicePage']}">{tr}Open Terms of Service in a new window{/tr}</a>
 		<hr>
 	{/if}
 
 	{* display tos agreement *}
 	{if $shopConfig['bobshopConfigRevocationNotice'] != ''}
 		<input required type="checkbox" name="revocation" value="{$smarty.now}">
-		<label>Ich habe die aktuelle Widerrufsbelehrung gelesen und stimme dieser zu.</label>
-		<br><a target='_blank' href="tiki-index.php?page={$shopConfig['bobshopConfigRevocationNotice']}">Widerrufsbelehrung in neuem Fenster anzeigen.</a>
+		<label>{tr}I have read and accept the revocation instruction{/tr}</label>
+		<br><a target='_blank' href="tiki-index.php?page={$shopConfig['bobshopConfigRevocationNotice']}">{tr}Open revocation instruction in a new window{/tr}</a>
 		<hr>
 	{/if}
 {else}
@@ -227,6 +226,6 @@
 	<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['bobshopConfigCheckoutButtonText']|escape}{/tr}">
 {else}
 	<input type="hidden" name="action" value="invite_offer">
-	<input type="submit" class="btn btn-secondary" value="{tr}Angebot jetzt anfragen{/tr}">
+	<input type="submit" class="btn btn-secondary" value="{tr}Enquiry Now{/tr}">
 {/if}
 </form>

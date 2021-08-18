@@ -21,11 +21,11 @@
 {/foreach}
 
 <form method="post" action="tiki-index.php?page=bobshop_order_submitted" style="display: inline;" class="">
-	<h2>Rechnungsempfänger</h2>
+	<h2>{tr}Invoice Recipient{/tr}</h2>
 	{include file="templates/wiki-plugins/wikiplugin_bobshop_userdetail_inc.tpl" scope="global"}
 	{*{$user}*}
 	<br><br>
-	<h2>Warenkorb</h2>
+	<h2>{tr}Cart{/tr}</h2>
 	{include file="templates/wiki-plugins/wikiplugin_bobshop_cartdetail_inc.tpl" scope="global"}
 
 	<hr>
@@ -43,5 +43,5 @@
 
 	{* buttons *}
 	<a class="btn btn-primary" target="" data-role="button" data-inline="true" title="Back" href="tiki-index.php?page=bobshop_cashierpage">{tr}Back{/tr}</a>
-	<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['bobshopConfigBuyNowButtonText']} {$payment.{$order.bobshopOrderPayment}.{$shopConfig['paymentBuyNowButtonTextExtraTextFieldId']}|escape}{/tr}">
+	<input type="submit" class="btn btn-secondary" value="{tr}{$shopConfig['bobshopConfigBuyNowButtonText']}{/tr} {tr}{$payment.{$order.bobshopOrderPayment}.{$shopConfig['paymentBuyNowButtonTextExtraTextFieldId']}|escape}{/tr}">
 </form>

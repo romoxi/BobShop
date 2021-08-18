@@ -17,22 +17,19 @@
 {* sorting buttons *}
 <div class="col-sm-12" style="text-align: right">
 	<form  action={$page}>
-		<label for="sorting">{$shopConfig['bobshopConfigSortingLabelText']}</label>
+		<label for="sorting">{tr}{$shopConfig['bobshopConfigSortingLabelText']}{/tr}</label>
 		<select name="sort_order" id="sort_order" onchange="this.form.submit()">
-			{sorting_option lastSort={$lastSort} value="sort_sort_order" text={$shopConfig['bobshopConfigSortingDefaultText']}}
-			{sorting_option lastSort={$lastSort} value="sort_price_up" text={$shopConfig['bobshopConfigSortingPriceUpText']}}
-			{sorting_option lastSort={$lastSort} value="sort_price_down" text={$shopConfig['bobshopConfigSortingPriceDownText']}}
-			{sorting_option lastSort={$lastSort} value="sort_name" text={$shopConfig['bobshopConfigSortingNameText']}}
+			{sorting_option lastSort={$lastSort} value="sort_sort_order" text="{tr}{$shopConfig['bobshopConfigSortingDefaultText']}{/tr}"}
+			{sorting_option lastSort={$lastSort} value="sort_price_up" text="{tr}{$shopConfig['bobshopConfigSortingPriceUpText']}{/tr}"}
+			{sorting_option lastSort={$lastSort} value="sort_price_down" text="{tr}{$shopConfig['bobshopConfigSortingPriceDownText']}{/tr}"}
+			{sorting_option lastSort={$lastSort} value="sort_name" text="{tr}{$shopConfig['bobshopConfigSortingNameText']}{/tr}"}
 		</select>
-		{*<input type="submit" value="Sub">*}
 	</form>
-
 </div>
 
 
 {* display a list of products*}
 {foreach from=$products item=row}
-	
 	{if $row.bobshopProductActive == 1}
 	
 	{* container *}
@@ -76,11 +73,14 @@
 				<div style="{$divborder}" class="col-sm-4 text-right">
 					{assign var="rate" value="bobshopConfigTaxrate{$row.bobshopProductTaxrateCat}"}
 					{if $showPrices}
+						{if $row.bobshopProductVariantProductIds != ''}
+							{tr}from-price{/tr}
+						{/if}
 						{$price = $row.bobshopProductPrice + $row.bobshopProductPrice/100 * $shopConfig[$rate]}
 						<h3 style="font-weight: bold;">{$price|string_format:"%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</h3>
-						<p class="small">inkl. {$shopConfig[$rate]}% MwSt.</p>
-						<p class="small" onClick='javascript:$( "#wpdialog_bobshop_shipping" ).dialog( "open" );'>Versandkostenkategorie: {$row.bobshopProductShippingCat}
-						<br>zzgl. Versandkosten</p>
+						<p class="small">{tr}incl.{/tr} {$shopConfig[$rate]}% {tr}VAT{/tr}</p>
+						<p class="small" onClick='javascript:$( "#wpdialog_bobshop_shipping" ).dialog( "open" );'>{tr}Shipping Category{/tr}: {$row.bobshopProductShippingCat}
+						<br>{tr}plus Shipping Costs{/tr}</p>
 						{*
 						<p class="small" onClick='javascript:$( "#ver_{$row.bobshopProductProductId}" ).dialog( "open" );'>zzgl. Versandkosten</p>
 							{wikiplugin _name="DIALOG"
@@ -92,30 +92,30 @@
 							}{/wikiplugin}
 						*}
 					{/if}
-					<p class="small">Artikelnr.: {$row.bobshopProductProductId}</p>
+					<p class="small">{tr}Part Number{/tr}: {$row.bobshopProductProductId}</p>
 
 					{* stock control*}
 					{if $shopConfig.bobshopConfigStockControl eq "y"}
 						{* <p>Lagerbestand: {$row.bobshopProductStockQuantity}<p> *}
-						<p>Lieferzeit: 
+						<p>{tr}Lead Time{/tr}: 
 						{if $row.bobshopProductStockQuantity > 0}
 							{if 
 								($row.bobshopProductStockWarning == 0 and $row.bobshopProductStockQuantity < $shopConfig.bobshopConfigStockWarning)
 								or
 								($row.bobshopProductStockWarning  > 0 and $row.bobshopProductStockQuantity < $row.bobshopProductStockWarning)
 							}
-								<span style="color: orange;">Lagerbestand gering!</span>
+								<span style="color: orange;">{tr}Low Inventory{/tr}</span>
 							{else}
-								<span style="color: green;">Ab Lager.</span>
+								<span style="color: green;">{tr}Ex Stock{/tr}</span>
 							{/if}
 						{else}
-							<span style="color: red;">Derzeit nicht lieferbar!</span>
+							<span style="color: red;">{tr}Out Of Stock{/tr}</span>
 						{/if}
 						</p>
 					{/if}
 
 					{if $showPrices and $shopConfig.bobshopConfigStockControl eq "n"}
-						<p>Lieferzeit: {$row.bobshopProductDeliveryTime}</p>
+						<p>{tr}Lead Time{/tr}: {$row.bobshopProductDeliveryTime}</p>
 					{/if}
 					
 					{if $cart}
@@ -139,7 +139,7 @@
 {wikiplugin _name="DIALOG"
 	autoOpen="n"
 	id="wpdialog_bobshop_shipping"
-	title="Versandkosten"
+	title="{tr}Shipping Costs{/tr}"
 	width="400"
 	modal="y"
 	wiki="bobshop_shipping"

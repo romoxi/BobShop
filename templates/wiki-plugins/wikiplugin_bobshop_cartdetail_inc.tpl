@@ -17,15 +17,15 @@
 	{/if}
 	
 	<tr>
-		<th >Produkt#</th>
-		<th >Bezeichnung</th>
-		<th colspan="3" style="text-align: center;">Anzahl</th>
+		<th>{tr}Part-Nb{/tr}</th>
+		<th>{tr}Designation{/tr}</th>
+		<th colspan="3" style="text-align: center;">{tr}Quantity{/tr}</th>
 		{*<th >Anzahl</th>
 		<th ></th>*}
 		{if $showPrices}
-			<th >Einzelpreis</th>
-			<th >Gesamt</th>
-			<th >MwSt</th>
+			<th>{tr}Unit Price{/tr}</th>
+			<th>{tr}Total Price{/tr}</th>
+			<th>{tr}VAT{/tr}</th>
 		{/if}
 	</tr>
 
@@ -44,19 +44,19 @@
 				<td>{$product.{$shopConfig['productNameFieldId']}}
 					{* stock control*}
 					{if $shopConfig['bobshopConfigStockControl'] eq "y"}
-						<p style="font-size: small">Lieferzeit: 
+						<p style="font-size: small">{tr}Lead Time{/tr}: 
 						{if $product.{$shopConfig['productStockQuantityFieldId']} >= $product.{$shopConfig['orderItemQuantityFieldId']}}
 							{if 
 								($product.{$shopConfig['productStockWaringFieldId']} == 0 and $product.{$shopConfig['productStockQuantityFieldId']} < $shopConfig['bobshopConfigStockWarning'])
 								or
 								($product.{$shopConfig['productStockWarningFieldId']}  > 0 and $product.{$shopConfig['productStockQuantityFieldId']} < $product.{$shopConfig['productStockWarningFieldId']})
 							}
-								<span style="color: orange;">Lagerbestand gering!</span>
+								<span style="color: orange;">{tr}Low Inventory{/tr}</span>
 							{else}
-								<span style="color: green;">Ab Lager.</span>
+								<span style="color: green;">{tr}Ex Stock{/tr}</span>
 							{/if}
 						{else}
-							<span style="color: red;">Lagerbestand nicht ausreichend!</span>
+							<span style="color: red;">{tr}Out Of Stock{/tr}</span>
 						{/if}
 						</p>
 					{/if}					
@@ -120,7 +120,7 @@
 <tr>
 	<td></td>
 	<td>
-		<b>Summe Warenwert</b>
+		<b>{tr}Sum{/tr}</b>
 	</td>
 	<td></td>
 	<td></td>
@@ -136,7 +136,7 @@
 <tr>
 	<td></td>
 	<td>
-		Versandkosten
+		{tr}Shipping Costs{/tr}
 	</td>
 	<td></td>
 	<td></td>
@@ -164,7 +164,7 @@
 	<tr>
 		<td></td>
 		<td>
-			MwSt
+			{tr}VAT{/tr}
 		</td>
 		{*<td></td>*}
 		<td colspan="3" style="text-align: right">
@@ -182,7 +182,7 @@
 	<tr>
 		<td></td>
 		<td>
-			MwSt
+			{tr}VAT{/tr}
 		</td>
 		{*<td></td>*}
 		<td colspan="3" style="text-align: right">
@@ -200,7 +200,7 @@
 	<tr>
 		<td></td>
 		<td>
-			MwSt
+			{tr}VAT{/tr}
 		</td>
 		{*<td></td>*}
 		<td colspan="3" style="text-align: right">
@@ -218,7 +218,7 @@
 <tr>
 	<td></td>
 	<td>
-		MwSt gesamt
+		{tr}Sum{/tr} {tr}VAT{/tr}
 	</td>
 	<td></td>
 	<td></td>
@@ -238,7 +238,7 @@
 			{$sumPaymentName = $payment.{$order['bobshopOrderPayment']}.{$shopConfig['paymentNameFieldId']}}
 			{$sumPaymentName} 
 			{if $sumPayment > 0}
-				(Kosten)
+				({tr}Costs{/tr})
 			{/if}
 		</td>
 		<td></td>
@@ -257,7 +257,7 @@
 <tr>
 	<td></td>
 	<td>
-		<b>Endsumme inkl. MwSt</b>
+		<b>{tr}Total amount incl. VAT{/tr}</b>
 	</td>
 	<td></td>
 	<td></td>
@@ -273,12 +273,12 @@
 </table>
 
 {if $showPrices}
-	<i>Alle Preisangaben in {$shopConfig['bobshopConfigCurrency']}.</i>
+	<i>{tr}All price quotations in{/tr} {$shopConfig['bobshopConfigCurrency']}.</i>
 {/if}
 
 	{if $showQuantityModify == 1}
 		<br><br>
 		<input type="hidden" name="action" value="modify_quantity">
-		<input type="submit" class="btn btn-primary" value="{tr}Warenkorb aktualisieren{/tr}">
+		<input type="submit" class="btn btn-primary" value="{tr}Refresh Cart{/tr}">
 		</form>
 	{/if}

@@ -19,8 +19,8 @@
  */
 
 //login data from PayPayl REST API app
-$clientId = 'uzDk';
-$secret   = '7Yu8';
+$clientId = 'AeLfm';
+$secret   = 'EGJ-x';
 
 if($shopConfig['bobshopConfigOpMode'] == 'sandbox')
 {
@@ -109,6 +109,7 @@ function createOrderPayPal($order, $token, $paypalURL)
 {
 	$header[0] = "Content-Type: application/json";
 	$header[1] = "Authorization: Bearer ". $token;
+
 	
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, $paypalURL ."/v2/checkout/orders"); 
@@ -127,7 +128,7 @@ function createOrderPayPal($order, $token, $paypalURL)
 	curl_close($ch);      	
 
 	$out = json_decode($output, true);
-	//echo '<hr>'. $out .'<hr>';
+	//echo '<hr>'. $token .'<hr>';
 	//print_r($out);
 	return $out;
 }
@@ -205,6 +206,9 @@ function getApproveLinkPayPal($response)
  */
 function getRequestStringPayPal($sums, $merchantName, $shopConfig)
 {
+	//$uri = $_SERVER["SCRIPT_URI"];
+	$uri = 'https://' . $_SERVER["SERVER_NAME"] . $_SERVER["SCRIPT_NAME"];
+	
 	$paypalOrder = '{"intent": "CAPTURE", "purchase_units": [{"amount": 
 					{
 					"currency_code": "'. $shopConfig['bobshopConfigCurrencyShortcut'] .'",
@@ -216,10 +220,11 @@ function getRequestStringPayPal($sums, $merchantName, $shopConfig)
 						"landing_page": "LOGIN",
 						"shipping_preference": "NO_SHIPPING",
 						"user_action": "PAY_NOW",
-						"return_url": "'. $_SERVER["SCRIPT_URI"] .'?page=bobshop_paypalAfterTransaction",
-						"cancel_url": "'. $_SERVER["SCRIPT_URI"] .'?page=bobshop_paypalAfterTransaction"
+						"return_url": "'. $uri .'?page=bobshop_paypalAfterTransaction",
+						"cancel_url": "'. $uri .'?page=bobshop_paypalAfterTransaction"
 					}										
 				}';
+	echo $paypalOrder .'<hr>'; 
 	return $paypalOrder;
 }
 

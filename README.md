@@ -3,7 +3,7 @@ Shopping cart plugin for TikiWiki
 
 BobShop can also be used as an easy product presentation system. See operation-modes in Wiki.
 
-release v1_8_1 available
+release v1_9_0 available
 
 ## Features
 - easy to install and configure
@@ -22,17 +22,16 @@ release v1_8_1 available
 - saving and reloading the cart by memoryCode (a cart can be transferd to another user/account/browser)
 - by memoryCode you can also create a kind of "share this cart" link
 - sorting in products list by name, relevance, price up/down
-
-New since v1_8_0
 - stock control system (inventory management)
 - shopping without the tiki user system (user data is saved encrypted in the orders tracker)
 - product quantity in the cart can be modified by input field
-
+- individual pages/messages after submitting the order/cart
+- product variations (eg. small, medium, large or red, blue, green)
+- custom language file for easy translating in your language
 
 ## What bobshop can not do at this time:
 - invoices
 - gifts
-- product presentation in categories (you can use tikiwiki functionality to do that > structures, catergories, menus etc.)
 
 ## How to install:
 To install the trackers and wiki pages you can use the BobShop Profile:
@@ -46,8 +45,6 @@ Add the following in your wikisite.
 {bobshop type="add_to_cart_button" productId="1004"}
 
 ## BobShop DEMO
+More details are available at the BobShop DEMO site
 https://bobshopdemo.bob360.de
-
-
-More details are soon available
 

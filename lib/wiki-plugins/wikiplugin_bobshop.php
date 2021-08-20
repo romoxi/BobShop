@@ -268,7 +268,7 @@ function wikiplugin_bobshop($data, $params)
 				{
 					showError('productId not set');
 				}
-				//$params['type'] = '';
+
 				if($params['type'] != 'add_to_cart_button' && $jitRequest->showdetails->text() == 1)
 				{
 					$showdetails = true;
@@ -395,6 +395,7 @@ function wikiplugin_bobshop($data, $params)
 				$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 
 				update_tracker_shop_order_submitted($sums, $order, $shopConfig);
+				update_tracker_shop_order_number_formated(orderNumber_format($order, $shopConfig), $order, $shopConfig);
 				
 				//mark the order as submitted - not for sandbox
 				if($shopConfig['bobshopConfigOpMode'] != 'sandbox')
@@ -419,7 +420,9 @@ function wikiplugin_bobshop($data, $params)
 				
 				$payment = get_tracker_shop_payment($shopConfig);
 
-				//if paypal is selected
+				/*
+				 * if paypal is selected *********************************************************
+				 */
 				if($payment[$order['bobshopOrderPayment']][$shopConfig['paymentFollowUpScriptFieldId']] == 'PAYPAL')
 				{
 					include_once('wikiplugin_bobshop_paypal_inc.php');
@@ -715,6 +718,7 @@ function wikiplugin_bobshop($data, $params)
 					$userBobshop = get_tracker_shop_user_by_user($user, $shopConfig);
 					$orderItems = get_tracker_shop_order_items($shopConfig);
 					$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
+					//echo orderNumber_format($order, $shopConfig);
 					//if there ist no payment set, use the default
 					if($order['bobshopOrderPayment'] == 0)
 					{
@@ -785,6 +789,9 @@ function wikiplugin_bobshop($data, $params)
 			//nothing to do
 			break;
 
+		/*
+		 * PayPal **********************************************************
+		 */
 		case 'paypal_after_transaction':
 			if($buying)
 			{
@@ -815,7 +822,7 @@ function wikiplugin_bobshop($data, $params)
 					else
 					{
 						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 102: '. $response['status'], $shopConfig);
-						$output .= message('Error', 'paypal error 102 - order not approved. Status = '. $response['status'] .' orderId = '. $orderIdResponse, 'errors');
+						$output .= message('Error', 'paypal error 102 - order not created. Status = '. $response['status'] .' orderId = '. $orderIdResponse, 'errors');
 						update_tracker_shop_order_status(1, $shopConfig);
 					}
 				}
@@ -834,16 +841,29 @@ function wikiplugin_bobshop($data, $params)
 						$transactionId = $response['purchase_units'][0]['payments']['captures'][0]['id'];
 						storeOrderDataPayPal('orderPaymentOrderIdFieldId', $transactionId , $shopConfig);
 					}
+					else
+					{
+						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 104: '. $response['status'], $shopConfig);
+						$output .= message('Error', 'paypal error 104 - order not completed. Status = '. $response['status'], 'errors');
+						
+						send_order_received(false, $sums, $shopConfig, 'paypal', 'error');
+					}
+					
 					if($response['status'] != 'COMPLETED')
 					{
 						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 103: '. $response['status'], $shopConfig);
 						update_tracker_shop_order_status(1, $shopConfig);
+						//send a mail
+						send_order_received(false, $sums, $shopConfig, 'paypal', 'error');
 						$output .= message('Error', 'paypal error 103 - order not completed. Status = '. $response['status'], 'errors');
 					}
 					else
 					{
 						storeOrderDataPayPal('orderPaymentPayeeMerchantIdFieldId', getMerchantIdPayPal($response), $shopConfig);
 						storeOrderDataPayPal('orderPaymentStatusFieldId', 'COMPLETED', $shopConfig);
+						//send infos about the payment
+						send_order_received(false, $sums, $shopConfig, 'paypal');
+						
 						$smarty->assign('orderIdResponse', $orderIdResponse);
 						$smarty->assign('transactionIdResponse', $transactionId);
 						$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_completed.tpl');
@@ -925,7 +945,8 @@ function get_tracker_shop_config()
 		'orderSessionIdFieldId'		=> 'bobshopOrderSessionId', 
 		'orderMemoryCodeFieldId'	=> 'bobshopOrderMemoryCode', 
 		'orderBobshopUserFieldId'	=> 'bobshopOrderBobshopUser', 
-		'orderUserFieldId'			=> 'bobshopOrderUser'
+		'orderUserFieldId'			=> 'bobshopOrderUser',
+		'orderNumberFormatedFieldId'	=> 'bobshopOrderNumberFormated',
 		);
 	
 	foreach($shopConfig['ordersFields']  as $key => $name)
@@ -1031,7 +1052,7 @@ function get_tracker_shop_config()
 		"bobshopConfigSortingDefaultText"=>"Relevance",
 		"bobshopConfigSortingPriceUpText"=>"Price up",
 		"bobshopConfigSortingPriceDownText"=>"Price down",
-		"bobshopConfigSortingNameText"=>"Name"
+		"bobshopConfigSortingNameText"=>"Name",
 	);
 
 	foreach($result as $row)
@@ -1608,6 +1629,7 @@ function check_duplicate_order_items_by_current_order_number($shopConfig)
 {
 	//return;
 	$orderItems =  get_tracker_shop_order_items($shopConfig);
+	//print_r($orderItems);
 
 	//return if empty
 	if(empty($orderItems)) return;
@@ -1616,7 +1638,11 @@ function check_duplicate_order_items_by_current_order_number($shopConfig)
 	foreach($orderItems as $itemId => $item)
 	{
 		//if  the quantity is 0 delete the item
-		if($item[$shopConfig['orderItemQuantityFieldId']] == 0)
+		if
+		(
+			$item[$shopConfig['orderItemQuantityFieldId']] == 0
+			
+		)
 		{
 			update_tracker_shop_order_items_delete($itemId, $shopConfig);
 		}
@@ -1993,7 +2019,6 @@ function update_tracker_shop_payment($order, $payment, $shopConfig)
 function update_tracker_shop_order_bobshop_user($order, $userData, $shopConfig)
 {
 	global $tikilib;
-	
 	$result = $tikilib->query(
 			"UPDATE 
 				tiki_tracker_item_fields
@@ -2076,6 +2101,31 @@ function update_tracker_shop_order_tos($value, $order, $shopConfig)
 					$value,
 					$order['itemId'], 
 					$shopConfig['orderAgreedTosDateFieldId']
+					]
+				);
+	return;	
+}
+
+/*
+ * Update the formated order number
+ */
+function update_tracker_shop_order_number_formated($value, $order, $shopConfig)
+{
+	global $tikilib;
+	
+	$result = $tikilib->query(
+				"UPDATE 
+					tiki_tracker_item_fields
+				SET
+					value = ?
+				WHERE
+					itemId = ?
+				AND
+					fieldId = ?
+				", [
+					$value,
+					$order['itemId'], 
+					$shopConfig['orderNumberFormatedFieldId']
 					]
 				);
 	return;	
@@ -2396,7 +2446,7 @@ function create_memoryCode($shopConfig)
  * @param type $shopConfig
  * @return type
  */
-function send_order_received($showPrices, $sums, $shopConfig)
+function send_order_received($showPrices, $sums, $shopConfig, $tpl = '', $error = '')
 {
 	//ToDo: check $sums
 	global $tikilib;
@@ -2430,23 +2480,6 @@ function send_order_received($showPrices, $sums, $shopConfig)
 	
 	$mailSender = $shopConfig['bobshopConfigEmailSender'];
 	$shopname = $shopConfig['bobshopConfigShopName'];
-	if($showPrices)
-	{
-		$subject = $shopname .' Bestellbestätigung';
-	}
-	else
-	{
-		$subject = $shopname .' Angebotsanfrage';		
-	}
-	
-
-/*	//attachments?
-	$doc = 'doccc';
-	$id = md5(uniqid(time()));
-	$doc = html_entity_decode($doc, ENT_COMPAT, 'UTF-8');
-	$doc = utf8_encode($doc); 
-	$dateiinhalt = $doc;
-*/
 	
 	$orderItems = get_tracker_shop_order_items($shopConfig);
 	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
@@ -2470,18 +2503,44 @@ function send_order_received($showPrices, $sums, $shopConfig)
 	$smarty->assign('showPrices', $showPrices);
 	$smarty->assign('user', $user);
 	$smarty->assign('order', $order);
+	$smarty->assign('orderNumberFormated', orderNumber_format($order, $shopConfig));
 	$smarty->assign('shopConfig', $shopConfig);
 	$smarty->assign('fieldNamesById', array_flip($shopConfig));
 	$smarty->assign('mailer', 1);
-	
-	if($showPrices)
+	$smarty->assign('error', $error);
+
+
+	if($tpl == '')
 	{
-		$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_order_received.tpl');
+		if($showPrices)
+		{
+			$subject = $shopname .' Bestellbestätigung';
+			$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_order_received.tpl');
+		}
+		else
+		{
+			$subject = $shopname .' Angebotsanfrage';		
+			$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_invite_offer_received.tpl');
+		}
 	}
 	else
 	{
-		$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_invite_offer_received.tpl');
+		if($tpl == 'paypal')
+		{
+			$subject = $shopname .' Zahlungsinformationen';		
+			$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_'. $tpl .'.tpl');
+		}
 	}
+
+/*	//attachments?
+	$doc = 'doccc';
+	$id = md5(uniqid(time()));
+	$doc = html_entity_decode($doc, ENT_COMPAT, 'UTF-8');
+	$doc = utf8_encode($doc); 
+	$dateiinhalt = $doc;
+*/
+	
+	
 		
 	$header = "MIME-Version: 1.0\r\n";
 	$header .= "Content-Type: text/html; charset=utf-8\r\n";
@@ -2491,20 +2550,6 @@ function send_order_received($showPrices, $sums, $shopConfig)
 	//$header .= "Bcc: ". $shopname ."<". $shopConfig['bobshopConfigEmailNotifications'] . ">\r\n";
 	$header .= "Reply-To: ". $shopname ."<". $mailSender . ">\r\n";
 	
-	//$anhang = chunk_split(base64_encode($dateiinhalt)); 
-	//$header .= "Content-Type: multipart/mixed; boundary=".$id."\n";
-	//$header .= "This is a multi-part message in MIME format\n";
-	//$header .= "--".$id."\n";
-	//$header .= "Content-Transfer-Encoding: 8bit\n";
-	//$header .= $mailText."\n";
-	//$header .= "--".$id."\n";
-	//$kopf .= "Content-Type: text/txt; name=\"".$dateiname_mail."\"\n";
-	//$header .= "Content-Transfer-Encoding: base64\n";
-	//$kopf .= "Content-Disposition: attachment; filename=\"".$dateiname_mail."\"\n\n";
-	//$kopf .= $anhang."\n";
-	//$header .= "--".$id."--\r\n\n";
-
-	//echo $header;
 	
 	$mail_send = mail($mailReceiver, $subject, $mailText, $header);
 
@@ -2516,17 +2561,29 @@ function send_order_received($showPrices, $sums, $shopConfig)
 		$header = "MIME-Version: 1.0\r\n";
 		$header .= "Content-Type: text/html; charset=utf-8\r\n";
 		$header .= "From: ". $shopname ."<". $mailSender . ">\r\n";
-		if($showPrices)
+
+		if($tpl == '')
 		{
-			//$header .= "To: ". $shopname ." - Info Bestelleingang<". $shopConfig['bobshopConfigEmailNotifications'] . ">\r\n";
-			$subject = $shopname ." - Info Bestelleingang\r\n";
+			if($showPrices)
+			{
+				$subject = $shopname ." - Info Bestelleingang\r\n";
+				$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_order_received.tpl');
+			}
+			else
+			{
+				$subject = $shopname ." - Info Angebotsanfrage\r\n";
+				$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_invite_offer_received.tpl');
+			}
 		}
-		else 
+		else
 		{
-			//$header .= "To: ". $shopname ." - Info Angebotsanfrage<". $shopConfig['bobshopConfigEmailNotifications'] . ">\r\n";
-			$subject = $shopname ." - Info Angebotsanfrage\r\n";
-		}
-		
+			if($tpl == 'paypal')
+			{
+				$subject = $shopname .' Info Zahlungsinformationen';		
+				$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_'. $tpl .'.tpl');
+			}
+		}		
+		// send the mail
 		$mail_send = mail($shopConfig['bobshopConfigEmailNotifications'], $subject, $mailText, $header);
 	}
 	else
@@ -2538,6 +2595,9 @@ function send_order_received($showPrices, $sums, $shopConfig)
 }
 
 
+/*
+ * for debug print a array
+ */
 function printArray($name, $data)
 {
 	//print_r($data); echo '<hr>';
@@ -2598,6 +2658,35 @@ function date_time()
 {
 	date_default_timezone_set('Europe/Berlin');
 	return date("Y-m-d H:i:s");
+}
+
+
+/*
+ * format the orderId
+ * eg: 1234%id%ABC|105|%'.05d
+ * the last part is a sprintf
+ */
+function orderNumber_format($order, $shopConfig)
+{
+	//explode the format 
+	$format = explode('|', $shopConfig['bobshopConfigOrderNumberFormat']);
+	
+	//add some value
+	if(isset($format[1]))
+	{
+		$id = $order['bobshopOrderOrderNumber'] + $format[1];
+	}
+	
+	//some more formating
+	if(isset($format[2]))
+	{
+		$sid = sprintf($format[2], $id);
+	}
+	
+	//replace the %id% with the new formated orderId
+	$ret = str_replace('%id%', $sid, $format[0]);
+		
+	return $ret;
 }
 
 /*

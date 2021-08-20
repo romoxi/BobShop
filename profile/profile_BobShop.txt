@@ -1,8 +1,8 @@
 {maketoc}
 !Introduction
-BobShop is a shopping cart system for TikiWiki.
+BobShop is a customized shopping cart system for Tiki.
 
-On Github you find some more information.
+On Github you can find some more information.
 https://github.com/romoxi/bobshop
 
 
@@ -11,12 +11,12 @@ https://github.com/romoxi/bobshop
 - bobshop own user management available (no need to set any permission for tiki users)
 - individual product fields
 - products can be enabled/disabled
-- multiple payment methodes (PayPal integrated)
+- multiple payment methods (PayPal integrated)
 - 3 different tax rates
 - 3 different shipping costs
 - "addToCart"-button can placed on any wikipage
 - built-in registration and login system (or bobshop own user management)
-- works without the TikiWiki Functions/Plugins Payment, shopper_info, Shopping Cart etc.
+- works without the Tiki Functions/Plugins Payment, shopper_info, Shopping Cart etc.
 - templates can be modified
 - bootstrap is used for the templates
 - different operation modes (default, sandbox, offer, presentation, info)
@@ -60,20 +60,20 @@ Just run the profile and upload the newest files, again.
 
 !User
 (This is not necessary if bobshop own user system is active)
-If you want the registed users to see there own tracker infos (Name, Address ...) you have to change the following:
+If you want the registered users to see there own tracker infos (Name, Address ...) you have to change the following:
 Tracker > User > Properties > Permissions
    > User can see his own items
    > Item creator can modify his items
 
 
-!Dependencys
-(to make after appling this profile)
+!Dependencies
+(to make after applying this profile)
 (This is not necessary if bobshop own user system is active)
 Settings > Control Panels > User Settings > Groups > Registered    
       > User Registration Tracker > User
 Save now!
 Settings > Control Panels > User Settings > Groups > Registered    
-      > Selekct user field > (User)
+      > Select user field > (User)
       > Group or User Tracker Registration Fields > (the field ID numbers for the User tracker fields)
           (typical by a fresh installation is something like that: 81:82:83:84:85:86:87:88)
 
@@ -120,7 +120,7 @@ The permissions in this profile are for the shopping system only. If your site d
 
 !DEMO
 A simple DEMO-Site is available under:
-http://bobshopdemo.bob360.de/tiki212/tiki-index.php
+https://bobshopdemo.bob360.de/
 
 
 !YAML for Permissions

@@ -13,7 +13,8 @@
 <br>
 <p>vielen Dank für Ihre Bestellung.</p>
 <br>
-<p>Bestellnummer: {$order.bobshopOrderOrderNumber}</p>
+{*<p>Bestellnummer: {$order.bobshopOrderOrderNumber}</p>*}
+<p>Bestellnummer: {$orderNumberFormated}</p>
 <br>
 <br>
 <p>Hiermit bestätigen wir die Bestellung folgender Artikel. </p>

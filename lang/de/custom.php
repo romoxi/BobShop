@@ -62,6 +62,8 @@ $lang_custom = array(
 "Mail not sent!"=>"Mail konnte nicht versendet werden.",
 "Additional variants of this product"=>"Weitere Varianten von diesem Produkt",
 "from-price"=>"ab",
+"payment information"=>"Zahlungsinformationen",
+"and pay with PayPal"=>"und mit PayPal bezahlen",
 ""=>"",
 );
 $lang = array_merge($lang, $lang_custom);

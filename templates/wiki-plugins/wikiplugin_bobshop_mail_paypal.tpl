@@ -1,25 +1,29 @@
 {* $Id$ *}
+{* This is the for email after the paypal transmission was done *}
 
-<h1>{tr}payment information{/tr}
-	
+<h1>{tr}payment information{/tr}</h1>
+<br>
+<p>{tr}Dear Sir / Madam{/tr},<p>
+<br>
+<br>
 {if $error eq ''}
 	
-	<p>Wir haben die PayPal Zahlung unter folgenden Kennungen verzeichnet:</p>
+	<p>recorded payment information:</p>
 	
-	<p>Bestellnummer: {$orderNumberFormated}</p>
+	<p>{tr}order number{/tr}: {$orderNumberFormated}</p>
 	{* transactionIdResponse *}
-	<p>Transaktionsnummer: {$order.bobshopOrderPaymentOrderId}</p>
-	<p>Gesamtsumme: {$order.bobshopOrderSumEnd}</p>
+	<p>{tr}transaction number{/tr}: {$order.bobshopOrderPaymentOrderId}</p>
+	<p>{tr}Total amount{/tr}: {$order.bobshopOrderSumEnd}</p>
 {else}
 	
-	<p>Bei der Bezahlung ist ein Fehler aufgetreten.</p>
+	<p>{tr}error during the payment prozess{/tr}</p>
 	<br>
-	<p>Wir kümmern uns persönlich um den Vorgang.</p>
+	<p>{tr}we will find an solution to fix that{/tr}</p>
 	
 {/if}
 <br>
 <br>
-Mit freundlichen Grüßen von Ihrem Kundenservice
+{tr}Yours sincerely{/tr}
 <br>
 <br>
 {$shopConfig.bobshopConfigCompanySignature|nl2br}

@@ -21,7 +21,7 @@
 {/foreach}
 
 <form method="post" action="tiki-index.php?page=bobshop_order_submitted" style="display: inline;" class="">
-	<h2>{tr}Invoice Recipient{/tr}</h2>
+	<h2>{tr}Invoice recipient{/tr}</h2>
 	{include file="templates/wiki-plugins/wikiplugin_bobshop_userdetail_inc.tpl" scope="global"}
 	{*{$user}*}
 	<br><br>

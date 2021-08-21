@@ -102,7 +102,7 @@ Settings > Control Panels
    
 
 !Version
-This profile is for the plugin version v1_9_0.
+This profile is for the plugin version v1_9_1.
 
 
 !Manual

@@ -1,4 +1,5 @@
 <?php
+//https://de.bab.la/phrasen/geschaeftlich/email/deutsch-englisch
 $lang_custom = array(
 "Part Number"=>"Artikelnummer",
 "Part-Nb"=>"Artikel-Nr.",
@@ -29,10 +30,11 @@ $lang_custom = array(
 "Total Price"=>"Gesamtpreis",
 "Sum"=>"Gesamt",
 "Costs"=>"Kosten",
+"Total amount"=>"Gesamtbetrag",
 "Total amount incl. VAT"=>"Endsumme inkl. MwSt.",
 "All price quotations in"=>"Alle Preisangaben in",
 "Refresh Cart"=>"Warenkorb aktualisieren",
-"Invoice Recipient"=>"Rechnungsempfänger",
+"Invoice recipient"=>"Rechnungsempfänger",
 "Offeree"=>"Angebotsempfänger",
 "Payment Method"=>"Zahlungsmethode",
 "Choice"=>"Auswahl",
@@ -64,6 +66,21 @@ $lang_custom = array(
 "from-price"=>"ab",
 "payment information"=>"Zahlungsinformationen",
 "and pay with PayPal"=>"und mit PayPal bezahlen",
+"Yours sincerely"=>"Mit freundlichen Grüßen",
+"order number"=>"Bestellnummer",
+"transaction number"=>"Transaktionsnummer",
+"Dear Sir /Madam"=>"Sehr geehrte Damen und Herren",
+"error during the payment prozess"=>"Bei der Bezahlung ist ein Fehler aufgetreten.",
+"we will find an solution to fix that"=>"Wir kümmern uns persönlich um den Vorgang.",
+"recorded payment information"=>"Wir haben die Zahlung wie folgt erfasst",
+"Many thanks for your order"=>"vielen Dank für Ihre Bestellung",
+"We hereby confirm your incoming order"=>"Hiermit bestätigen wir den Bestelleingang",
+"ordered products"=>"Bestellte Produkte",
+"Order confirmation"=>"Bestellbestätigung",
+"terms and conditions"=>"Allgemeine Geschäftsbedingungen",
+"revocation instruction"=>"",
+"could not be loaded"=>"Konnte nicht geladen werden",
+"please contact the service department"=>"Bitte wenden sie sich an unseren Kundenservice",
 ""=>"",
 );
 $lang = array_merge($lang, $lang_custom);

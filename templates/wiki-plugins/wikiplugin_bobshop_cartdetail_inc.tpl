@@ -1,6 +1,7 @@
 <table class="table table-hover">
 	{* for the mails don't colgroup *}
-	{if !isset($mailer) || (isset($mailer) && $mailer == 0)}
+	{$isNotMail = !isset($mailer) || (isset($mailer) && $mailer == 0)}
+	{if $isNotMail}
 		<colgroup>
 			<col width="5%">
 			<col width="45%">
@@ -37,9 +38,12 @@
 		
 		{if $product.{$shopConfig['orderItemQuantityFieldId']} > 0}
 			<tr>
-				<td><a href="tiki-index.php?page={$page}&action=shop_article_detail&productId={$product.{$shopConfig['productProductIdFieldId']}}">
-					{$product.{$shopConfig['productProductIdFieldId']}}
-					</a>
+				<td>
+					{if $isNotMail}
+						<a href="tiki-index.php?page={$page}&action=shop_article_detail&productId={$product.{$shopConfig['productProductIdFieldId']}}">
+					{/if}
+						{$product.{$shopConfig['productProductIdFieldId']}}
+					{if $isNotMail}</a>{/if}
 				</td>
 				<td>{$product.{$shopConfig['productNameFieldId']}}
 					{* stock control*}
@@ -63,23 +67,23 @@
 					
 					
 				</td>
-				<td style="padding-left: 0; padding-right: 5px;">
+				<td style="padding: 18px 0 0 0;">
 					{if $showQuantityModify == 1}
-						<a class="btn btn-primary btn-xs" data-role="button" data-inline="true" title="-" href="tiki-index.php?page={$page}&action=quantitySub&productId={$product.{$shopConfig['productProductIdFieldId']}}">
-						{icon name="minus"}</a>
+						<a class="" data-role="button" data-inline="true" title="-" href="tiki-index.php?page={$page}&action=quantitySub&productId={$product.{$shopConfig['productProductIdFieldId']}}">
+						{icon name="minus-circle"}</a>
 					{/if}
 				</td>
 				{if $showQuantityModify == 1}
 					<td style="padding-left: 0; padding-right: 0;">
-						<input type="text" name="quantity{$product.{$shopConfig['productProductIdFieldId']}}" value="{$product.{$shopConfig['orderItemQuantityFieldId']}}" class="form-control">
+						<input style="text-align: center;" type="text" name="quantity{$product.{$shopConfig['productProductIdFieldId']}}" value="{$product.{$shopConfig['orderItemQuantityFieldId']}}" class="form-control">
 					</td>
 				{else}
 					<td style="text-align: center;">{$product.{$shopConfig['orderItemQuantityFieldId']}}</td>
 				{/if}
-				<td style="padding-left: 5px; padding-right: 0;">
+				<td style="padding: 18px 0 0 15px">
 					{if $showQuantityModify == 1}
-						<a class="btn btn-primary btn-xs" data-role="button" data-inline="true" title="+" href="tiki-index.php?page={$page}&action=quantityAdd&productId={$product.{$shopConfig['productProductIdFieldId']}}">
-						{icon name="create"}</a>
+						<a class="" data-role="button" data-inline="true" title="+" href="tiki-index.php?page={$page}&action=quantityAdd&productId={$product.{$shopConfig['productProductIdFieldId']}}">
+						{icon name="plus-circle"}</a>
 					{/if}
 				</td>
 

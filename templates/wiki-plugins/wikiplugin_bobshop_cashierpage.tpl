@@ -14,7 +14,7 @@
 
 {* display billing adress *}
 {if $showPrices}
-	<h2>{tr}Invoice Recipient{/tr}</h2>
+	<h2>{tr}Invoice recipient{/tr}</h2>
 {else}
 	<h2>{tr}Offeree{/tr}</h2>
 {/if}

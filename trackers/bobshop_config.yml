@@ -281,10 +281,10 @@ objects:
       permname: bobshopConfigPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:611d37f10637a$'
-        fieldId: '$unknownobject:611d37f106384$'
+        trackerId: '$unknownobject:61224b488350c$'
+        fieldId: '$unknownobject:61224b4883512$'
         displayFieldsList:
-          - '$unknownobject:611d37f106384$'
+          - '$unknownobject:61224b4883512$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact
@@ -623,6 +623,24 @@ objects:
       type: numeric
       order: '360'
       description: 'if stockQuantity  lower stockWarning there is a hint in the products page'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigOrderNumberFormat
+    data:
+      name: orderNumberFormat
+      permname: bobshopConfigOrderNumberFormat
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '370'
+      description: 'format the orderNumber to show your customer some impressive number; example: 2021%id%00|76|%''.05d; the %id% will be replaced by the real orderNumber and then 76 is added and finally some ''0'' are filled up'
       visby: {  }
       editby: {  }
       flags:

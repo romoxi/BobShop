@@ -6,7 +6,7 @@
 			<col width="*">
 			<col width="10%">
 			<col width="3%">
-			<col width="9%">
+			<col width="5%">
 			<col width="3%">
 
 			{if $showPrices}
@@ -21,8 +21,6 @@
 		<th>{tr}Part-Nb{/tr}<br>{tr}Designation{/tr}</th>
 		<th></th>
 		<th colspan="3" style="text-align: center;">{tr}Quantity{/tr}</th>
-		{*<th >Anzahl</th>
-		<th ></th>*}
 		{if $showPrices}
 			<th>{tr}Unit Price{/tr}</th>
 			<th>{tr}Total Price{/tr}</th>
@@ -91,20 +89,20 @@
 
 				</td>
 				
-				<td style="padding: 18px 0 0 0;">
+				<td style="padding: 20px 5px 0 0; text-align: right;">
 					{if $showQuantityModify == 1}
 						<a class="" data-role="button" data-inline="true" title="-" href="tiki-index.php?page={$page}&action=quantitySub&productId={$product.{$shopConfig['productProductIdFieldId']}}">
 						{icon name="minus-circle"}</a>
 					{/if}
 				</td>
 				{if $showQuantityModify == 1}
-					<td style="padding-left: 0; padding-right: 0;">
+					<td style="padding-left: 0; padding-right: 0; min-width: 45px;">
 						<input style="text-align: center;" type="text" name="quantity{$product.{$shopConfig['productProductIdFieldId']}}" value="{$product.{$shopConfig['orderItemQuantityFieldId']}}" class="form-control">
 					</td>
 				{else}
 					<td style="text-align: center;">{$product.{$shopConfig['orderItemQuantityFieldId']}}</td>
 				{/if}
-				<td style="padding: 18px 0 0 15px">
+				<td style="padding: 20px 0 0 5px">
 					{if $showQuantityModify == 1}
 						<a class="" data-role="button" data-inline="true" title="+" href="tiki-index.php?page={$page}&action=quantityAdd&productId={$product.{$shopConfig['productProductIdFieldId']}}">
 						{icon name="plus-circle"}</a>
@@ -114,9 +112,8 @@
 				{assign var="rate" value="bobshopConfigTaxrate{$product.{$shopConfig['productTaxrateCatFieldId']}}"}
 				{assign var="quantity" value="{$product.{$shopConfig['orderItemQuantityFieldId']}}"}
 				{if $showPrices}
-					
 					<td style="text-align: right">{$product.{$shopConfig['productPriceFieldId']}|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</td>
-					<td style="text-align: right">{math equation="q * p" q=$quantity p=$product.{$shopConfig['productPriceFieldId']} format="%.2f"}</td>
+					<td style="text-align: right">{math equation="q * p" q=$quantity p=$product.{$shopConfig['productPriceFieldId']} format="%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</td>
 					<td style="text-align: right">{$shopConfig[$rate]} %</td>
 				{/if}
 			</tr>

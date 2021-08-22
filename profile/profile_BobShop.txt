@@ -27,6 +27,8 @@ https://github.com/romoxi/bobshop
 - individual pages/messages after submitting the order/cart
 - product variations (eg. small, medium, large or red, blue, green)
 - custom language file for easy translating in your language
+- admin panel for orders and carts (be sure to set the permissions of this page)
+- order number can be formated to suggest your customers a very big shop ;)
 
 
 !How to install?
@@ -37,6 +39,7 @@ https://github.com/romoxi/bobshop
 You have to download an copy the files in:
 /lib/wiki-plugins
 /templates/wiki-plugins
+/lang/de (if you need german language - read the manual for more information)
 bobshop_register.php (not used if bobshop own user system is active)
 
 Apply this profile
@@ -102,7 +105,7 @@ Settings > Control Panels
    
 
 !Version
-This profile is for the plugin version v1_9_1.
+This profile is for the plugin version v1_91_0.
 
 
 !Manual
@@ -115,7 +118,14 @@ Be sure to call the plugin bobshop only once per page!
 
 
 !Permissions
-The permissions in this profile are for the shopping system only. If your site does need something different feel free to change it.
+The permissions in this profile are for the shopping system only.
+
+!!Permissions Object bobshop_admin
+__Make sure you change the permissions to the wikipage "bobshop_admin"__:
+Edit the page > Permissions > wiki > tiki_p_view
+Disable all user-groups except the admin.
+
+If your site does need something different feel free to change it.
 
 
 !DEMO
@@ -451,10 +461,10 @@ objects:
       permname: bobshopConfigPaymentDefault
       tracker: '$profileobject:bobshop_config$'
       options:
-        trackerId: '$unknownobject:611d37f10637a$'
-        fieldId: '$unknownobject:611d37f106384$'
+        trackerId: '$unknownobject:61224b488350c$'
+        fieldId: '$unknownobject:61224b4883512$'
         displayFieldsList:
-          - '$unknownobject:611d37f106384$'
+          - '$unknownobject:61224b4883512$'
         displayFieldsListType: dropdown
         status: opc
         preSelectFieldMethod: exact
@@ -793,6 +803,24 @@ objects:
       type: numeric
       order: '360'
       description: 'if stockQuantity  lower stockWarning there is a hint in the products page'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigOrderNumberFormat
+    data:
+      name: orderNumberFormat
+      permname: bobshopConfigOrderNumberFormat
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '370'
+      description: 'format the orderNumber to show your customer some impressive number; example: 2021%id%00|76|%''.05d; the %id% will be replaced by the real orderNumber and then 76 is added and finally some ''0'' are filled up'
       visby: {  }
       editby: {  }
       flags:
@@ -2029,6 +2057,24 @@ objects:
       flags:
         - public
   -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderOrderNumberFormated
+    data:
+      name: orderNumberFormated
+      permname: bobshopOrderOrderNumberFormated
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '310'
+      description: 'the orderNumber in a bobshop_config.orderNumberFormat formated form'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
     type: tracker_option
     ref: bobshop_orders_sort_default_field
     data:
@@ -2365,4 +2411,10 @@ objects:
       name: bobshop_shipping
       mode: create_or_update 
       content: Shipping Costs
+ -
+    type: wiki_page
+    data:
+      name: bobshop_admin
+      mode: create_or_update 
+      content: BobShop Admin {bobshop type="show_cart"}
 {CODE}

@@ -1,7 +1,7 @@
 <?php
 /**
  * BobShop
- * Version: 1_9_0
+ * Version: 1_91_0
  * This Plugin is for CMS TikiWiki
  * 
  * BobShop is a shopping cart system for TikiWiki. 
@@ -553,18 +553,18 @@ function wikiplugin_bobshop($data, $params)
 			case 'admin_show_orders':
 				//print_r($jitRequest);
 				
-				$orders = get_tracker_shop_orders_by_trackerID($shopConfig['ordersTrackerId']);
+				$ordersAdmin = get_tracker_shop_orders_by_trackerID($shopConfig['ordersTrackerId']);
 				
-				foreach($orders as $key => $value)
+				foreach($ordersAdmin as $key => $value)
 				{
-					$orders[$key]['bobshopOrderBobshopUser'] = decode_this(base64_decode($value['bobshopOrderBobshopUser']));
+					$ordersAdmin[$key]['bobshopOrderBobshopUser'] = decode_this(base64_decode($value['bobshopOrderBobshopUser']));
 				}
 				
 				//show specific status
 				switch($jitRequest->status->text())
 				{
 					case 'submitted':
-						foreach($orders as $key => $value)
+						foreach($ordersAdmin as $key => $value)
 						{
 							if
 							(
@@ -581,7 +581,7 @@ function wikiplugin_bobshop($data, $params)
 						break;
 					
 					case 'all':
-						$ordersNew = $orders;
+						$ordersNew = $ordersAdmin;
 						break;
 					
 				}
@@ -593,22 +593,25 @@ function wikiplugin_bobshop($data, $params)
 				$smarty->assign('tableFields', array_map('ucfirst', (explode('|', $tableFields))));
 				$smarty->assign('action', 'admin_show_orders');
 				
-				
 				break;
 				
 			case 'admin_show_order':
 				//print_r($jitRequest);
 	
-				$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig, $jitRequest->orderNumber->text());
+				$orderAdmin = get_tracker_shop_orders_order_by_orderNumber($shopConfig, $jitRequest->orderNumber->text());
 				$orderItems = get_tracker_shop_order_items($shopConfig, false, $jitRequest->orderNumber->text());
-				
 
-				//print_r($orderItems);
-				$order['bobshopOrderBobshopUser'] = decode_this(base64_decode($order['bobshopOrderBobshopUser']));
-				$order['bobshopOrderPaymentResponse'] = decode_this(base64_decode($order['bobshopOrderPaymentResponse']));
+				if(!empty($orderAdmin['bobshopOrderBobshopUser']))
+				{
+					$orderAdmin['bobshopOrderBobshopUser'] = decode_this(base64_decode($orderAdmin['bobshopOrderBobshopUser']));
+				}
+				if(!empty($orderAdmin['bobshopOrderPaymentResponse']))
+				{
+					$orderAdmin['bobshopOrderPaymentResponse'] = decode_this(base64_decode($orderAdmin['bobshopOrderPaymentResponse']));
+				}
 
 				$smarty->assign('mailer', 1);
-				$smarty->assign('order', $order);
+				$smarty->assign('order', $orderAdmin);
 				$smarty->assign('orderItems', $orderItems);
 				$smarty->assign('action', 'admin_show_order');
 				

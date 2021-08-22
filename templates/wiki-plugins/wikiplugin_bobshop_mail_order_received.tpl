@@ -13,8 +13,8 @@
 <br>
 <p>{tr}Many thanks for your order{/tr}.</p>
 <br>
-{*<p>Bestellnummer: {$order.bobshopOrderOrderNumber}</p>*}
-<p>{tr}Order number{/tr}: {$orderNumberFormated}</p>
+{*<p>{tr}order number{/tr}: {$order.bobshopOrderOrderNumber}</p>*} {* unformated orderNumber *}
+<p>{tr}order number{/tr}: {$orderNumberFormated}</p>
 <br>
 <br>
 <p>{tr}We hereby confirm receipt of your order{/tr}.</p>

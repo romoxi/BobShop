@@ -514,6 +514,24 @@ objects:
       flags:
         - public
   -
+    type: tracker_field
+    ref: bobshop_orders_bobshopOrderOrderNumberFormated
+    data:
+      name: orderNumberFormated
+      permname: bobshopOrderOrderNumberFormated
+      tracker: '$profileobject:bobshop_orders$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '310'
+      description: 'the orderNumber in a bobshop_config.orderNumberFormat formated form'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
     type: tracker_option
     ref: bobshop_orders_sort_default_field
     data:

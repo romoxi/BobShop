@@ -38,7 +38,7 @@
 					{tr}{$key}{/tr}		
 				</td>
 				<td>
-					{tr}{$value}{/tr}		
+					{$value}		
 				</td>
 			</tr>
 		{/foreach}

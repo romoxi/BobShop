@@ -36,7 +36,8 @@ function wikiplugin_bobshop_info()
 						checkout, 
 						order_submitted, 
 						paypal_after_transaction,
-						show_memory_code_button
+						show_memory_code_button,
+						admin
 						',
                     'filter' => 'text',
                     'since' => '1.0',
@@ -545,6 +546,73 @@ function wikiplugin_bobshop($data, $params)
 					}
 				}
 				break;
+				
+			/*
+			 * admin bobshop
+			 */
+			case 'admin_show_orders':
+				//print_r($jitRequest);
+				
+				$orders = get_tracker_shop_orders_by_trackerID($shopConfig['ordersTrackerId']);
+				
+				foreach($orders as $key => $value)
+				{
+					$orders[$key]['bobshopOrderBobshopUser'] = decode_this(base64_decode($value['bobshopOrderBobshopUser']));
+				}
+				
+				//show specific status
+				switch($jitRequest->status->text())
+				{
+					case 'submitted':
+						foreach($orders as $key => $value)
+						{
+							if
+							(
+								$value['bobshopOrderStatus'] >= 2
+								&&
+								$value['bobshopOrderStatus'] < 13
+								&&
+								$value['bobshopOrderStatus'] != 7									
+							)
+							{
+								$ordersNew[$key] = $value;
+							}
+						}
+						break;
+					
+					case 'all':
+						$ordersNew = $orders;
+						break;
+					
+				}
+				
+				//print_r($orders);
+				$smarty->assign('orders', $ordersNew);
+				$tableFields = 'orderNumber|created|sumEnd|status|paymentOrderId|orderNumberFormated|bobshopUser';
+				$smarty->assign('tableHead', $tableFields);
+				$smarty->assign('tableFields', array_map('ucfirst', (explode('|', $tableFields))));
+				$smarty->assign('action', 'admin_show_orders');
+				
+				
+				break;
+				
+			case 'admin_show_order':
+				//print_r($jitRequest);
+	
+				$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig, $jitRequest->orderNumber->text());
+				$orderItems = get_tracker_shop_order_items($shopConfig, false, $jitRequest->orderNumber->text());
+				
+
+				//print_r($orderItems);
+				$order['bobshopOrderBobshopUser'] = decode_this(base64_decode($order['bobshopOrderBobshopUser']));
+				$order['bobshopOrderPaymentResponse'] = decode_this(base64_decode($order['bobshopOrderPaymentResponse']));
+
+				$smarty->assign('mailer', 1);
+				$smarty->assign('order', $order);
+				$smarty->assign('orderItems', $orderItems);
+				$smarty->assign('action', 'admin_show_order');
+				
+				break;
 		}
 		
 		//show the product details page
@@ -879,6 +947,12 @@ function wikiplugin_bobshop($data, $params)
 				$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_memory_code_button.tpl');
 			}
 			break;
+			
+		//admin bobshop
+		case 'admin':
+			$smarty->assign('shopConfig', $shopConfig);
+			$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_admin.tpl');
+			break;
 	}
 
 	return '~np~' . $output .'~/np~';
@@ -946,7 +1020,7 @@ function get_tracker_shop_config()
 		'orderMemoryCodeFieldId'	=> 'bobshopOrderMemoryCode', 
 		'orderBobshopUserFieldId'	=> 'bobshopOrderBobshopUser', 
 		'orderUserFieldId'			=> 'bobshopOrderUser',
-		'orderNumberFormatedFieldId'	=> 'bobshopOrderNumberFormated',
+		'orderNumberFormatedFieldId'	=> 'bobshopOrderOrderNumberFormated',
 		);
 	
 	foreach($shopConfig['ordersFields']  as $key => $name)
@@ -1417,6 +1491,7 @@ function insert_tracker_shop_order($fieldNames, $shopConfig, $username, $makeCop
 	}
 	else
 	{
+		//mark it as a saved order
 		update_tracker_shop_order_status(14, $shopConfig);
 	}
 		
@@ -1682,9 +1757,14 @@ function check_duplicate_order_items_by_current_order_number($shopConfig)
  * @return array with all products in that order
  * 
  */
-function get_tracker_shop_order_items($shopConfig, $productId = false)
+function get_tracker_shop_order_items($shopConfig, $productId = false, $orderNumber = false)
 {
 	global $tikilib;
+	if($orderNumber != false)
+	{
+		$shopConfig['currentOrderNumber'] = $orderNumber;
+	}
+	
 	//first all products
 	$result = $tikilib->query(
 				"
@@ -1839,6 +1919,49 @@ function get_tracker_shop_products_by_trackerID($trackerId)
 	}
 }
 
+
+/**
+ * returns all orders
+ * for admin
+ */
+function get_tracker_shop_orders_by_trackerID($trackerId)
+{
+	global $tikilib;
+	$result = $tikilib->query(
+				"SELECT
+					itemId,
+					fieldId,
+					value,
+					name AS fieldName,
+					permName
+				FROM
+					tiki_tracker_items
+				LEFT JOIN
+					tiki_tracker_item_fields USING (itemId)
+				LEFT JOIN
+					tiki_tracker_fields using (fieldId)
+				WHERE
+					tiki_tracker_items.trackerId = ?
+
+				ORDER BY itemId ASC
+			",
+			[$trackerId]
+			);
+	
+	$orders = [];
+	
+	if($result->numrows > 0) 
+	{
+		while($row = $result->fetchRow())
+		{
+			$orders[$row['itemId']][$row['permName']] = $row['value'];
+		}
+		return $orders;
+	}
+}
+
+
+
 function get_tracker_shop_product_by_productId($productId, $shopConfig)
 {
 	global $tikilib;
@@ -1925,9 +2048,13 @@ function get_tracker_shop_user_by_user($user, $shopConfig)
 /**
  * 
  */
-function get_tracker_shop_orders_order_by_orderNumber($shopConfig)
+function get_tracker_shop_orders_order_by_orderNumber($shopConfig, $orderNumber = false)
 {
 	global $tikilib;
+	if($orderNumber != false)
+	{
+		$shopConfig['currentOrderNumber'] = $orderNumber;
+	}
 
 	$result = $tikilib->query("
 				SELECT
@@ -2125,7 +2252,7 @@ function update_tracker_shop_order_number_formated($value, $order, $shopConfig)
 				", [
 					$value,
 					$order['itemId'], 
-					$shopConfig['orderNumberFormatedFieldId']
+					$shopConfig['orderOrderNumberFormatedFieldId']
 					]
 				);
 	return;	

@@ -79,24 +79,13 @@
 						{$price = $row.bobshopProductPrice + $row.bobshopProductPrice/100 * $shopConfig[$rate]}
 						<h3 style="font-weight: bold;">{$price|string_format:"%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}</h3>
 						<p class="small">{tr}incl.{/tr} {$shopConfig[$rate]}% {tr}VAT{/tr}</p>
-						<p class="small" onClick='javascript:$( "#wpdialog_bobshop_shipping" ).dialog( "open" );'>{tr}Shipping Category{/tr}: {$row.bobshopProductShippingCat}
+						<p class="small" style="cursor: pointer;" onClick='javascript:$( "#wpdialog_bobshop_shipping" ).dialog( "open" );'>{tr}Shipping Category{/tr}: {$row.bobshopProductShippingCat}
 						<br>{tr}plus Shipping Costs{/tr}</p>
-						{*
-						<p class="small" onClick='javascript:$( "#ver_{$row.bobshopProductProductId}" ).dialog( "open" );'>zzgl. Versandkosten</p>
-							{wikiplugin _name="DIALOG"
-								autoOpen="n"
-								id="ver_{$row.bobshopProductProductId}"
-								title="Versandkosten"
-								modal="y"
-								wiki="bobshop_shipping"
-							}{/wikiplugin}
-						*}
 					{/if}
 					<p class="small">{tr}Part Number{/tr}: {$row.bobshopProductProductId}</p>
 
 					{* stock control*}
 					{if $shopConfig.bobshopConfigStockControl eq "y"}
-						{* <p>Lagerbestand: {$row.bobshopProductStockQuantity}<p> *}
 						<p>{tr}Lead Time{/tr}: 
 						{if $row.bobshopProductStockQuantity > 0}
 							{if 

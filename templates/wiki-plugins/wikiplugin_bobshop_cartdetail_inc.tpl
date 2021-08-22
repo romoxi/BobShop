@@ -3,8 +3,8 @@
 	{$isNotMail = !isset($mailer) || (isset($mailer) && $mailer == 0)}
 	{if $isNotMail}
 		<colgroup>
-			<col width="5%">
-			<col width="45%">
+			<col width="*">
+			<col width="10%">
 			<col width="3%">
 			<col width="9%">
 			<col width="3%">
@@ -18,8 +18,8 @@
 	{/if}
 	
 	<tr>
-		<th>{tr}Part-Nb{/tr}</th>
-		<th>{tr}Designation{/tr}</th>
+		<th>{tr}Part-Nb{/tr}<br>{tr}Designation{/tr}</th>
+		<th></th>
 		<th colspan="3" style="text-align: center;">{tr}Quantity{/tr}</th>
 		{*<th >Anzahl</th>
 		<th ></th>*}
@@ -38,14 +38,17 @@
 		
 		{if $product.{$shopConfig['orderItemQuantityFieldId']} > 0}
 			<tr>
+				
+				{* description *}
 				<td>
+					{*tr}Part-Nb{/tr*} 
 					{if $isNotMail}
 						<a href="tiki-index.php?page={$page}&action=shop_article_detail&productId={$product.{$shopConfig['productProductIdFieldId']}}">
 					{/if}
 						{$product.{$shopConfig['productProductIdFieldId']}}
 					{if $isNotMail}</a>{/if}
-				</td>
-				<td>{$product.{$shopConfig['productNameFieldId']}}
+					<br>
+					{$product.{$shopConfig['productNameFieldId']}}
 					{* stock control*}
 					{if $shopConfig['bobshopConfigStockControl'] eq "y"}
 						<p style="font-size: small">{tr}Lead Time{/tr}: 
@@ -64,9 +67,30 @@
 						{/if}
 						</p>
 					{/if}					
-					
-					
 				</td>
+				
+				{* the pic *}
+				<td style="padding-right: 20px;">
+					{if $isNotMail}
+						<a  href="tiki-index.php?page={$page}&action=shop_article_detail&productId={$product.{$shopConfig['productProductIdFieldId']}}">
+							{if $product.{$shopConfig['productPic1FieldId']} != ''}
+								{wikiplugin _name="IMG"
+									width="100%"
+									fileId="{$product.{$shopConfig['productPic1FieldId']}}"
+								}
+								{/wikiplugin}
+							{else}
+								{wikiplugin _name="IMG" 
+									width="100%"
+									fileId="{$shopConfig['bobshopConfigProductPicMissingPic']}"
+								}
+								{/wikiplugin}
+							{/if}
+						</a>	
+					{/if}
+
+				</td>
+				
 				<td style="padding: 18px 0 0 0;">
 					{if $showQuantityModify == 1}
 						<a class="" data-role="button" data-inline="true" title="-" href="tiki-index.php?page={$page}&action=quantitySub&productId={$product.{$shopConfig['productProductIdFieldId']}}">
@@ -122,10 +146,10 @@
 {if $showPrices}
 {* sum of products *}
 <tr>
-	<td></td>
 	<td>
 		<b>{tr}Sum{/tr}</b>
 	</td>
+	<td></td>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -138,10 +162,10 @@
 
 {* shipping *}
 <tr>
-	<td></td>
 	<td>
 		{tr}Shipping Costs{/tr}
 	</td>
+	<td></td>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -166,10 +190,10 @@
 {* VAT *}
 {if $sumTaxrate1 > 0}
 	<tr>
-		<td></td>
 		<td>
 			{tr}VAT{/tr}
 		</td>
+		<td></td>
 		{*<td></td>*}
 		<td colspan="3" style="text-align: right">
 			{$shopConfig['bobshopConfigTaxrate1']} %
@@ -184,7 +208,6 @@
 {/if}
 {if $sumTaxrate2 > 0}
 	<tr>
-		<td></td>
 		<td>
 			{tr}VAT{/tr}
 		</td>
@@ -192,6 +215,7 @@
 		<td colspan="3" style="text-align: right">
 			{$shopConfig['bobshopConfigTaxrate2']} %
 		</td>
+		<td></td>
 		{*<td></td>*}
 		<td style="text-align: right">
 			{$sumTaxrate2|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
@@ -202,7 +226,6 @@
 {/if}
 {if $sumTaxrate3 > 0}
 	<tr>
-		<td></td>
 		<td>
 			{tr}VAT{/tr}
 		</td>
@@ -210,6 +233,7 @@
 		<td colspan="3" style="text-align: right">
 			{$shopConfig['bobshopConfigTaxrate3']} %
 		</td>
+		<td></td>
 		{*<td></td>*}
 		<td style="text-align: right">
 			{$sumTaxrate3|string_format: "%.2f"} {$shopConfig['bobshopConfigCurrencySymbol']}
@@ -220,10 +244,10 @@
 {/if}
 {$sumTaxrates = $sumTaxrate1 + $sumTaxrate2 + $sumTaxrate3}
 <tr>
-	<td></td>
 	<td>
 		{tr}Sum{/tr} {tr}VAT{/tr}
 	</td>
+	<td></td>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -237,7 +261,6 @@
 {* Payment Sum *}
 {if $showPayment == 1}
 	<tr>
-		<td></td>
 		<td>
 			{$sumPaymentName = $payment.{$order['bobshopOrderPayment']}.{$shopConfig['paymentNameFieldId']}}
 			{$sumPaymentName} 
@@ -245,6 +268,7 @@
 				({tr}Costs{/tr})
 			{/if}
 		</td>
+		<td></td>
 		<td></td>
 		<td></td>
 		<td></td>
@@ -259,10 +283,10 @@
 {* sum End *}
 {$sumEnd = $sumPayment + $sumTaxrates + $sumProducts + $sumShipping}
 <tr>
-	<td></td>
 	<td>
 		<b>{tr}Total amount incl. VAT{/tr}</b>
 	</td>
+	<td></td>
 	<td></td>
 	<td></td>
 	<td></td>

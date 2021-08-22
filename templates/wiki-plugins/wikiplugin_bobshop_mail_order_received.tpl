@@ -17,7 +17,7 @@
 <p>{tr}Order number{/tr}: {$orderNumberFormated}</p>
 <br>
 <br>
-<p>{tr}We hereby confirm your incoming order{/tr}.</p>
+<p>{tr}We hereby confirm receipt of your order{/tr}.</p>
 <br>
 <br>
 <br>

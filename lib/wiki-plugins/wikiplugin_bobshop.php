@@ -1,7 +1,7 @@
 <?php
 /**
  * BobShop
- * Version: 1_91_0
+ * Version: 1_91_1
  * This Plugin is for CMS TikiWiki
  * 
  * BobShop is a shopping cart system for TikiWiki. 
@@ -1023,7 +1023,7 @@ function get_tracker_shop_config()
 		'orderMemoryCodeFieldId'	=> 'bobshopOrderMemoryCode', 
 		'orderBobshopUserFieldId'	=> 'bobshopOrderBobshopUser', 
 		'orderUserFieldId'			=> 'bobshopOrderUser',
-		'orderNumberFormatedFieldId'	=> 'bobshopOrderOrderNumberFormated',
+		'orderOrderNumberFormatedFieldId'	=> 'bobshopOrderOrderNumberFormated',
 		);
 	
 	foreach($shopConfig['ordersFields']  as $key => $name)

@@ -2416,5 +2416,5 @@ objects:
     data:
       name: bobshop_admin
       mode: create_or_update 
-      content: BobShop Admin {bobshop type="show_cart"}
+      content: BobShop Admin {bobshop type="show_admin"}
 {CODE}

@@ -3,7 +3,7 @@ Shopping cart plugin for TikiWiki
 
 BobShop can also be used as an easy product presentation system. See operation-modes in Wiki.
 
-release v1_9_0 available
+release v1_91_0 available
 
 ## Features
 - easy to install and configure
@@ -28,6 +28,8 @@ release v1_9_0 available
 - individual pages/messages after submitting the order/cart
 - product variations (eg. small, medium, large or red, blue, green)
 - custom language file for easy translating in your language
+- admin panel for orders and carts (be sure to set the permissions of this page)
+- order number can be formated to suggest your customers a very big shop ;)
 
 ## What bobshop can not do at this time:
 - invoices
@@ -47,4 +49,7 @@ Add the following in your wikisite.
 ## BobShop DEMO
 More details are available at the BobShop DEMO site
 https://bobshopdemo.bob360.de
+
+## Manual/Documentation
+https://bobshopdemo.bob360.de/Manual
 

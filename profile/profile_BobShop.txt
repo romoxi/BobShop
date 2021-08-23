@@ -105,7 +105,7 @@ Settings > Control Panels
    
 
 !Version
-This profile is for the plugin version v1_91_1.
+This profile is for the plugin version v1_92_1.
 
 
 !Manual
@@ -968,10 +968,10 @@ objects:
       permname: bobshopProductCategory
       tracker: '$profileobject:bobshop_products$'
       options:
+        distinct: 'n'
+        wysiwyg: 'n'
         samerow: 1
-        autocomplete: 'n'
-        exact: 'n'
-      type: text_field
+      type: text_area
       order: '60'
       description: 'Product category; actually not used by bobshop'
       visby: {  }
@@ -1204,18 +1204,53 @@ objects:
         - public
   -
     type: tracker_field
+    ref: bobshop_products_bobshopProductCategories
+    data:
+      name: categories
+      permname: bobshopProductCategories
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        trackerId: '$unknownobject:6123b2d3129a9$'
+        fieldId: '$unknownobject:6123b2d3129b1$'
+        displayFieldsList:
+          - '$unknownobject:6123b2d3129b1$'
+        displayFieldsListType: table
+        status: opc
+        preSelectFieldMethod: exact
+        displayOneItem: multi
+        indexRemote:
+          - 0
+      type: item_link
+      order: '220'
+      description: 'categories for this product'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+  -
+    type: tracker_field
     ref: bobshop_products_bobshopProductVariantProductIds
     data:
       name: variantProductIds
       permname: bobshopProductVariantProductIds
       tracker: '$profileobject:bobshop_products$'
       options:
-        samerow: 1
-        autocomplete: 'n'
-        exact: 'n'
-      type: text_field
-      order: '200'
-      description: 'productIds from different product variants; (e.g. 1006| 1006a|1006b)'
+        trackerId: '$profileobject:bobshop_products$'
+        fieldId: '$profileobject:bobshop_products_bobshopProductProductId$'
+        displayFieldsList:
+          - '$profileobject:bobshop_products_bobshopProductProductId$'
+          - '$profileobject:bobshop_products_bobshopProductName$'
+          - '$profileobject:bobshop_products_bobshopProductVariantName$'
+        displayFieldsListType: table
+        status: opc
+        preSelectFieldMethod: exact
+        displayOneItem: multi
+        selectMultipleValues: 1
+        indexRemote:
+          - 0
+      type: item_link
+      order: '230'
+      description: 'product with different variations; itemLink field with the itemId of the products; comma separates values'
       visby: {  }
       editby: {  }
       flags:
@@ -1229,12 +1264,21 @@ objects:
       permname: bobshopProductVariantSuperset
       tracker: '$profileobject:bobshop_products$'
       options:
-        samerow: 1
-        autocomplete: 'n'
-        exact: 'n'
-      type: text_field
-      order: '210'
-      description: 'Base productId for the differen variants of a product'
+        trackerId: '$profileobject:bobshop_products$'
+        fieldId: '$profileobject:bobshop_products_bobshopProductProductId$'
+        displayFieldsList:
+          - '$profileobject:bobshop_products_bobshopProductVariantName$'
+          - '$profileobject:bobshop_products_bobshopProductName$'
+          - '$profileobject:bobshop_products_bobshopProductProductId$'
+        displayFieldsListType: table
+        status: opc
+        preSelectFieldMethod: exact
+        displayOneItem: multi
+        indexRemote:
+          - 0
+      type: item_link
+      order: '240'
+      description: 'Base productId for the different variants of a product'
       visby: {  }
       editby: {  }
       flags:
@@ -2361,6 +2405,78 @@ objects:
     ref: user_sort_default_field
     data:
       tracker: '$profileobject:user$'
+      name: sort_default_field
+      value: modification
+{CODE}
+
+
+!!categories
+{CODE(caption=>YAML,wrap=>0)}
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: bobshop_categories
+    data:
+      name: bobshop_categories
+      description: ''
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: bobshop_categories_bobshopCategoryName
+    data:
+      name: name
+      permname: bobshopCategoryName
+      tracker: '$profileobject:bobshop_categories$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '10'
+      description: 'the name of the category'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: bobshop_categories_bobshopCategoryIsSuperset
+    data:
+      name: isSuperset
+      permname: bobshopCategoryIsSuperset
+      tracker: '$profileobject:bobshop_categories$'
+      options:
+        trackerId: '$profileobject:bobshop_categories$'
+        fieldId: '$profileobject:bobshop_categories_bobshopCategoryName$'
+        displayFieldsList:
+          - '$profileobject:bobshop_categories_bobshopCategoryName$'
+        displayFieldsListType: table
+        status: opc
+        preSelectFieldMethod: exact
+        displayOneItem: multi
+        selectMultipleValues: 1
+        indexRemote:
+          - 0
+      type: item_link
+      order: '20'
+      description: 'this category have these subcategories'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_option
+    ref: bobshop_categories_sort_default_field
+    data:
+      tracker: '$profileobject:bobshop_categories$'
       name: sort_default_field
       value: modification
 {CODE}

@@ -1,0 +1,67 @@
+permissions: {  }
+preferences: {  }
+objects:
+  -
+    type: tracker
+    ref: bobshop_categories
+    data:
+      name: bobshop_categories
+      description: ''
+      restrict_end: '0'
+      form_classes: ''
+      restrict_start: '0'
+  -
+    type: tracker_field
+    ref: bobshop_categories_bobshopCategoryName
+    data:
+      name: name
+      permname: bobshopCategoryName
+      tracker: '$profileobject:bobshop_categories$'
+      options:
+        samerow: 1
+        autocomplete: 'n'
+        exact: 'n'
+      type: text_field
+      order: '10'
+      description: 'the name of the category'
+      visby: {  }
+      editby: {  }
+      flags:
+        - link
+        - list
+        - public
+        - mandatory
+  -
+    type: tracker_field
+    ref: bobshop_categories_bobshopCategoryIsSuperset
+    data:
+      name: isSuperset
+      permname: bobshopCategoryIsSuperset
+      tracker: '$profileobject:bobshop_categories$'
+      options:
+        trackerId: '$profileobject:bobshop_categories$'
+        fieldId: '$profileobject:bobshop_categories_bobshopCategoryName$'
+        displayFieldsList:
+          - '$profileobject:bobshop_categories_bobshopCategoryName$'
+        displayFieldsListType: table
+        status: opc
+        preSelectFieldMethod: exact
+        displayOneItem: multi
+        selectMultipleValues: 1
+        indexRemote:
+          - 0
+      type: item_link
+      order: '20'
+      description: 'this category have these subcategories'
+      visby: {  }
+      editby: {  }
+      flags:
+        - list
+        - public
+  -
+    type: tracker_option
+    ref: bobshop_categories_sort_default_field
+    data:
+      tracker: '$profileobject:bobshop_categories$'
+      name: sort_default_field
+      value: modification

@@ -29,6 +29,7 @@ function wikiplugin_bobshop_info()
                     'required' => false,
                     'name' => tra('Type'),
                     'description' => '
+						show_shop_categories,
 						show_shop, 
 						add_to_cart_button, 
 						show_cart, 
@@ -49,17 +50,17 @@ function wikiplugin_bobshop_info()
                     'filter' => 'text',
                     'since' => '1.0',
                 ),
-                'showdetails' => array(
+         ),
+    );
+}
+
+ /*               'showdetails' => array(
                     'required' => false,
                     'name' => tra('Show details'),
                     'description' => tra('1 = after clicking the "Add to Cart button", the '),
                     'filter' => 'number',
                     'since' => '1.7.2',
-                ),
-         ),
-    );
-}
-
+                ),*/
 /*
  * Main function of plugin
  * 
@@ -630,7 +631,8 @@ function wikiplugin_bobshop($data, $params)
 			//if there is a superset, get some info from it
 			if(!empty($product['bobshopProductVariantSuperset']))
 			{
-				$productSuperset = get_tracker_shop_product_by_productId($product['bobshopProductVariantSuperset'], $shopConfig);
+				//$productSuperset = get_tracker_shop_product_by_productId($product['bobshopProductVariantSuperset'], $shopConfig);
+				$productSuperset = get_tracker_shop_product_by_itemId($product['bobshopProductVariantSuperset'], $shopConfig);
 				
 				//set all empty fields with the superset values
 				foreach($product as $field => $value)
@@ -660,6 +662,17 @@ function wikiplugin_bobshop($data, $params)
  
     switch($params['type'])
 	{
+		case 'show_shop_categories':
+			//print_r($shopConfig);
+			$categories = get_tracker_shop_categories($shopConfig);
+			//print_r($categories);
+			
+			$smarty->assign('categories', $categories);
+			$smarty->assign('shopConfig', $shopConfig);
+			$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_shop_categories.tpl');
+
+			break;
+		
 		//shows the product list
 		//wiki syntax {bobshop type="show_shop"}
 		case 'show_shop':
@@ -977,6 +990,7 @@ function get_tracker_shop_config()
 	$shopConfig['orderItemsTrackerId']	= get_tracker_shop_trackerId('bobshop_order_items');
 	$shopConfig['paymentTrackerId']		= get_tracker_shop_trackerId('bobshop_payment');
 	$shopConfig['userTrackerId']		= get_tracker_shop_trackerId('User');
+	$shopConfig['categoriesTrackerId']	= get_tracker_shop_trackerId('bobshop_categories');
 	
 	//this fields are in the tracker bobshop_order_items
 	//fields in orderitems tracker
@@ -1075,6 +1089,17 @@ function get_tracker_shop_config()
 	foreach($shopConfig['paymentFields']  as $key => $name)
 	{
 		$shopConfig[$key] = get_tracker_shop_fieldId($name, $shopConfig['paymentTrackerId']);
+	}
+	
+	//fields in categories tracker
+	$shopConfig['categoryFields'] = array(
+		'categoryNameFieldId'	=> 'bobshopCategoryName', 
+		'categoryIsSupersetFieldId'	=> 'bobshopCategoryIsSuperset', 
+	);
+	
+	foreach($shopConfig['categoryFields']  as $key => $name)
+	{
+		$shopConfig[$key] = get_tracker_shop_fieldId($name, $shopConfig['categoriesTrackerId']);
 	}
 	
 	//fields in user tracker
@@ -2000,6 +2025,40 @@ function get_tracker_shop_product_by_productId($productId, $shopConfig)
 	return $product;
 }
 
+function get_tracker_shop_product_by_itemId($itemId, $shopConfig)
+{
+	global $tikilib;
+
+	$result = $tikilib->query("
+				SELECT
+					f1.itemId,
+					f1.fieldId,
+					f1.value,
+					permName
+				FROM
+					tiki_tracker_item_fields
+				LEFT JOIN
+					tiki_tracker_item_fields AS f1 ON f1.itemId = tiki_tracker_item_fields.itemId
+				LEFT JOIN
+					tiki_tracker_fields ON f1.fieldId = tiki_tracker_fields.fieldId
+				WHERE
+					f1.itemId = ?
+
+			",
+			[
+			$itemId
+			]
+			);
+
+	while($row = $result->fetchRow())
+	{
+		$product[$row['permName']] = $row['value'];
+		$product['itemId'] = $row['itemId'];
+	}
+	//print_r($product);
+	return $product;
+}
+
 /**
  * 
  */
@@ -2235,6 +2294,89 @@ function update_tracker_shop_order_tos($value, $order, $shopConfig)
 				);
 	return;	
 }
+
+
+/**
+ * 
+ */
+function get_tracker_shop_categories($shopConfig)
+{
+	global $tikilib;
+	$data = [];
+	//print_r($shopConfig);
+	$result = $tikilib->query("
+				SELECT
+					tiki_tracker_item_fields.itemId,
+					tiki_tracker_item_fields.fieldId,
+					tiki_tracker_item_fields.value,
+					tiki_tracker_fields.permName,
+					tiki_tracker_fields.fieldId
+				FROM
+					tiki_tracker_fields
+				LEFT JOIN
+					tiki_tracker_item_fields ON tiki_tracker_fields.fieldId = tiki_tracker_item_fields.fieldId
+				WHERE
+					tiki_tracker_fields.trackerId = ?
+				ORDER BY itemId
+			", [$shopConfig['categoriesTrackerId']]
+			);
+
+	//get all supersets with value as there subsets
+	while($row = $result->fetchRow())
+	{
+		$data[$row['itemId']][$row['fieldId']] = $row['value'];
+	}
+	//echo '<hr>'; print_r($data);
+
+	//check for subset data
+	foreach($data as $itemId => $superset)
+	{
+		//is there some data in the isSuperset field?
+		$dataNew[$itemId] = $superset;
+		$dataNew[$itemId]['subset'] = categories_set_subset($data, $superset, $shopConfig);
+	}
+	
+	//remove all superset when it is a subset too
+	foreach($dataNew as $itemId => $value)
+	{
+		//print_r(array_column($dataNew, $shopConfig['categoryIsSupersetFieldId']));
+		if(!in_array($itemId, array_column($dataNew, $shopConfig['categoryIsSupersetFieldId'])))
+		{
+			$dataRet[$itemId] = $value;
+		}
+	}
+
+	//echo '<hr>New: '; print_r(array_values($dataNew));
+	//echo '<hr>Ret: '; print_r(array_values($dataRet));
+	
+	return $dataRet;
+}
+
+
+function categories_set_subset($data, $superset, $shopConfig, $lastItemId = 0)
+{
+	if(!empty($superset[$shopConfig['categoryIsSupersetFieldId']]))
+	{
+		$subsets = explode(',', $superset[$shopConfig['categoryIsSupersetFieldId']]);
+		//echo '<hr>superset '; print_r($superset); echo '<br>subsets> '; print_r($subsets); echo '<br>';
+		foreach($subsets as $subsetItemId)
+		{
+			$subset[$subsetItemId] = $data[$subsetItemId];
+			//$data[$itemId]['subset'][$subsetItemId] = $data[$subsetItemId];
+			if(!empty($data[$subsetItemId][$shopConfig['categoryIsSupersetFieldId']]))
+			{
+				//echo 'next'. $data[$subsetItemId][$shopConfig['categoryIsSupersetFieldId']] .'<br>';
+				//echo 'next'. $subsetItemId .'<br>';
+				$subset[$subsetItemId]['subset'] = categories_set_subset($data, $data[$subsetItemId], $shopConfig);
+				//echo '<br>in: '; print_r($subset); echo '<br>';
+			}
+			
+		}
+	}
+	//echo '<br>end function: '; print_r($subset); echo '<hr>';
+	return $subset;
+}
+
 
 /*
  * Update the formated order number
@@ -2529,10 +2671,6 @@ function load_order_by_memoryCode($memoryCode, $username, $shopConfig)
 }
 
 
-
-
-
-
 /**
  * 
  */
@@ -2758,27 +2896,36 @@ function printArray($name, $data)
  */
 function get_product_variants($product, $shopConfig)
 {
+	//echo $product['bobshopProductVariantProductIds'];
 	//is there a superset? then get the variants from there
 	if(!empty($product['bobshopProductVariantSuperset']))
 	{
-		$productSuperset = get_tracker_shop_product_by_productId($product['bobshopProductVariantSuperset'], $shopConfig);
-		$variantProductIds = explode('|', $productSuperset['bobshopProductVariantProductIds']);
+		$productSuperset = get_tracker_shop_product_by_itemId($product['bobshopProductVariantSuperset'], $shopConfig);
+		//$variantProductIds = explode('|', $productSuperset['bobshopProductVariantProductIds']);
+		$variantItemIds = explode(',', $productSuperset['bobshopProductVariantProductIds']);
 	}
 	else
 	{
-		$variantProductIds = explode('|', $product['bobshopProductVariantProductIds']);
+		//$variantProductIds = explode('|', $product['bobshopProductVariantProductIds']);
+		$variantItemIds = explode(',', $product['bobshopProductVariantProductIds']);
 	}
 	//get the produts for the variants
-	foreach($variantProductIds as $productId)
+	foreach($variantItemIds as $itemId)
 	{
 		//echo 'aa'.$productId;
-		if(!empty($productId))
+		if(!empty($itemId))
 		{
-			$variants[$productId] = get_tracker_shop_product_by_productId($productId, $shopConfig);
+			//$variants[$productId] = get_tracker_shop_product_by_productId($productId, $shopConfig);
+			$variants[$itemId] = get_tracker_shop_product_by_itemId($itemId, $shopConfig);
 		}
 	}
 	
-	return $variants;
+	foreach($variants as $itemId => $value)
+	{
+		$ret[$value['bobshopProductProductId']] = $value;
+	}
+	
+	return $ret;
 }
 
 /*

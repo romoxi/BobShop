@@ -1,0 +1,57 @@
+yml tracker profile exports linked field problems
+
+
+>>bobshop_config
+
+    type: tracker_field
+    ref: bobshop_config_bobshopConfigPaymentDefault
+    data:
+      name: paymentDefault
+      permname: bobshopConfigPaymentDefault
+      tracker: '$profileobject:bobshop_config$'
+      options:
+        trackerId: '$unknownobject:61224b488350c$'		>>$profileobject:bobshop_payment$
+        fieldId: '$unknownobject:61224b4883512$'		>>$profileobject:bobshop_payment_bobshopPaymentName$
+        displayFieldsList:
+          - '$unknownobject:61224b4883512$'				>>$profileobject:bobshop_payment_bobshopPaymentName$
+        displayFieldsListType: dropdown
+        status: opc
+        preSelectFieldMethod: exact
+        displayOneItem: multi
+        indexRemote:
+          - 0
+      type: item_link
+      order: '150'
+      description: 'this payment method is selected by default in the cashierpage'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public
+
+
+>>bobshop_products
+
+    type: tracker_field
+    ref: bobshop_products_bobshopProductCategories
+    data:
+      name: categories
+      permname: bobshopProductCategories
+      tracker: '$profileobject:bobshop_products$'
+      options:
+        trackerId: '$unknownobject:6123b2d3129a9$'	>>$profileobject:bobshop_categories$
+        fieldId: '$unknownobject:6123b2d3129b1$'	>>$profileobject:bobshop_categories_bobshopCategoryName$
+        displayFieldsList:
+          - '$unknownobject:6123b2d3129b1$'			>>$profileobject:bobshop_categories_bobshopCategoryName$
+        displayFieldsListType: table
+        status: opc
+        preSelectFieldMethod: exact
+        displayOneItem: multi
+        indexRemote:
+          - 0
+      type: item_link
+      order: '220'
+      description: 'categories for this product'
+      visby: {  }
+      editby: {  }
+      flags:
+        - public

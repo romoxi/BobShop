@@ -2850,6 +2850,11 @@ function send_order_received($showPrices, $sums, $shopConfig, $tpl = '', $error 
 				$subject = $shopname .' Info Zahlungsinformationen';		
 				$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_'. $tpl .'.tpl');
 			}
+			else
+			{
+				$subject = $shopname .' Info Zahlungsinformationen Fehler in tpl';		
+				$mailText = $smarty->fetch('wiki-plugins/wikiplugin_bobshop_mail_'. $tpl .'.tpl');
+			}
 		}		
 		// send the mail
 		$mail_send = mail($shopConfig['bobshopConfigEmailNotifications'], $subject, $mailText, $header);

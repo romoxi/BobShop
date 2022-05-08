@@ -1,7 +1,7 @@
 <?php
 /**
  * BobShop
- * Version: 1_91_1
+ * Version: 1_91_2
  * This Plugin is for CMS TikiWiki
  * 
  * BobShop is a shopping cart system for TikiWiki. 
@@ -99,7 +99,11 @@ function wikiplugin_bobshop($data, $params)
 	//is there a open order for the current session?
 	$shopConfig['currentOrderNumber'] = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
 	
-	//if there is no open order for the current session, is there a open order for the current user?
+
+	/*
+	 * if there is no open order for the current session, is there a open order for the current user?
+	 */
+	
 	if($shopConfig['bobshopConfigTikiUserRegistration'] == 'y')
 	{
 		/**
@@ -149,6 +153,8 @@ function wikiplugin_bobshop($data, $params)
 		//$bobshopOrderBobshopUser = get_tracker_shop_orders_order_by_orderNumber($shopConfig)['bobshopOrderBobshopUser'];
 		$bobshopOrderBobshopUser = bobshop_user_data_decode($shopConfig);
 	}
+	
+	
 	//echo 'orderNumber: '. $shopConfig['currentOrderNumber'];
 	//print_r($_REQUEST);
 	//print_r($params);
@@ -203,6 +209,33 @@ function wikiplugin_bobshop($data, $params)
 		$action = '';
 	}
 
+	/*
+	 * is there a paypal payment in START_PAYPAL paymentStatus?
+	 *
+	 */
+	$orderNumber = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
+	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig, $orderNumber);
+	if($order['bobshopOrderPaymentStatus'] == "START_PAYPAL")
+	{
+		if($action == "paypal_retry")
+		{
+			$action = "order_submitted";
+		}
+		elseif($action == "paypal_retry_no")
+		{
+			include_once('wikiplugin_bobshop_paypal_inc.php');
+			storeOrderDataPayPal('orderPaymentStatusFieldId', 'START_PAYPAL_USER_ABORTED', $shopConfig);
+			//empty the cart by deleting the orderNumber
+			unset($shopConfig['currentOrderNumber']);
+			$action = "";
+		}
+		else
+		{
+			$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_retry.tpl');
+		}
+	}
+	
+	
 	/*
 	 * checks if the "add to cart" button is pressed
 	 * and if yes, then store the action a tracker
@@ -400,26 +433,26 @@ function wikiplugin_bobshop($data, $params)
 				update_tracker_shop_order_number_formated(orderNumber_format($order, $shopConfig), $order, $shopConfig);
 				
 				//mark the order as submitted - not for sandbox
-				if($shopConfig['bobshopConfigOpMode'] != 'sandbox')
-				{
-					update_tracker_shop_order_status(2, $shopConfig);
-				}
+				//moved below paypal stuff
 				
-				//stock control
-				if($shopConfig['bobshopConfigStockControl'] == 'y')
+				//is this the first time to use paypal for this order?
+				if($order['bobshopOrderPaymentStatus'] != "START_PAYPAL")
 				{
-					//load the ordered items
-					$orderItems = get_tracker_shop_order_items($shopConfig);
-					foreach($orderItems as $key => $value)
+					//stock control
+					if($shopConfig['bobshopConfigStockControl'] == 'y')
 					{
-						//dec the stock quantity
-						update_tracker_shop_product_quantity($value[$shopConfig['productProductIdFieldId']], $shopConfig, $value[$shopConfig['orderItemQuantityFieldId']] );
+						//load the ordered items
+						$orderItems = get_tracker_shop_order_items($shopConfig);
+						foreach($orderItems as $key => $value)
+						{
+							//dec the stock quantity
+							update_tracker_shop_product_quantity($value[$shopConfig['productProductIdFieldId']], $shopConfig, $value[$shopConfig['orderItemQuantityFieldId']] );
+						}
 					}
+
+					//send a order-received mail
+					$output .= send_order_received(true, $sums, $shopConfig);
 				}
-				
-				//send a order-received mail
-				$output .= send_order_received(true, $sums, $shopConfig);
-				
 				$payment = get_tracker_shop_payment($shopConfig);
 
 				/*
@@ -429,11 +462,19 @@ function wikiplugin_bobshop($data, $params)
 				{
 					include_once('wikiplugin_bobshop_paypal_inc.php');
 
+					//set paymentStatus to "START_PAYPAL"
+					//if there is any problem from this point, we know by this status, the user
+					//have startet the paypal-prozess
+					storeOrderDataPayPal('orderPaymentStatusFieldId', 'START_PAYPAL', $shopConfig);
+
+					
 					$token = getTokenPayPal($clientId, $secret, $paypalURL);
 					if(empty($token))
 					{
-						echo '<hr>paypal error 100 - invalid token<hr>';
-						exit;
+						//echo '<hr>paypal error 100 - invalid token<hr>';
+						$output .= message('Error', 'paypal error 100 - invalid token', 'errors');
+						$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_retry.tpl');
+						//exit;
 					}
 					elseif(isset($sums['sumEnd']) && !empty($sums['sumEnd']))
 					{
@@ -443,25 +484,30 @@ function wikiplugin_bobshop($data, $params)
 					}
 					else
 					{
-						$output .= message('Error', 'paypal error 201 - no endsum', 'errors');	
+						$output .= message('Error', 'paypal error 201 - no endsum', 'errors');
+						$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_retry.tpl');
 					}
 
-					//is the order created?
-					if($orderPayPal['status'] != 'CREATED')
+					if(!empty($token))
 					{
-						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 101: '. $orderPayPal['status'], $shopConfig);
-						$output .= message('Error', 'paypal error 101 - order not created', 'errors');
-						update_tracker_shop_order_status(1, $shopConfig);
-					}
-					else
-					{
-						//storeOrderDataPayPal('orderPaymentOrderIdFieldId', $orderPayPal['id'], $shopConfig);
-						storeOrderDataPayPal('orderPaymentStatusFieldId', 'CREATED', $shopConfig);
-						$approveLink = getApproveLinkPayPal($orderPayPal);
-						if($approveLink != false)
+						//is the order created?
+						if($orderPayPal['status'] != 'CREATED')
 						{
-							storeOrderDataPayPal('orderPaymenApproveLinkFieldId', $approveLink, $shopConfig);
-							header("location: ". $approveLink);
+							storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 101: '. $orderPayPal['status'], $shopConfig);
+							$output .= message('Error', 'paypal error 101 - order not created', 'errors');
+							update_tracker_shop_order_status(1, $shopConfig);
+							$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_retry.tpl');
+						}
+						else
+						{
+							//storeOrderDataPayPal('orderPaymentOrderIdFieldId', $orderPayPal['id'], $shopConfig);
+							storeOrderDataPayPal('orderPaymentStatusFieldId', 'CREATED', $shopConfig);
+							$approveLink = getApproveLinkPayPal($orderPayPal);
+							if($approveLink != false)
+							{
+								storeOrderDataPayPal('orderPaymenApproveLinkFieldId', $approveLink, $shopConfig);
+								header("location: ". $approveLink);
+							}
 						}
 					}
 				}
@@ -492,7 +538,12 @@ function wikiplugin_bobshop($data, $params)
 				}
 				$params['type'] = 'order_submitted';
 				
-				break;
+				//mark the order as submitted - not for sandbox
+				if($shopConfig['bobshopConfigOpMode'] != 'sandbox')
+				{
+					update_tracker_shop_order_status(2, $shopConfig);
+				}
+				break; //end order submitted
 				
 			//the invite offer button was clicked
 			case 'invite_offer':
@@ -589,7 +640,7 @@ function wikiplugin_bobshop($data, $params)
 				
 				//print_r($orders);
 				$smarty->assign('orders', $ordersNew);
-				$tableFields = 'orderNumber|created|sumEnd|status|paymentOrderId|orderNumberFormated|bobshopUser';
+				$tableFields = 'orderNumber|created|sumEnd|status|paymentOrderId|orderNumberFormated|paymentStatus|bobshopUser';
 				$smarty->assign('tableHead', $tableFields);
 				$smarty->assign('tableFields', array_map('ucfirst', (explode('|', $tableFields))));
 				$smarty->assign('action', 'admin_show_orders');
@@ -618,7 +669,8 @@ function wikiplugin_bobshop($data, $params)
 				
 				break;
 		}
-		
+
+			
 		//show the product details page
 		if($showdetails)
 		{
@@ -665,12 +717,15 @@ function wikiplugin_bobshop($data, $params)
 		case 'show_shop_categories':
 			//print_r($shopConfig);
 			$categories = get_tracker_shop_categories($shopConfig);
-			//print_r($categories);
+			$categoriesStructures = get_tracker_shop_categories_structures($shopConfig);
+			print_r($categories);
+			echo '<hr>';print_r($categoriesStructures);
+			
 			
 			$smarty->assign('categories', $categories);
+			$smarty->assign('categoriesStructures', $categoriesStructures);
 			$smarty->assign('shopConfig', $shopConfig);
 			$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_shop_categories.tpl');
-
 			break;
 		
 		//shows the product list
@@ -780,6 +835,7 @@ function wikiplugin_bobshop($data, $params)
 			$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_cart.tpl');
 			break;
 		
+		//show the cashier page
 		case 'show_cashier':
 			if($buying)
 			{
@@ -834,6 +890,7 @@ function wikiplugin_bobshop($data, $params)
 			}
 			break;
 			
+		//Checkout/Summary with the Name, Adress, Cart ...
 		case 'checkout':
 			//print_r($shopConfig);
 			if($buying)
@@ -991,6 +1048,7 @@ function get_tracker_shop_config()
 	$shopConfig['paymentTrackerId']		= get_tracker_shop_trackerId('bobshop_payment');
 	$shopConfig['userTrackerId']		= get_tracker_shop_trackerId('User');
 	$shopConfig['categoriesTrackerId']	= get_tracker_shop_trackerId('bobshop_categories');
+	$shopConfig['categoriesStructuresTrackerId'] = get_tracker_shop_trackerId('bobshop_categories_structures');
 	
 	//this fields are in the tracker bobshop_order_items
 	//fields in orderitems tracker
@@ -1092,14 +1150,24 @@ function get_tracker_shop_config()
 	}
 	
 	//fields in categories tracker
-	$shopConfig['categoryFields'] = array(
-		'categoryNameFieldId'	=> 'bobshopCategoryName', 
-		'categoryIsSupersetFieldId'	=> 'bobshopCategoryIsSuperset', 
+	$shopConfig['categoriesFields'] = array(
+		'categoriesNameFieldId'	=> 'bobshopCategoriesName', 
 	);
 	
-	foreach($shopConfig['categoryFields']  as $key => $name)
+	foreach($shopConfig['categoriesFields']  as $key => $name)
 	{
 		$shopConfig[$key] = get_tracker_shop_fieldId($name, $shopConfig['categoriesTrackerId']);
+	}
+	
+	//fields in categories structures tracker
+	$shopConfig['categoriesStructuresFields'] = array(
+		'categoriesStructuresNameFieldId'			=> 'bobshopCategoriesStructuresName', 
+		'categoriesStructuresCategoriesIdsFieldId'	=> 'bobshopCategoriesStructuresCategoriesIds', 
+	);
+	
+	foreach($shopConfig['categoriesStructuresFields']  as $key => $name)
+	{
+		$shopConfig[$key] = get_tracker_shop_fieldId($name, $shopConfig['categoriesStructuresTrackerId']);
 	}
 	
 	//fields in user tracker
@@ -1243,7 +1311,7 @@ function get_tracker_shop_orders_order_number_by_itemId($itemId, $fieldId)
 function get_tracker_shop_orders_order_number_by_session_id($sessionId, $shopConfig)
 {
 	global $tikilib;
-	
+	echo $sessionId;
 	$result = $tikilib->query(
 		"SELECT
 				f3.itemId,
@@ -1262,18 +1330,30 @@ function get_tracker_shop_orders_order_number_by_session_id($sessionId, $shopCon
 			AND
 				tiki_tracker_item_fields.value = ?
 			AND
-				f2.fieldId = ?
-			AND
-				(f2.value = '1' OR f2.value = '0' OR f2.value = '')
+				((
+					f2.fieldId = ?
+					AND
+					(f2.value = '1' OR f2.value = '0' OR f2.value = '')
+				)
+				OR
+				(
+					f2.fieldId = ?
+					AND
+					f2.value = 'START_PAYPAL'
+				))
 		",
 		[
 			$shopConfig['orderSessionIdFieldId'], 
 			$sessionId,
-			$shopConfig['orderStatusFieldId'] 
+			$shopConfig['orderStatusFieldId'], 
+			$shopConfig['orderPaymentStatusFieldId']
 			]
 		);
 	
 	$res = $result->fetchRow();
+	//echo $shopConfig['orderPaymentStatusFieldId']. "KKKK<hr>";
+	//print_r($res);
+	
 	return $res['value'];
 }
 
@@ -1285,7 +1365,7 @@ function get_tracker_shop_orders_order_number_by_session_id($sessionId, $shopCon
 function get_tracker_shop_orders_order_number_by_username($username, $shopConfig)
 {
 	global $tikilib;
-	
+	//echo 'user<hr>';
 	if(empty($username)){ return false;}
 	
 	$result = $tikilib->query(
@@ -1306,9 +1386,17 @@ function get_tracker_shop_orders_order_number_by_username($username, $shopConfig
 			AND
 				tiki_tracker_item_fields.value = ?
 			AND
-				f2.fieldId = ?
-			AND
-				(f2.value = '1' OR f2.value = '0' OR f2.value = '')
+				((
+					f2.fieldId = ?
+					AND
+					(f2.value = '1' OR f2.value = '0' OR f2.value = '')
+				)
+				OR
+				(
+					f2.fieldId = ?
+					AND
+					f2.value = 'START_PAYPAL'
+				))
 		",
 		[
 			$shopConfig['orderUserFieldId'], 
@@ -2153,7 +2241,7 @@ function get_tracker_shop_orders_order_by_orderNumber($shopConfig, $orderNumber 
 
 
 /**
- * 
+ * returns all the payment options
  */
 function get_tracker_shop_payment($shopConfig)
 {
@@ -2302,8 +2390,7 @@ function update_tracker_shop_order_tos($value, $order, $shopConfig)
 function get_tracker_shop_categories($shopConfig)
 {
 	global $tikilib;
-	$data = [];
-	//print_r($shopConfig);
+	
 	$result = $tikilib->query("
 				SELECT
 					tiki_tracker_item_fields.itemId,
@@ -2321,62 +2408,93 @@ function get_tracker_shop_categories($shopConfig)
 			", [$shopConfig['categoriesTrackerId']]
 			);
 
-	//get all supersets with value as there subsets
 	while($row = $result->fetchRow())
 	{
 		$data[$row['itemId']][$row['fieldId']] = $row['value'];
 	}
-	//echo '<hr>'; print_r($data);
-
-	//check for subset data
-	foreach($data as $itemId => $superset)
-	{
-		//is there some data in the isSuperset field?
-		$dataNew[$itemId] = $superset;
-		$dataNew[$itemId]['subset'] = categories_set_subset($data, $superset, $shopConfig);
-	}
-	
-	//remove all superset when it is a subset too
-	foreach($dataNew as $itemId => $value)
-	{
-		//print_r(array_column($dataNew, $shopConfig['categoryIsSupersetFieldId']));
-		if(!in_array($itemId, array_column($dataNew, $shopConfig['categoryIsSupersetFieldId'])))
-		{
-			$dataRet[$itemId] = $value;
-		}
-	}
-
-	//echo '<hr>New: '; print_r(array_values($dataNew));
-	//echo '<hr>Ret: '; print_r(array_values($dataRet));
-	
-	return $dataRet;
+	return $data;
 }
 
 
-function categories_set_subset($data, $superset, $shopConfig, $lastItemId = 0)
+/*
+ * get categories structures
+ */
+function get_tracker_shop_categories_structures_old($shopConfig)
 {
-	if(!empty($superset[$shopConfig['categoryIsSupersetFieldId']]))
+	global $tikilib;
+	
+	$result = $tikilib->query("
+				SELECT
+					tiki_tracker_item_fields.itemId,
+					tiki_tracker_item_fields.fieldId,
+					tiki_tracker_item_fields.value,
+					tiki_tracker_fields.permName,
+					tiki_tracker_fields.fieldId
+				FROM
+					tiki_tracker_fields
+				LEFT JOIN
+					tiki_tracker_item_fields ON tiki_tracker_fields.fieldId = tiki_tracker_item_fields.fieldId
+				WHERE
+					tiki_tracker_fields.trackerId = ?
+				ORDER BY itemId
+			", [$shopConfig['categoriesStructuresTrackerId']]
+			);
+
+	while($row = $result->fetchRow())
 	{
-		$subsets = explode(',', $superset[$shopConfig['categoryIsSupersetFieldId']]);
-		//echo '<hr>superset '; print_r($superset); echo '<br>subsets> '; print_r($subsets); echo '<br>';
-		foreach($subsets as $subsetItemId)
+		if($row['fieldId'] == $shopConfig['categoriesStructuresCategoriesIdsFieldId'])
 		{
-			$subset[$subsetItemId] = $data[$subsetItemId];
-			//$data[$itemId]['subset'][$subsetItemId] = $data[$subsetItemId];
-			if(!empty($data[$subsetItemId][$shopConfig['categoryIsSupersetFieldId']]))
-			{
-				//echo 'next'. $data[$subsetItemId][$shopConfig['categoryIsSupersetFieldId']] .'<br>';
-				//echo 'next'. $subsetItemId .'<br>';
-				$subset[$subsetItemId]['subset'] = categories_set_subset($data, $data[$subsetItemId], $shopConfig);
-				//echo '<br>in: '; print_r($subset); echo '<br>';
-			}
-			
+			$row['value'] = explode(',', str_replace(' ', '', $row['value']));
 		}
+		$data[$row['itemId']][$row['fieldId']] = $row['value'];
 	}
-	//echo '<br>end function: '; print_r($subset); echo '<hr>';
-	return $subset;
+	
+	return $data;	
 }
 
+function get_tracker_shop_categories_structures($shopConfig)
+{
+	global $tikilib;
+	//$data = new stdClass;
+	$data = array();
+	
+	$result = $tikilib->query("
+				SELECT
+					tiki_tracker_item_fields.itemId,
+					tiki_tracker_item_fields.fieldId,
+					tiki_tracker_item_fields.value,
+					tiki_tracker_fields.permName,
+					tiki_tracker_fields.fieldId
+				FROM
+					tiki_tracker_fields
+				LEFT JOIN
+					tiki_tracker_item_fields ON tiki_tracker_fields.fieldId = tiki_tracker_item_fields.fieldId
+				WHERE
+					tiki_tracker_fields.trackerId = ?
+				ORDER BY itemId
+			", [$shopConfig['categoriesStructuresTrackerId']]
+			);
+
+	while($row = $result->fetchRow())
+	{
+		if($row['fieldId'] == $shopConfig['categoriesStructuresCategoriesIdsFieldId'])
+		{
+			//echo 'sql : '.$row['value'].'<br>';
+			//echo 'json: '; print_r(json_decode($row['value'], true)); echo '<br>';
+			//array_push($data, json_decode($row['value'], true));
+			$data[$row['itemId']] = json_decode($row['value'], true);
+			//print_r($data); echo '<hr>';
+		}
+		
+		
+			$data[$row['itemId']]['fields'][$row['fieldId']] = $row['value'];
+			echo '<br>i'. $row['itemId']. ' f-'. $row['fieldId']. '-'. $row['value'];
+	}
+		
+	//$test = [1 => 100, 2 => [21 => 200, 22 => 201]];echo '<hr>test: '. json_encode($test). '<hr>';
+	
+	return $data;	
+}
 
 /*
  * Update the formated order number
@@ -2935,10 +3053,13 @@ function get_product_variants($product, $shopConfig)
 
 /*
  * returns the current date and time in sql format
+ * no need to set any timezone
+ * the right timezone will be set at read time
  */
 function date_time()
 {
-	date_default_timezone_set('Europe/Berlin');
+	//date_default_timezone_set('Europe/Berlin');
+	date_default_timezone_set('UTC');
 	return date("Y-m-d H:i:s");
 }
 

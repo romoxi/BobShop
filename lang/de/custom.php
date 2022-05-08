@@ -81,6 +81,9 @@ $lang_custom = array(
 "revocation instruction"=>"Widerrufsbelehrung",
 "could not be loaded"=>"Konnte nicht geladen werden",
 "please contact the service department"=>"Bitte wenden sie sich an unseren Kundenservice",
+"An error occurred by paying with PayPal!"=>"Beim Bezahlvorgang mit PayPal ist ein Fehler aufgetreten!",
+"Do you want to try it again?"=>"Möchten die den Bezahlvorgang mit PayPal erneut durchführen?",
+"Pay with Paypal"=>"Mit PayPal bezahlen.",
 ""=>"",
 );
 $lang = array_merge($lang, $lang_custom);

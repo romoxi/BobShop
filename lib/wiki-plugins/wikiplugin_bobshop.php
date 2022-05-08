@@ -211,11 +211,11 @@ function wikiplugin_bobshop($data, $params)
 
 	/*
 	 * is there a paypal payment in START_PAYPAL paymentStatus?
-	 *
+	 * error 101 = CREATED could not be set by paypal api
 	 */
 	$orderNumber = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
 	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig, $orderNumber);
-	if($order['bobshopOrderPaymentStatus'] == "START_PAYPAL")
+	if($order['bobshopOrderPaymentStatus'] == "START_PAYPAL" || $order['bobshopOrderPaymentStatus'] == "error 101")
 	{
 		if($action == "paypal_retry")
 		{
@@ -493,7 +493,7 @@ function wikiplugin_bobshop($data, $params)
 						//is the order created?
 						if($orderPayPal['status'] != 'CREATED')
 						{
-							storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 101: '. $orderPayPal['status'], $shopConfig);
+							storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 101'. $orderPayPal['status'], $shopConfig);
 							$output .= message('Error', 'paypal error 101 - order not created', 'errors');
 							update_tracker_shop_order_status(1, $shopConfig);
 							$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_retry.tpl');

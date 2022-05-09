@@ -19,8 +19,8 @@
  */
 
 //login data from PayPayl REST API app
-$clientId = 'KJnFaTX6wC';
-$secret   = 'pU1AM6p4';
+$clientId = 'AYUDkCwvF01qQM1kXU_o_aqYZFWjcMhLEE0dKDTJ0mUu2zGrJEh-7DiBI_b3wlNJ1FRo28-fettD7uzD';
+$secret   = 'ELvY3oozHQgLlfzx6MT0WHBJtgXnvFJmIG6D-u0fbkxto2-VqPCq3V73jvJqUySgmYVdUifC2JPZ7Yu8';
 
 if($shopConfig['bobshopConfigOpMode'] == 'sandbox')
 {
@@ -34,14 +34,11 @@ elseif($shopConfig['bobshopConfigOpMode'] == 'default')
 	// mit -m von schak
 	//$paypalURL = 'https://api.paypal.com';
 }
-
 //END Config Section
 
-//echo 'Sie werden auf die PayPal-Seite weitergeleitet.';
-
-
-
-
+/*
+ * update some tracker fields
+ */
 function storeOrderDataPayPal($fieldId, $data, $shopConfig)
 {
 	global $tikilib;

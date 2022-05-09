@@ -203,6 +203,22 @@ function wikiplugin_bobshop($data, $params)
 	global $jitGet;
 	$action = $jitRequest->action->text();
 	
+	
+	/*
+	 * these values accept the user by clicking the buy now button
+	 */
+	$sumFields = array(
+		'sumProducts',
+		'sumTaxrate1',
+		'sumTaxrate2',
+		'sumTaxrate3',
+		'sumTaxrates',
+		'sumShipping',
+		'sumPayment',
+		'sumPaymentName',
+		'sumEnd'
+	);
+
 	//only show the Add to Cart button
 	if($params['type'] == 'add_to_cart_button' && $action == 'shop_article_detail')
 	{
@@ -215,11 +231,22 @@ function wikiplugin_bobshop($data, $params)
 	 */
 	$orderNumber = get_tracker_shop_orders_order_number_by_session_id($fieldNames['bobshopOrderSessionId'], $shopConfig);
 	$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig, $orderNumber);
-	if($order['bobshopOrderPaymentStatus'] == "START_PAYPAL" || $order['bobshopOrderPaymentStatus'] == "error 101")
+	if(
+		$order['bobshopOrderPaymentStatus'] == "START_PAYPAL"
+		|| $order['bobshopOrderPaymentStatus'] == "error 101"
+		|| ($order['bobshopOrderPaymentStatus'] == "CREATED"
+			&& $params['type'] != "paypal_after_transaction")
+		)
+	//if($order['bobshopOrderPaymentStatus'] != "COMPLETED" && $order['bobshopOrderPaymentStatus'] != "")
 	{
 		if($action == "paypal_retry")
 		{
 			$action = "order_submitted";
+			//get the sums out of the order
+			foreach($sumFields as $key)
+			{
+				$sums[$key] = $order['bobshopOrder'. ucfirst($key)];
+			}
 		}
 		elseif($action == "paypal_retry_no")
 		{
@@ -231,6 +258,7 @@ function wikiplugin_bobshop($data, $params)
 		}
 		else
 		{
+			$output .= message('Error', 'paypal error 105 - order not completed. Status = '.$order['bobshopOrderPaymentStatus'] , 'errors');
 			$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_retry.tpl');
 		}
 	}
@@ -408,25 +436,16 @@ function wikiplugin_bobshop($data, $params)
 			
 			//the buy now button was clicked
 			case 'order_submitted':
-				$sumFields = array(
-					'sumProducts',
-					'sumTaxrate1',
-					'sumTaxrate2',
-					'sumTaxrate3',
-					'sumTaxrates',
-					'sumShipping',
-					'sumPayment',
-					'sumPaymentName',
-					'sumEnd'
-				);
 				
-				$sums = array();
-				
-				foreach($sumFields AS $value)
+				//the $sums are not empty when clicked on paypal retry
+				if(empty($sums))
 				{
-					$sums[$value] = $jitPost->$value->text();
+					$sums = array();
+					foreach($sumFields AS $value)
+					{
+						$sums[$value] = $jitPost->$value->text();
+					}
 				}
-				
 				$order = get_tracker_shop_orders_order_by_orderNumber($shopConfig);
 
 				update_tracker_shop_order_submitted($sums, $order, $shopConfig);
@@ -467,7 +486,6 @@ function wikiplugin_bobshop($data, $params)
 					//have startet the paypal-prozess
 					storeOrderDataPayPal('orderPaymentStatusFieldId', 'START_PAYPAL', $shopConfig);
 
-					
 					$token = getTokenPayPal($clientId, $secret, $paypalURL);
 					if(empty($token))
 					{
@@ -500,7 +518,6 @@ function wikiplugin_bobshop($data, $params)
 						}
 						else
 						{
-							//storeOrderDataPayPal('orderPaymentOrderIdFieldId', $orderPayPal['id'], $shopConfig);
 							storeOrderDataPayPal('orderPaymentStatusFieldId', 'CREATED', $shopConfig);
 							$approveLink = getApproveLinkPayPal($orderPayPal);
 							if($approveLink != false)
@@ -514,7 +531,7 @@ function wikiplugin_bobshop($data, $params)
 				else
 				{				
 					//reading the message in the followUpScript field
-					//[tpl] marks a template file
+					//[tpl] marks a template file to be loaded
 					if(substr($payment[$order['bobshopOrderPayment']][$shopConfig['paymentFollowUpScriptFieldId']], 0, 5) == '[tpl]')
 					{
 						$tplFile = 'wiki-plugins/wikiplugin_bobshop_'. substr($payment[$order['bobshopOrderPayment']][$shopConfig['paymentFollowUpScriptFieldId']], 5) .'.tpl';
@@ -539,7 +556,7 @@ function wikiplugin_bobshop($data, $params)
 				$params['type'] = 'order_submitted';
 				
 				//mark the order as submitted - not for sandbox
-				if($shopConfig['bobshopConfigOpMode'] != 'sandbox')
+				if($shopConfig['bobshopConfigOpMode'] != 'sandbox1')
 				{
 					update_tracker_shop_order_status(2, $shopConfig);
 				}
@@ -953,19 +970,20 @@ function wikiplugin_bobshop($data, $params)
 				//get some new info from the order
 				$response = showOrderPayPal($orderIdResponse, $token, $paypalURL);
 
+				//now the order should be APPROVED
 				if($response['status'] != 'APPROVED' && $response['status'] != 'COMPLETED')
 				{
 					if($response['status'] == 'CREATED')
 					{
-						$output .= message('Cancel', 'The payment was canceled', 'errors');
-						update_tracker_shop_order_status(1, $shopConfig);
+						$output .= message('Error', 'paypal error 106 - order not created. Status = '. $response['status'] .' orderId = '. $orderIdResponse, 'errors');
 					}
 					else
 					{
-						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 102: '. $response['status'], $shopConfig);
 						$output .= message('Error', 'paypal error 102 - order not created. Status = '. $response['status'] .' orderId = '. $orderIdResponse, 'errors');
-						update_tracker_shop_order_status(1, $shopConfig);
 					}
+					update_tracker_shop_order_status(1, $shopConfig);
+					storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 102: '. $response['status'], $shopConfig);
+					$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_retry.tpl');
 				}
 				else
 				{
@@ -982,12 +1000,13 @@ function wikiplugin_bobshop($data, $params)
 						$transactionId = $response['purchase_units'][0]['payments']['captures'][0]['id'];
 						storeOrderDataPayPal('orderPaymentOrderIdFieldId', $transactionId , $shopConfig);
 					}
+					//elseif($response['status'] != 'COMPLETED')
 					else
 					{
 						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 104: '. $response['status'], $shopConfig);
-						$output .= message('Error', 'paypal error 104 - order not completed. Status = '. $response['status'], 'errors');
-						
-						send_order_received(false, $sums, $shopConfig, 'paypal', 'error');
+						$output .= message('Error', 'paypal error 104 - order not approved. Status = '. $response['status'], 'errors');
+						//send_order_received(false, $sums, $shopConfig, 'paypal', 'error');
+						$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_retry.tpl');
 					}
 					
 					if($response['status'] != 'COMPLETED')
@@ -995,8 +1014,9 @@ function wikiplugin_bobshop($data, $params)
 						storeOrderDataPayPal('orderPaymentStatusFieldId', 'error 103: '. $response['status'], $shopConfig);
 						update_tracker_shop_order_status(1, $shopConfig);
 						//send a mail
-						send_order_received(false, $sums, $shopConfig, 'paypal', 'error');
+						//send_order_received(false, $sums, $shopConfig, 'paypal', 'error');
 						$output .= message('Error', 'paypal error 103 - order not completed. Status = '. $response['status'], 'errors');
+						$output .= $smarty->fetch('wiki-plugins/wikiplugin_bobshop_paypal_retry.tpl');
 					}
 					else
 					{
@@ -1339,7 +1359,7 @@ function get_tracker_shop_orders_order_number_by_session_id($sessionId, $shopCon
 				(
 					f2.fieldId = ?
 					AND
-					f2.value = 'START_PAYPAL'
+					f2.value != 'COMPLETED'
 				))
 		",
 		[
@@ -1351,9 +1371,6 @@ function get_tracker_shop_orders_order_number_by_session_id($sessionId, $shopCon
 		);
 	
 	$res = $result->fetchRow();
-	//echo $shopConfig['orderPaymentStatusFieldId']. "KKKK<hr>";
-	//print_r($res);
-	
 	return $res['value'];
 }
 
@@ -1395,7 +1412,7 @@ function get_tracker_shop_orders_order_number_by_username($username, $shopConfig
 				(
 					f2.fieldId = ?
 					AND
-					f2.value = 'START_PAYPAL'
+					f2.value != 'COMPLETED'
 				))
 		",
 		[
